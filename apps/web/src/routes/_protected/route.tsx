@@ -9,6 +9,8 @@ export const Route = createFileRoute("/_protected")({
   beforeLoad: async () => {
     const { userId } = await authStateFn();
 
+    console.log(import.meta.env.VITE_AUTH_URL);
+
     if (!userId) {
       throw redirect({ href: import.meta.env.VITE_AUTH_URL });
     }

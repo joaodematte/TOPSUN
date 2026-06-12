@@ -12,6 +12,7 @@ import { useEffect } from "react";
 import { Toaster } from "sonner";
 
 import { setClerkAuthTokenGetter } from "@/lib/clerk";
+import { getTitle } from "@/utils/seo";
 
 import appCss from "@topsun/ui/globals.css?url";
 
@@ -58,7 +59,7 @@ export const Route = createRootRouteWithContext<RouterAppContext>()({
         name: "viewport",
       },
       {
-        title: "My App",
+        title: getTitle(),
       },
     ],
   }),
