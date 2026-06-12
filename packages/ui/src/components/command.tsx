@@ -1,21 +1,17 @@
-"use client"
+"use client";
 
-import * as React from "react"
-import { Command as CommandPrimitive } from "cmdk"
-
-import { cn } from "@topsun/ui/lib/utils"
+import { IconSearch, IconCheck } from "@tabler/icons-react";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@topsun/ui/components/dialog"
-import {
-  InputGroup,
-  InputGroupAddon,
-} from "@topsun/ui/components/input-group"
-import { IconSearch, IconCheck } from "@tabler/icons-react"
+} from "@topsun/ui/components/dialog";
+import { InputGroup, InputGroupAddon } from "@topsun/ui/components/input-group";
+import { cn } from "@topsun/ui/lib/utils";
+import { Command as CommandPrimitive } from "cmdk";
+import * as React from "react";
 
 function Command({
   className,
@@ -30,7 +26,7 @@ function Command({
       )}
       {...props}
     />
-  )
+  );
 }
 
 function CommandDialog({
@@ -41,11 +37,11 @@ function CommandDialog({
   showCloseButton = false,
   ...props
 }: Omit<React.ComponentProps<typeof Dialog>, "children"> & {
-  title?: string
-  description?: string
-  className?: string
-  showCloseButton?: boolean
-  children: React.ReactNode
+  title?: string;
+  description?: string;
+  className?: string;
+  showCloseButton?: boolean;
+  children: React.ReactNode;
 }) {
   return (
     <Dialog {...props}>
@@ -63,7 +59,7 @@ function CommandDialog({
         {children}
       </DialogContent>
     </Dialog>
-  )
+  );
 }
 
 function CommandInput({
@@ -72,7 +68,7 @@ function CommandInput({
 }: React.ComponentProps<typeof CommandPrimitive.Input>) {
   return (
     <div data-slot="command-input-wrapper" className="p-1 pb-0">
-      <InputGroup className="h-8! bg-input/50">
+      <InputGroup className="bg-input/50 h-8!">
         <CommandPrimitive.Input
           data-slot="command-input"
           className={cn(
@@ -86,7 +82,7 @@ function CommandInput({
         </InputGroupAddon>
       </InputGroup>
     </div>
-  )
+  );
 }
 
 function CommandList({
@@ -102,7 +98,7 @@ function CommandList({
       )}
       {...props}
     />
-  )
+  );
 }
 
 function CommandEmpty({
@@ -115,7 +111,7 @@ function CommandEmpty({
       className={cn("py-6 text-center text-sm", className)}
       {...props}
     />
-  )
+  );
 }
 
 function CommandGroup({
@@ -131,7 +127,7 @@ function CommandGroup({
       )}
       {...props}
     />
-  )
+  );
 }
 
 function CommandSeparator({
@@ -144,7 +140,7 @@ function CommandSeparator({
       className={cn("my-1 h-px bg-border/50", className)}
       {...props}
     />
-  )
+  );
 }
 
 function CommandItem({
@@ -164,7 +160,7 @@ function CommandItem({
       {children}
       <IconCheck className="ml-auto opacity-0 group-has-data-[slot=command-shortcut]/command-item:hidden group-data-[checked=true]/command-item:opacity-100" />
     </CommandPrimitive.Item>
-  )
+  );
 }
 
 function CommandShortcut({
@@ -180,7 +176,7 @@ function CommandShortcut({
       )}
       {...props}
     />
-  )
+  );
 }
 
 export {
@@ -193,4 +189,4 @@ export {
   CommandItem,
   CommandShortcut,
   CommandSeparator,
-}
+};

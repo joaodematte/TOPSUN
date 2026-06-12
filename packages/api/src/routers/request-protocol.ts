@@ -1,7 +1,12 @@
-import { getRequestProtocolStatusThresholds } from "@topsun/db/postgres-queries";
+import {
+  getRequestProtocolStatusThresholds,
+  upsertRequestProtocolStatusThresholds,
+} from "@topsun/db/postgres-queries";
 import { getProjectsOnRequestProtocol } from "@topsun/db/queries";
+import { TRPCError } from "@trpc/server";
 
 import { protectedProcedure, router } from "..";
+import { requestProtocolStatusThresholdsSchema } from "../schemas/request-protocol-status-thresholds";
 
 export const requestProtocolRouter = router({
   getProjects: protectedProcedure.query(async () => {
@@ -14,4 +19,16 @@ export const requestProtocolRouter = router({
 
     return data;
   }),
+  saveStatusThresholds: protectedProcedure
+    .input(requestProtocolStatusThresholdsSchema)
+    .mutation(async ({ input }) => {
+      try {
+        return await upsertRequestProtocolStatusThresholds(input);
+      } catch {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Não foi possível salvar as configurações. Tente novamente.",
+        });
+      }
+    }),
 });

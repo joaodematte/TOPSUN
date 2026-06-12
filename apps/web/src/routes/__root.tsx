@@ -9,6 +9,7 @@ import {
 import type { AppRouter } from "@topsun/api/routers/index";
 import type { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import { useEffect } from "react";
+import { Toaster } from "sonner";
 
 import { setClerkAuthTokenGetter } from "@/lib/clerk";
 
@@ -73,6 +74,7 @@ function RootDocument() {
         <ClerkProvider>
           <ClerkApiAuthBridge />
           <Outlet />
+          <Toaster position="top-right" theme="light" />
         </ClerkProvider>
         <Scripts />
       </body>
