@@ -5,6 +5,8 @@ import type { AppRouter } from "@topsun/api/routers/index";
 import { createTRPCClient, httpBatchLink, loggerLink } from "@trpc/client";
 import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";
 
+import { getClerkAuthToken } from "@/lib/clerk";
+
 import { TRPCProvider } from "./lib/trpc";
 import { routeTree } from "./routeTree.gen";
 
@@ -18,6 +20,10 @@ const trpcClient = createTRPCClient<AppRouter>({
   links: [
     loggerLink({ enabled: () => import.meta.env.DEV }),
     httpBatchLink({
+      headers: async () => {
+        const token = await getClerkAuthToken();
+        return token ? { Authorization: `Bearer ${token}` } : {};
+      },
       url: `${import.meta.env.VITE_SERVER_URL}/trpc`,
     }),
   ],

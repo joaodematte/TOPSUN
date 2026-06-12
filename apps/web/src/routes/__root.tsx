@@ -1,3 +1,4 @@
+import { ClerkProvider, useAuth } from "@clerk/tanstack-react-start";
 import type { QueryClient } from "@tanstack/react-query";
 import {
   HeadContent,
@@ -7,6 +8,9 @@ import {
 } from "@tanstack/react-router";
 import type { AppRouter } from "@topsun/api/routers/index";
 import type { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
+import { useEffect } from "react";
+
+import { setClerkAuthTokenGetter } from "@/lib/clerk";
 
 import appCss from "@topsun/ui/globals.css?url";
 
@@ -15,13 +19,33 @@ export interface RouterAppContext {
   queryClient: QueryClient;
 }
 
+function ClerkApiAuthBridge() {
+  const { getToken } = useAuth();
+
+  useEffect(() => {
+    setClerkAuthTokenGetter(getToken);
+
+    return () => {
+      setClerkAuthTokenGetter(null);
+    };
+  }, [getToken]);
+
+  return null;
+}
+
 export const Route = createRootRouteWithContext<RouterAppContext>()({
   component: RootDocument,
+
   head: () => ({
     links: [
       {
         href: appCss,
         rel: "stylesheet",
+      },
+      {
+        href: "https://cdn.topsun.dev/images/icon.svg",
+        rel: "icon",
+        type: "image/svg+xml",
       },
     ],
     meta: [
@@ -46,7 +70,10 @@ function RootDocument() {
         <HeadContent />
       </head>
       <body>
-        <Outlet />
+        <ClerkProvider>
+          <ClerkApiAuthBridge />
+          <Outlet />
+        </ClerkProvider>
         <Scripts />
       </body>
     </html>

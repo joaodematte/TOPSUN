@@ -1,0 +1,11 @@
+node_modules
+**/node_modules
+.git
+.turbo
+**/dist
+**/.output
+apps/web
+.agents
+.cursor
+**/.env*
+!**/.env.example

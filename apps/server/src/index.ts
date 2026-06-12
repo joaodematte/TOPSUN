@@ -29,5 +29,6 @@ app.get("/", (c) => c.text("OK"));
 
 export default {
   fetch: app.fetch,
-  port: 3001,
+  hostname: process.env.HOSTNAME ?? "0.0.0.0",
+  port: process.env.PORT ?? 3001,
 };
