@@ -36,20 +36,21 @@
     "db:watch": "turbo -F @topsun/db db:watch",
     "db:stop": "turbo -F @topsun/db db:stop",
     "db:down": "turbo -F @topsun/db db:down",
-    "check": "oxlint && oxfmt --write"
+    "check": "ultracite check",
+    "fix": "ultracite fix"
   },
   "dependencies": {
-    "@topsun/env": "workspace:*",
     "dotenv": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
     "@topsun/config": "workspace:*",
     "@types/bun": "catalog:",
-    "oxfmt": "^0.53.0",
-    "oxlint": "^1.68.0",
+    "oxfmt": "^0.54.0",
+    "oxlint": "^1.69.0",
     "turbo": "^2.9.16",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "ultracite": "7.8.3"
   },
   "packageManager": "bun@1.3.14"
 }

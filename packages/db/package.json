@@ -20,7 +20,6 @@
     "db:down": "docker compose down"
   },
   "dependencies": {
-    "@topsun/env": "workspace:*",
     "dotenv": "catalog:",
     "drizzle-orm": "^0.45.1",
     "pg": "^8.17.1",

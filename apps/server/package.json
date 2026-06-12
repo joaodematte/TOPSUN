@@ -13,7 +13,6 @@
     "@hono/trpc-server": "^0.4.0",
     "@topsun/api": "workspace:*",
     "@topsun/db": "workspace:*",
-    "@topsun/env": "workspace:*",
     "@trpc/server": "catalog:",
     "dotenv": "catalog:",
     "hono": "catalog:",

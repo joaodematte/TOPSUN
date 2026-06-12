@@ -1,10 +1,10 @@
 import type { Context as HonoContext } from "hono";
 
-export type CreateContextOptions = {
+export interface CreateContextOptions {
   context: HonoContext;
-};
+}
 
-export async function createContext(_options: CreateContextOptions) {
+export function createContext(_options: CreateContextOptions) {
   return {
     auth: null,
     session: null,
