@@ -20,6 +20,12 @@
     "./features/access-request/schema": {
       "default": "./src/features/access-request/schema.ts"
     },
+    "./features/art-access-requirement/schema": {
+      "default": "./src/features/art-access-requirement/schema.ts"
+    },
+    "./features/utility-inspection-request/schema": {
+      "default": "./src/features/utility-inspection-request/schema.ts"
+    },
     "./*": {
       "default": "./src/*.ts"
     }

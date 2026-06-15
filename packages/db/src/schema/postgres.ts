@@ -10,6 +10,12 @@ export const INSPECTION_APPROVAL_STATUS_THRESHOLDS_ID =
 export const ACCESS_REQUEST_STATUS_THRESHOLDS_ID =
   "00000000-0000-4000-8000-000000000003";
 
+export const ART_ACCESS_REQUIREMENT_STATUS_THRESHOLDS_ID =
+  "00000000-0000-4000-8000-000000000004";
+
+export const UTILITY_INSPECTION_REQUEST_STATUS_THRESHOLDS_ID =
+  "00000000-0000-4000-8000-000000000005";
+
 export const requestProtocolStatusThresholds = pgTable(
   "request_protocol_status_thresholds",
   {
@@ -105,3 +111,67 @@ export type AccessRequestStatusThresholds =
 
 export type NewAccessRequestStatusThresholds =
   typeof accessRequestStatusThresholds.$inferInsert;
+
+export const artAccessRequirementStatusThresholds = pgTable(
+  "art_access_requirement_status_thresholds",
+  {
+    attention: integer("attention").notNull(),
+    critical: integer("critical").notNull(),
+    id: uuid("id")
+      .primaryKey()
+      .default(sql`'00000000-0000-4000-8000-000000000004'::uuid`),
+    onTime: integer("on_time").notNull(),
+    updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    check(
+      "art_access_requirement_status_thresholds_singleton",
+      sql`${table.id} = '00000000-0000-4000-8000-000000000004'::uuid`
+    ),
+    check(
+      "art_access_requirement_status_thresholds_order",
+      sql`${table.onTime} <= ${table.attention} AND ${table.attention} <= ${table.critical}`
+    ),
+  ]
+);
+
+export type ArtAccessRequirementStatusThresholds =
+  typeof artAccessRequirementStatusThresholds.$inferSelect;
+
+export type NewArtAccessRequirementStatusThresholds =
+  typeof artAccessRequirementStatusThresholds.$inferInsert;
+
+export const utilityInspectionRequestStatusThresholds = pgTable(
+  "utility_inspection_request_status_thresholds",
+  {
+    attention: integer("attention").notNull(),
+    critical: integer("critical").notNull(),
+    id: uuid("id")
+      .primaryKey()
+      .default(sql`'00000000-0000-4000-8000-000000000005'::uuid`),
+    onTime: integer("on_time").notNull(),
+    updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    check(
+      "utility_inspection_request_status_thresholds_singleton",
+      sql`${table.id} = '00000000-0000-4000-8000-000000000005'::uuid`
+    ),
+    check(
+      "utility_inspection_request_status_thresholds_order",
+      sql`${table.onTime} <= ${table.attention} AND ${table.attention} <= ${table.critical}`
+    ),
+  ]
+);
+
+export type UtilityInspectionRequestStatusThresholds =
+  typeof utilityInspectionRequestStatusThresholds.$inferSelect;
+
+export type NewUtilityInspectionRequestStatusThresholds =
+  typeof utilityInspectionRequestStatusThresholds.$inferInsert;

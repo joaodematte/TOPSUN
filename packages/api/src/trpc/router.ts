@@ -1,14 +1,18 @@
 import type { inferRouterInputs, inferRouterOutputs } from "@trpc/server";
 
 import { accessRequestRouter } from "../features/access-request/router";
+import { artAccessRequirementRouter } from "../features/art-access-requirement/router";
 import { inspectionApprovalRouter } from "../features/inspection-approval/router";
 import { requestProtocolRouter } from "../features/request-protocol/router";
+import { utilityInspectionRequestRouter } from "../features/utility-inspection-request/router";
 import { router } from "./init";
 
 export const appRouter = router({
   accessRequest: accessRequestRouter,
+  artAccessRequirement: artAccessRequirementRouter,
   inspectionApproval: inspectionApprovalRouter,
   requestProtocol: requestProtocolRouter,
+  utilityInspectionRequest: utilityInspectionRequestRouter,
 });
 
 export type AppRouter = typeof appRouter;

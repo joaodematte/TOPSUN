@@ -10,6 +10,7 @@ import {
 } from "@topsun/ui/components/dialog";
 
 import { AccessRequestDataTable } from "@/features/access-request/components/access-request-data-table";
+import { ArtAccessRequirementDataTable } from "@/features/art-access-requirement/components/art-access-requirement-data-table";
 import { useProjectStatusDialogStore } from "@/features/dashboard/stores/project-status-dialog-store";
 import {
   filterProjectsByStatus,
@@ -18,6 +19,7 @@ import {
 import type { ProjectStatusThresholds } from "@/features/dashboard/utils/project-status";
 import { InspectionApprovalDataTable } from "@/features/inspection-approval/components/inspection-approval-data-table";
 import { RequestProtocolDataTable } from "@/features/request-protocol/components/request-protocol-data-table";
+import { UtilityInspectionRequestDataTable } from "@/features/utility-inspection-request/components/utility-inspection-request-data-table";
 
 type ProjectOnRequestProtocol =
   RouterOutputs["requestProtocol"]["getProjects"][number];
@@ -27,6 +29,12 @@ type ProjectOnInspectionApproval =
 
 type ProjectOnAccessRequest =
   RouterOutputs["accessRequest"]["getProjects"][number];
+
+type ProjectOnArtAccessRequirement =
+  RouterOutputs["artAccessRequirement"]["getProjects"][number];
+
+type ProjectOnUtilityInspectionRequest =
+  RouterOutputs["utilityInspectionRequest"]["getProjects"][number];
 
 interface ProjectStatusProjectsDialogBaseProps {
   thresholds: ProjectStatusThresholds;
@@ -47,10 +55,22 @@ interface AccessRequestProjectStatusProjectsDialogProps extends ProjectStatusPro
   source: "accessRequest";
 }
 
+interface ArtAccessRequirementProjectStatusProjectsDialogProps extends ProjectStatusProjectsDialogBaseProps {
+  projects: ProjectOnArtAccessRequirement[];
+  source: "artAccessRequirement";
+}
+
+interface UtilityInspectionRequestProjectStatusProjectsDialogProps extends ProjectStatusProjectsDialogBaseProps {
+  projects: ProjectOnUtilityInspectionRequest[];
+  source: "utilityInspectionRequest";
+}
+
 type ProjectStatusProjectsDialogProps =
   | RequestProtocolProjectStatusProjectsDialogProps
   | InspectionApprovalProjectStatusProjectsDialogProps
-  | AccessRequestProjectStatusProjectsDialogProps;
+  | AccessRequestProjectStatusProjectsDialogProps
+  | ArtAccessRequirementProjectStatusProjectsDialogProps
+  | UtilityInspectionRequestProjectStatusProjectsDialogProps;
 
 function ProjectStatusProjectsDialogContent({
   children,
@@ -153,6 +173,50 @@ function AccessRequestProjectStatusProjectsDialog({
   );
 }
 
+function ArtAccessRequirementProjectStatusProjectsDialog({
+  projects,
+  thresholds,
+}: ArtAccessRequirementProjectStatusProjectsDialogProps) {
+  const { selectedStatus } = useProjectStatusDialogStore();
+
+  const filteredProjects =
+    selectedStatus === null
+      ? []
+      : filterProjectsByStatus(projects, thresholds, selectedStatus);
+
+  return (
+    <ProjectStatusProjectsDialogContent filteredProjects={filteredProjects}>
+      <ArtAccessRequirementDataTable
+        data={filteredProjects}
+        pageSize={10}
+        thresholds={thresholds}
+      />
+    </ProjectStatusProjectsDialogContent>
+  );
+}
+
+function UtilityInspectionRequestProjectStatusProjectsDialog({
+  projects,
+  thresholds,
+}: UtilityInspectionRequestProjectStatusProjectsDialogProps) {
+  const { selectedStatus } = useProjectStatusDialogStore();
+
+  const filteredProjects =
+    selectedStatus === null
+      ? []
+      : filterProjectsByStatus(projects, thresholds, selectedStatus);
+
+  return (
+    <ProjectStatusProjectsDialogContent filteredProjects={filteredProjects}>
+      <UtilityInspectionRequestDataTable
+        data={filteredProjects}
+        pageSize={10}
+        thresholds={thresholds}
+      />
+    </ProjectStatusProjectsDialogContent>
+  );
+}
+
 export function ProjectStatusProjectsDialog(
   props: ProjectStatusProjectsDialogProps
 ) {
@@ -162,6 +226,14 @@ export function ProjectStatusProjectsDialog(
 
   if (props.source === "accessRequest") {
     return <AccessRequestProjectStatusProjectsDialog {...props} />;
+  }
+
+  if (props.source === "artAccessRequirement") {
+    return <ArtAccessRequirementProjectStatusProjectsDialog {...props} />;
+  }
+
+  if (props.source === "utilityInspectionRequest") {
+    return <UtilityInspectionRequestProjectStatusProjectsDialog {...props} />;
   }
 
   return <RequestProtocolProjectStatusProjectsDialog {...props} />;

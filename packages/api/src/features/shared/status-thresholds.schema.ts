@@ -11,7 +11,7 @@ export const statusThresholdsSchema = z
     path: ["attention"],
   })
   .refine((values) => values.critical >= values.attention, {
-    message: "Críticos não pode ser menor que Atenção.",
+    message: "Caminho crítico não pode ser menor que Atenção.",
     path: ["critical"],
   });
 

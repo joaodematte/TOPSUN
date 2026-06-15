@@ -9,7 +9,7 @@ export type ProjectStatusFilter = ProjectStatusCategory | "total";
 export const PROJECT_STATUS_FILTER_LABEL: Record<ProjectStatusFilter, string> =
   {
     attention: "Atenção",
-    critical: "Críticos",
+    critical: "Caminho crítico",
     onTime: "No prazo",
     overdue: "Atrasados",
     total: "Total",

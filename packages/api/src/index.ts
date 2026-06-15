@@ -21,3 +21,13 @@ export {
   accessRequestStatusThresholdsSchema,
   type AccessRequestStatusThresholdsInput,
 } from "./features/access-request/schema";
+
+export {
+  artAccessRequirementStatusThresholdsSchema,
+  type ArtAccessRequirementStatusThresholdsInput,
+} from "./features/art-access-requirement/schema";
+
+export {
+  utilityInspectionRequestStatusThresholdsSchema,
+  type UtilityInspectionRequestStatusThresholdsInput,
+} from "./features/utility-inspection-request/schema";

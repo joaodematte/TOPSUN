@@ -15,6 +15,12 @@ type ProjectOnInspectionApproval =
 
 type ProjectOnAccessRequest = RouterOutputs["accessRequest"]["getProjects"];
 
+type ProjectOnArtAccessRequirement =
+  RouterOutputs["artAccessRequirement"]["getProjects"];
+
+type ProjectOnUtilityInspectionRequest =
+  RouterOutputs["utilityInspectionRequest"]["getProjects"];
+
 interface DashboardDataResult {
   isLoading: boolean;
   projects: DashboardProject[] | undefined;
@@ -39,6 +45,16 @@ export function useDashboardData(source: DashboardSource): DashboardDataResult {
     enabled: source === "accessRequest",
   });
 
+  const artAccessRequirementProjectsQuery = useQuery({
+    ...trpc.artAccessRequirement.getProjects.queryOptions(),
+    enabled: source === "artAccessRequirement",
+  });
+
+  const utilityInspectionRequestProjectsQuery = useQuery({
+    ...trpc.utilityInspectionRequest.getProjects.queryOptions(),
+    enabled: source === "utilityInspectionRequest",
+  });
+
   const requestProtocolThresholdsQuery = useQuery({
     ...trpc.requestProtocol.getStatusThresholds.queryOptions(),
     enabled: source === "requestProtocol",
@@ -52,6 +68,16 @@ export function useDashboardData(source: DashboardSource): DashboardDataResult {
   const accessRequestThresholdsQuery = useQuery({
     ...trpc.accessRequest.getStatusThresholds.queryOptions(),
     enabled: source === "accessRequest",
+  });
+
+  const artAccessRequirementThresholdsQuery = useQuery({
+    ...trpc.artAccessRequirement.getStatusThresholds.queryOptions(),
+    enabled: source === "artAccessRequirement",
+  });
+
+  const utilityInspectionRequestThresholdsQuery = useQuery({
+    ...trpc.utilityInspectionRequest.getStatusThresholds.queryOptions(),
+    enabled: source === "utilityInspectionRequest",
   });
 
   if (source === "inspectionApproval") {
@@ -78,6 +104,30 @@ export function useDashboardData(source: DashboardSource): DashboardDataResult {
     };
   }
 
+  if (source === "artAccessRequirement") {
+    return {
+      isLoading:
+        artAccessRequirementProjectsQuery.isLoading ||
+        artAccessRequirementThresholdsQuery.isLoading,
+      projects: artAccessRequirementProjectsQuery.data as
+        | DashboardProject[]
+        | undefined,
+      thresholds: artAccessRequirementThresholdsQuery.data,
+    };
+  }
+
+  if (source === "utilityInspectionRequest") {
+    return {
+      isLoading:
+        utilityInspectionRequestProjectsQuery.isLoading ||
+        utilityInspectionRequestThresholdsQuery.isLoading,
+      projects: utilityInspectionRequestProjectsQuery.data as
+        | DashboardProject[]
+        | undefined,
+      thresholds: utilityInspectionRequestThresholdsQuery.data,
+    };
+  }
+
   return {
     isLoading:
       requestProtocolProjectsQuery.isLoading ||
@@ -91,6 +141,8 @@ export function useDashboardData(source: DashboardSource): DashboardDataResult {
 
 export type {
   ProjectOnAccessRequest,
+  ProjectOnArtAccessRequirement,
   ProjectOnInspectionApproval,
   ProjectOnRequestProtocol,
+  ProjectOnUtilityInspectionRequest,
 };

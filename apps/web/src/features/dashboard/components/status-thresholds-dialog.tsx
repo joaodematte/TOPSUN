@@ -4,10 +4,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { accessRequestStatusThresholdsSchema } from "@topsun/api/features/access-request/schema";
 import type { AccessRequestStatusThresholdsInput } from "@topsun/api/features/access-request/schema";
+import { artAccessRequirementStatusThresholdsSchema } from "@topsun/api/features/art-access-requirement/schema";
+import type { ArtAccessRequirementStatusThresholdsInput } from "@topsun/api/features/art-access-requirement/schema";
 import { inspectionApprovalStatusThresholdsSchema } from "@topsun/api/features/inspection-approval/schema";
 import type { InspectionApprovalStatusThresholdsInput } from "@topsun/api/features/inspection-approval/schema";
 import type { RequestProtocolStatusThresholdsInput } from "@topsun/api/features/request-protocol/schema";
 import { requestProtocolStatusThresholdsSchema } from "@topsun/api/features/request-protocol/schema";
+import { utilityInspectionRequestStatusThresholdsSchema } from "@topsun/api/features/utility-inspection-request/schema";
+import type { UtilityInspectionRequestStatusThresholdsInput } from "@topsun/api/features/utility-inspection-request/schema";
 import { Button } from "@topsun/ui/components/button";
 import {
   Dialog,
@@ -38,7 +42,9 @@ import { useTRPC } from "@/features/platform/api/trpc";
 type StatusThresholdsFormInput =
   | RequestProtocolStatusThresholdsInput
   | InspectionApprovalStatusThresholdsInput
-  | AccessRequestStatusThresholdsInput;
+  | AccessRequestStatusThresholdsInput
+  | ArtAccessRequirementStatusThresholdsInput
+  | UtilityInspectionRequestStatusThresholdsInput;
 
 interface StatusThresholdsDialogProps {
   defaultValues: ProjectStatusThresholds;
@@ -54,6 +60,14 @@ function getSchemaForSource(source: DashboardSource) {
 
   if (source === "accessRequest") {
     return accessRequestStatusThresholdsSchema;
+  }
+
+  if (source === "artAccessRequirement") {
+    return artAccessRequirementStatusThresholdsSchema;
+  }
+
+  if (source === "utilityInspectionRequest") {
+    return utilityInspectionRequestStatusThresholdsSchema;
   }
 
   return requestProtocolStatusThresholdsSchema;
@@ -128,6 +142,40 @@ export function StatusThresholdsDialog({
     })
   );
 
+  const saveArtAccessRequirementThresholds = useMutation(
+    trpc.artAccessRequirement.saveStatusThresholds.mutationOptions({
+      onError: (error) => {
+        toast.error(error.message);
+      },
+      onSuccess: async () => {
+        toast.success("Configurações atualizadas com sucesso");
+
+        await queryClient.invalidateQueries(
+          trpc.artAccessRequirement.getStatusThresholds.queryFilter()
+        );
+
+        onOpenChange(false);
+      },
+    })
+  );
+
+  const saveUtilityInspectionRequestThresholds = useMutation(
+    trpc.utilityInspectionRequest.saveStatusThresholds.mutationOptions({
+      onError: (error) => {
+        toast.error(error.message);
+      },
+      onSuccess: async () => {
+        toast.success("Configurações atualizadas com sucesso");
+
+        await queryClient.invalidateQueries(
+          trpc.utilityInspectionRequest.getStatusThresholds.queryFilter()
+        );
+
+        onOpenChange(false);
+      },
+    })
+  );
+
   function getSaveThresholdsMutation() {
     if (source === "inspectionApproval") {
       return saveInspectionApprovalThresholds;
@@ -135,6 +183,14 @@ export function StatusThresholdsDialog({
 
     if (source === "accessRequest") {
       return saveAccessRequestThresholds;
+    }
+
+    if (source === "artAccessRequirement") {
+      return saveArtAccessRequirementThresholds;
+    }
+
+    if (source === "utilityInspectionRequest") {
+      return saveUtilityInspectionRequestThresholds;
     }
 
     return saveRequestProtocolThresholds;
@@ -224,7 +280,9 @@ export function StatusThresholdsDialog({
                 name="critical"
                 render={({ field, fieldState }) => (
                   <Field data-invalid={fieldState.invalid}>
-                    <FieldLabel htmlFor={criticalId}>Críticos</FieldLabel>
+                    <FieldLabel htmlFor={criticalId}>
+                      Caminho crítico
+                    </FieldLabel>
                     <Input
                       {...field}
                       aria-invalid={fieldState.invalid}
@@ -237,9 +295,9 @@ export function StatusThresholdsDialog({
                       value={field.value}
                     />
                     <FieldDescription>
-                      Limite inclusive de dias na etapa para críticos. Projetos
-                      acima de Atenção e até este valor ficam críticos; acima
-                      disso são atrasados.
+                      Limite inclusive de dias na etapa para Caminho crítico.
+                      Projetos acima de Atenção e até este valor ficam Caminho
+                      críticos; acima disso são atrasados.
                     </FieldDescription>
                     {fieldState.invalid ? (
                       <FieldError errors={[fieldState.error]} />

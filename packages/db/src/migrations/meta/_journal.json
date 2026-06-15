@@ -15,6 +15,20 @@
       "when": 1781547661779,
       "tag": "0001_access_request_status_thresholds",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781551265181,
+      "tag": "0002_art_access_requirement_status_thresholds",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1781554865181,
+      "tag": "0003_utility_inspection_request_status_thresholds",
+      "breakpoints": true
     }
   ]
 }

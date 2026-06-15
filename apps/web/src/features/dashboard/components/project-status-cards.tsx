@@ -22,8 +22,10 @@ import { StatusThresholdsDialogButton } from "@/features/dashboard/components/st
 import { useDashboardData } from "@/features/dashboard/hooks/use-dashboard-data";
 import type {
   ProjectOnAccessRequest,
+  ProjectOnArtAccessRequirement,
   ProjectOnInspectionApproval,
   ProjectOnRequestProtocol,
+  ProjectOnUtilityInspectionRequest,
 } from "@/features/dashboard/hooks/use-dashboard-data";
 import { useProjectStatusDialogStore } from "@/features/dashboard/stores/project-status-dialog-store";
 import { DASHBOARD_SOURCE_CONFIG } from "@/features/dashboard/utils/dashboard-source";
@@ -33,7 +35,10 @@ import {
   PROJECT_STATUS_CLASSNAME,
   PROJECT_STATUS_FILTER_LABEL,
 } from "@/features/dashboard/utils/project-status";
-import type { ProjectStatusThresholds } from "@/features/dashboard/utils/project-status";
+import type {
+  DashboardProject,
+  ProjectStatusThresholds,
+} from "@/features/dashboard/utils/project-status";
 
 interface StatusCardConfig {
   count: number | string;
@@ -90,7 +95,7 @@ function StatusCard({
   return (
     <button
       className={cn(
-        "bg-card hover:bg-muted focus-visible:border-ring focus-visible:ring-ring/30 flex flex-col gap-3 rounded-[min(var(--radius-4xl),24px)] border p-4 transition-all duration-150 outline-none focus-visible:ring-3",
+        "bg-card hover:bg-muted focus-visible:ring-ring/30 flex flex-col gap-3 rounded-[min(var(--radius-4xl),24px)] ring-1 ring-foreground/5 p-4 transition-all duration-150 outline-none focus-visible:ring-3",
         !isInteractive && "cursor-not-allowed"
       )}
       onClick={onOpen}
@@ -134,10 +139,7 @@ function ProjectStatusProjectsDialogBySource({
   source,
   thresholds,
 }: {
-  projects:
-    | ProjectOnAccessRequest
-    | ProjectOnInspectionApproval
-    | ProjectOnRequestProtocol;
+  projects: DashboardProject[];
   source: DashboardSource;
   thresholds: ProjectStatusThresholds;
 }) {
@@ -156,6 +158,26 @@ function ProjectStatusProjectsDialogBySource({
       <ProjectStatusProjectsDialog
         projects={projects as ProjectOnAccessRequest}
         source="accessRequest"
+        thresholds={thresholds}
+      />
+    );
+  }
+
+  if (source === "artAccessRequirement") {
+    return (
+      <ProjectStatusProjectsDialog
+        projects={projects as ProjectOnArtAccessRequirement}
+        source="artAccessRequirement"
+        thresholds={thresholds}
+      />
+    );
+  }
+
+  if (source === "utilityInspectionRequest") {
+    return (
+      <ProjectStatusProjectsDialog
+        projects={projects as ProjectOnUtilityInspectionRequest}
+        source="utilityInspectionRequest"
         thresholds={thresholds}
       />
     );

@@ -1,4 +1,10 @@
-import { IconKey, IconTicket, IconZoom } from "@tabler/icons-react";
+import {
+  IconFileCertificate,
+  IconKey,
+  IconReportSearch,
+  IconTicket,
+  IconZoom,
+} from "@tabler/icons-react";
 
 import type { FileRoutesByTo } from "@/routeTree.gen";
 
@@ -23,5 +29,15 @@ export const SIDEBAR_ITEMS: SidebarItem[] = [
     href: "/access-request",
     icon: <IconKey />,
     title: "Solicitação de acesso",
+  },
+  {
+    href: "/art-access-requirement",
+    icon: <IconFileCertificate />,
+    title: "Emissão de ART e requerimento de acesso",
+  },
+  {
+    href: "/utility-inspection-request",
+    icon: <IconReportSearch />,
+    title: "Solicitação de vistoria pela concessionária",
   },
 ];

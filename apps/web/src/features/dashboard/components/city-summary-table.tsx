@@ -49,7 +49,7 @@ const citySummaryColumns: ColumnDef<CitySummaryRow>[] = [
     cell: ({ getValue }) => (
       <span className={numericCellClassName}>{getValue<number>()}</span>
     ),
-    header: () => <div className="text-right">Crítico</div>,
+    header: () => <div className="text-right">Caminho crítico</div>,
     size: 75,
   },
   {
