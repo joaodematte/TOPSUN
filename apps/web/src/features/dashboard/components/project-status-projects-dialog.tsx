@@ -9,6 +9,7 @@ import {
   DialogTitle,
 } from "@topsun/ui/components/dialog";
 
+import { AccessRequestDataTable } from "@/features/access-request/components/access-request-data-table";
 import { useProjectStatusDialogStore } from "@/features/dashboard/stores/project-status-dialog-store";
 import {
   filterProjectsByStatus,
@@ -24,6 +25,9 @@ type ProjectOnRequestProtocol =
 type ProjectOnInspectionApproval =
   RouterOutputs["inspectionApproval"]["getProjects"][number];
 
+type ProjectOnAccessRequest =
+  RouterOutputs["accessRequest"]["getProjects"][number];
+
 interface ProjectStatusProjectsDialogBaseProps {
   thresholds: ProjectStatusThresholds;
 }
@@ -38,20 +42,24 @@ interface InspectionApprovalProjectStatusProjectsDialogProps extends ProjectStat
   source: "inspectionApproval";
 }
 
+interface AccessRequestProjectStatusProjectsDialogProps extends ProjectStatusProjectsDialogBaseProps {
+  projects: ProjectOnAccessRequest[];
+  source: "accessRequest";
+}
+
 type ProjectStatusProjectsDialogProps =
   | RequestProtocolProjectStatusProjectsDialogProps
-  | InspectionApprovalProjectStatusProjectsDialogProps;
+  | InspectionApprovalProjectStatusProjectsDialogProps
+  | AccessRequestProjectStatusProjectsDialogProps;
 
-function RequestProtocolProjectStatusProjectsDialog({
-  projects,
-  thresholds,
-}: RequestProtocolProjectStatusProjectsDialogProps) {
+function ProjectStatusProjectsDialogContent({
+  children,
+  filteredProjects,
+}: {
+  children: React.ReactNode;
+  filteredProjects: unknown[];
+}) {
   const { closeDialog, open, selectedStatus } = useProjectStatusDialogStore();
-
-  const filteredProjects =
-    selectedStatus === null
-      ? []
-      : filterProjectsByStatus(projects, thresholds, selectedStatus);
 
   function handleOpenChange(nextOpen: boolean) {
     if (!nextOpen) {
@@ -73,15 +81,31 @@ function RequestProtocolProjectStatusProjectsDialog({
             {filteredProjects.length === 1 ? "projeto" : "projetos"}
           </DialogDescription>
         </DialogHeader>
-        <div className="min-h-0 min-w-0 flex-1 overflow-auto">
-          <RequestProtocolDataTable
-            data={filteredProjects}
-            pageSize={10}
-            thresholds={thresholds}
-          />
-        </div>
+        <div className="min-h-0 min-w-0 flex-1 overflow-auto">{children}</div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function RequestProtocolProjectStatusProjectsDialog({
+  projects,
+  thresholds,
+}: RequestProtocolProjectStatusProjectsDialogProps) {
+  const { selectedStatus } = useProjectStatusDialogStore();
+
+  const filteredProjects =
+    selectedStatus === null
+      ? []
+      : filterProjectsByStatus(projects, thresholds, selectedStatus);
+
+  return (
+    <ProjectStatusProjectsDialogContent filteredProjects={filteredProjects}>
+      <RequestProtocolDataTable
+        data={filteredProjects}
+        pageSize={10}
+        thresholds={thresholds}
+      />
+    </ProjectStatusProjectsDialogContent>
   );
 }
 
@@ -89,42 +113,43 @@ function InspectionApprovalProjectStatusProjectsDialog({
   projects,
   thresholds,
 }: InspectionApprovalProjectStatusProjectsDialogProps) {
-  const { closeDialog, open, selectedStatus } = useProjectStatusDialogStore();
+  const { selectedStatus } = useProjectStatusDialogStore();
 
   const filteredProjects =
     selectedStatus === null
       ? []
       : filterProjectsByStatus(projects, thresholds, selectedStatus);
 
-  function handleOpenChange(nextOpen: boolean) {
-    if (!nextOpen) {
-      closeDialog();
-    }
-  }
+  return (
+    <ProjectStatusProjectsDialogContent filteredProjects={filteredProjects}>
+      <InspectionApprovalDataTable
+        data={filteredProjects}
+        pageSize={10}
+        thresholds={thresholds}
+      />
+    </ProjectStatusProjectsDialogContent>
+  );
+}
+
+function AccessRequestProjectStatusProjectsDialog({
+  projects,
+  thresholds,
+}: AccessRequestProjectStatusProjectsDialogProps) {
+  const { selectedStatus } = useProjectStatusDialogStore();
+
+  const filteredProjects =
+    selectedStatus === null
+      ? []
+      : filterProjectsByStatus(projects, thresholds, selectedStatus);
 
   return (
-    <Dialog onOpenChange={handleOpenChange} open={open}>
-      <DialogContent className="flex max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-6xl flex-col gap-4 overflow-hidden sm:max-w-6xl">
-        <DialogHeader className="shrink-0">
-          <DialogTitle>
-            {selectedStatus
-              ? PROJECT_STATUS_FILTER_LABEL[selectedStatus]
-              : "Projetos"}
-          </DialogTitle>
-          <DialogDescription>
-            {filteredProjects.length}{" "}
-            {filteredProjects.length === 1 ? "projeto" : "projetos"}
-          </DialogDescription>
-        </DialogHeader>
-        <div className="min-h-0 min-w-0 flex-1 overflow-auto">
-          <InspectionApprovalDataTable
-            data={filteredProjects}
-            pageSize={10}
-            thresholds={thresholds}
-          />
-        </div>
-      </DialogContent>
-    </Dialog>
+    <ProjectStatusProjectsDialogContent filteredProjects={filteredProjects}>
+      <AccessRequestDataTable
+        data={filteredProjects}
+        pageSize={10}
+        thresholds={thresholds}
+      />
+    </ProjectStatusProjectsDialogContent>
   );
 }
 
@@ -133,6 +158,10 @@ export function ProjectStatusProjectsDialog(
 ) {
   if (props.source === "inspectionApproval") {
     return <InspectionApprovalProjectStatusProjectsDialog {...props} />;
+  }
+
+  if (props.source === "accessRequest") {
+    return <AccessRequestProjectStatusProjectsDialog {...props} />;
   }
 
   return <RequestProtocolProjectStatusProjectsDialog {...props} />;

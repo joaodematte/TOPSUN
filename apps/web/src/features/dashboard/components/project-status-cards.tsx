@@ -21,6 +21,7 @@ import { ProjectStatusProjectsDialog } from "@/features/dashboard/components/pro
 import { StatusThresholdsDialogButton } from "@/features/dashboard/components/status-thresholds-dialog-button";
 import { useDashboardData } from "@/features/dashboard/hooks/use-dashboard-data";
 import type {
+  ProjectOnAccessRequest,
   ProjectOnInspectionApproval,
   ProjectOnRequestProtocol,
 } from "@/features/dashboard/hooks/use-dashboard-data";
@@ -32,6 +33,7 @@ import {
   PROJECT_STATUS_CLASSNAME,
   PROJECT_STATUS_FILTER_LABEL,
 } from "@/features/dashboard/utils/project-status";
+import type { ProjectStatusThresholds } from "@/features/dashboard/utils/project-status";
 
 interface StatusCardConfig {
   count: number | string;
@@ -127,6 +129,46 @@ interface ProjectStatusCardsProps {
   source?: DashboardSource;
 }
 
+function ProjectStatusProjectsDialogBySource({
+  projects,
+  source,
+  thresholds,
+}: {
+  projects:
+    | ProjectOnAccessRequest
+    | ProjectOnInspectionApproval
+    | ProjectOnRequestProtocol;
+  source: DashboardSource;
+  thresholds: ProjectStatusThresholds;
+}) {
+  if (source === "inspectionApproval") {
+    return (
+      <ProjectStatusProjectsDialog
+        projects={projects as ProjectOnInspectionApproval}
+        source="inspectionApproval"
+        thresholds={thresholds}
+      />
+    );
+  }
+
+  if (source === "accessRequest") {
+    return (
+      <ProjectStatusProjectsDialog
+        projects={projects as ProjectOnAccessRequest}
+        source="accessRequest"
+        thresholds={thresholds}
+      />
+    );
+  }
+
+  return (
+    <ProjectStatusProjectsDialog
+      projects={projects as ProjectOnRequestProtocol}
+      thresholds={thresholds}
+    />
+  );
+}
+
 export function ProjectStatusCards({
   source = "requestProtocol",
 }: ProjectStatusCardsProps) {
@@ -207,18 +249,11 @@ export function ProjectStatusCards({
           <StatusCard key={card.label} {...card} />
         ))}
       </CardContent>
-      {source === "inspectionApproval" ? (
-        <ProjectStatusProjectsDialog
-          projects={projects as ProjectOnInspectionApproval}
-          source="inspectionApproval"
-          thresholds={thresholds}
-        />
-      ) : (
-        <ProjectStatusProjectsDialog
-          projects={projects as ProjectOnRequestProtocol}
-          thresholds={thresholds}
-        />
-      )}
+      <ProjectStatusProjectsDialogBySource
+        projects={projects}
+        source={source}
+        thresholds={thresholds}
+      />
     </Card>
   );
 }

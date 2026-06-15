@@ -13,6 +13,8 @@ type ProjectOnRequestProtocol = RouterOutputs["requestProtocol"]["getProjects"];
 type ProjectOnInspectionApproval =
   RouterOutputs["inspectionApproval"]["getProjects"];
 
+type ProjectOnAccessRequest = RouterOutputs["accessRequest"]["getProjects"];
+
 interface DashboardDataResult {
   isLoading: boolean;
   projects: DashboardProject[] | undefined;
@@ -32,6 +34,11 @@ export function useDashboardData(source: DashboardSource): DashboardDataResult {
     enabled: source === "inspectionApproval",
   });
 
+  const accessRequestProjectsQuery = useQuery({
+    ...trpc.accessRequest.getProjects.queryOptions(),
+    enabled: source === "accessRequest",
+  });
+
   const requestProtocolThresholdsQuery = useQuery({
     ...trpc.requestProtocol.getStatusThresholds.queryOptions(),
     enabled: source === "requestProtocol",
@@ -40,6 +47,11 @@ export function useDashboardData(source: DashboardSource): DashboardDataResult {
   const inspectionApprovalThresholdsQuery = useQuery({
     ...trpc.inspectionApproval.getStatusThresholds.queryOptions(),
     enabled: source === "inspectionApproval",
+  });
+
+  const accessRequestThresholdsQuery = useQuery({
+    ...trpc.accessRequest.getStatusThresholds.queryOptions(),
+    enabled: source === "accessRequest",
   });
 
   if (source === "inspectionApproval") {
@@ -54,6 +66,18 @@ export function useDashboardData(source: DashboardSource): DashboardDataResult {
     };
   }
 
+  if (source === "accessRequest") {
+    return {
+      isLoading:
+        accessRequestProjectsQuery.isLoading ||
+        accessRequestThresholdsQuery.isLoading,
+      projects: accessRequestProjectsQuery.data as
+        | DashboardProject[]
+        | undefined,
+      thresholds: accessRequestThresholdsQuery.data,
+    };
+  }
+
   return {
     isLoading:
       requestProtocolProjectsQuery.isLoading ||
@@ -65,4 +89,8 @@ export function useDashboardData(source: DashboardSource): DashboardDataResult {
   };
 }
 
-export type { ProjectOnInspectionApproval, ProjectOnRequestProtocol };
+export type {
+  ProjectOnAccessRequest,
+  ProjectOnInspectionApproval,
+  ProjectOnRequestProtocol,
+};

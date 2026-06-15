@@ -1,6 +1,16 @@
-export type DashboardSource = "requestProtocol" | "inspectionApproval";
+export type DashboardSource =
+  | "requestProtocol"
+  | "inspectionApproval"
+  | "accessRequest";
 
 export const DASHBOARD_SOURCE_CONFIG = {
+  accessRequest: {
+    statusCardDescription:
+      "Resumo de projetos em andamento na etapa de solicitação de acesso",
+    statusCardTitle: 'Resumo de projetos na etapa "Solicitação de acesso"',
+    tableDescription: "Projetos aguardando solicitação de acesso",
+    tableTitle: "Listagem de projetos (solicitação de acesso)",
+  },
   inspectionApproval: {
     statusCardDescription:
       "Resumo de projetos em andamento na etapa de aprovação de vistoria pela concessionária",

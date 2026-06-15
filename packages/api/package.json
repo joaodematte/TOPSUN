@@ -17,6 +17,9 @@
     "./features/inspection-approval/schema": {
       "default": "./src/features/inspection-approval/schema.ts"
     },
+    "./features/access-request/schema": {
+      "default": "./src/features/access-request/schema.ts"
+    },
     "./*": {
       "default": "./src/*.ts"
     }

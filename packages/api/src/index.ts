@@ -16,3 +16,8 @@ export {
   inspectionApprovalStatusThresholdsSchema,
   type InspectionApprovalStatusThresholdsInput,
 } from "./features/inspection-approval/schema";
+
+export {
+  accessRequestStatusThresholdsSchema,
+  type AccessRequestStatusThresholdsInput,
+} from "./features/access-request/schema";

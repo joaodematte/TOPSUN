@@ -2,6 +2,8 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { accessRequestStatusThresholdsSchema } from "@topsun/api/features/access-request/schema";
+import type { AccessRequestStatusThresholdsInput } from "@topsun/api/features/access-request/schema";
 import { inspectionApprovalStatusThresholdsSchema } from "@topsun/api/features/inspection-approval/schema";
 import type { InspectionApprovalStatusThresholdsInput } from "@topsun/api/features/inspection-approval/schema";
 import type { RequestProtocolStatusThresholdsInput } from "@topsun/api/features/request-protocol/schema";
@@ -33,11 +35,28 @@ import type { DashboardSource } from "@/features/dashboard/utils/dashboard-sourc
 import type { ProjectStatusThresholds } from "@/features/dashboard/utils/project-status";
 import { useTRPC } from "@/features/platform/api/trpc";
 
+type StatusThresholdsFormInput =
+  | RequestProtocolStatusThresholdsInput
+  | InspectionApprovalStatusThresholdsInput
+  | AccessRequestStatusThresholdsInput;
+
 interface StatusThresholdsDialogProps {
   defaultValues: ProjectStatusThresholds;
   onOpenChange: (open: boolean) => void;
   open: boolean;
   source?: DashboardSource;
+}
+
+function getSchemaForSource(source: DashboardSource) {
+  if (source === "inspectionApproval") {
+    return inspectionApprovalStatusThresholdsSchema;
+  }
+
+  if (source === "accessRequest") {
+    return accessRequestStatusThresholdsSchema;
+  }
+
+  return requestProtocolStatusThresholdsSchema;
 }
 
 export function StatusThresholdsDialog({
@@ -53,18 +72,9 @@ export function StatusThresholdsDialog({
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
-  const isInspectionApproval = source === "inspectionApproval";
-
-  const form = useForm<
-    | RequestProtocolStatusThresholdsInput
-    | InspectionApprovalStatusThresholdsInput
-  >({
+  const form = useForm<StatusThresholdsFormInput>({
     defaultValues,
-    resolver: zodResolver(
-      isInspectionApproval
-        ? inspectionApprovalStatusThresholdsSchema
-        : requestProtocolStatusThresholdsSchema
-    ),
+    resolver: zodResolver(getSchemaForSource(source)),
   });
 
   const saveRequestProtocolThresholds = useMutation(
@@ -101,9 +111,36 @@ export function StatusThresholdsDialog({
     })
   );
 
-  const saveThresholds = isInspectionApproval
-    ? saveInspectionApprovalThresholds
-    : saveRequestProtocolThresholds;
+  const saveAccessRequestThresholds = useMutation(
+    trpc.accessRequest.saveStatusThresholds.mutationOptions({
+      onError: (error) => {
+        toast.error(error.message);
+      },
+      onSuccess: async () => {
+        toast.success("Configurações atualizadas com sucesso");
+
+        await queryClient.invalidateQueries(
+          trpc.accessRequest.getStatusThresholds.queryFilter()
+        );
+
+        onOpenChange(false);
+      },
+    })
+  );
+
+  function getSaveThresholdsMutation() {
+    if (source === "inspectionApproval") {
+      return saveInspectionApprovalThresholds;
+    }
+
+    if (source === "accessRequest") {
+      return saveAccessRequestThresholds;
+    }
+
+    return saveRequestProtocolThresholds;
+  }
+
+  const saveThresholds = getSaveThresholdsMutation();
 
   useEffect(() => {
     if (open) {
@@ -111,11 +148,7 @@ export function StatusThresholdsDialog({
     }
   }, [defaultValues, form, open]);
 
-  function onSubmit(
-    data:
-      | RequestProtocolStatusThresholdsInput
-      | InspectionApprovalStatusThresholdsInput
-  ) {
+  function onSubmit(data: StatusThresholdsFormInput) {
     saveThresholds.mutate(data);
   }
 
