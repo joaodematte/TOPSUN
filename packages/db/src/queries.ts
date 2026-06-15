@@ -1,4 +1,4 @@
-import { and, asc, eq, gt, ne, sql } from "drizzle-orm";
+import { and, asc, eq, isNotNull, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/mysql-core";
 
 import { topsunDb } from ".";
@@ -69,8 +69,9 @@ export function getProjectsOnRequestProtocol() {
     .where(
       and(
         eq(e42.statusEtapa, 0),
-        gt(coletaDados.statusColeta, 1),
-        ne(coletaDados.statusColeta, 3)
+        eq(coletaDados.statusColeta, 2),
+        eq(e42.bloqueadaEtapa, 0),
+        isNotNull(e42.datahoraAberturaEtapa)
       )
     )
     .orderBy(asc(coletaDados.idColeta));
