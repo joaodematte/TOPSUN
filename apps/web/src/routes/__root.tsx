@@ -9,13 +9,13 @@ import {
   createRootRouteWithContext,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import type { AppRouter } from "@topsun/api/routers/index";
+import type { AppRouter } from "@topsun/api";
 import type { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import { useEffect } from "react";
 import { Toaster } from "sonner";
 
-import { setClerkAuthTokenGetter } from "@/lib/clerk";
-import { getTitle } from "@/utils/seo";
+import { setClerkAuthTokenGetter } from "@/features/platform/auth/clerk-token";
+import { getTitle } from "@/shared/utils/get-title";
 
 import appCss from "@topsun/ui/globals.css?url";
 

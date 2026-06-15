@@ -1,9 +1,9 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
 import { SidebarInset, SidebarProvider } from "@topsun/ui/components/sidebar";
 
-import { AppSidebar } from "@/components/app-sidebar";
-import { SiteHeader } from "@/components/site-header";
-import { authStateFn } from "@/functions/auth-state";
+import { AppSidebar } from "@/features/app-shell/components/app-sidebar";
+import { SiteHeader } from "@/features/app-shell/components/site-header";
+import { authStateFn } from "@/features/platform/auth/auth-state";
 
 export const Route = createFileRoute("/_protected")({
   beforeLoad: async () => {

@@ -1,26 +1,18 @@
-import { initTRPC, TRPCError } from "@trpc/server";
+export type { AppRouter, RouterInputs, RouterOutputs } from "./trpc/router";
+export { appRouter } from "./trpc/router";
 
-import type { Context } from "./context";
+export { createContext } from "./trpc/context";
+export type { Context, CreateContextOptions } from "./trpc/context";
 
-export const t = initTRPC.context<Context>().create();
+export { publicProcedure, protectedProcedure } from "./trpc/procedures";
+export { router } from "./trpc/init";
 
-export const { router } = t;
+export {
+  requestProtocolStatusThresholdsSchema,
+  type RequestProtocolStatusThresholdsInput,
+} from "./features/request-protocol/schema";
 
-export const publicProcedure = t.procedure;
-
-export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
-  if (!ctx.auth?.userId) {
-    throw new TRPCError({
-      cause: "No Clerk userId",
-      code: "UNAUTHORIZED",
-      message: "Authentication required",
-    });
-  }
-
-  return next({
-    ctx: {
-      ...ctx,
-      auth: ctx.auth,
-    },
-  });
-});
+export {
+  inspectionApprovalStatusThresholdsSchema,
+  type InspectionApprovalStatusThresholdsInput,
+} from "./features/inspection-approval/schema";

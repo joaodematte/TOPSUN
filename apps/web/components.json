@@ -11,9 +11,9 @@
   },
   "iconLibrary": "tabler",
   "aliases": {
-    "components": "@/components",
-    "hooks": "@/hooks",
-    "lib": "@/lib",
+    "components": "@/shared/components",
+    "hooks": "@/features",
+    "lib": "@/features/platform",
     "utils": "@topsun/ui/lib/utils",
     "ui": "@topsun/ui/components"
   },

@@ -1,13 +1,13 @@
 import { QueryClient } from "@tanstack/react-query";
 import { createRouter as createTanStackRouter } from "@tanstack/react-router";
 import { setupRouterSsrQueryIntegration } from "@tanstack/react-router-ssr-query";
-import type { AppRouter } from "@topsun/api/routers/index";
+import type { AppRouter } from "@topsun/api";
 import { createTRPCClient, httpBatchLink, loggerLink } from "@trpc/client";
 import { createTRPCOptionsProxy } from "@trpc/tanstack-react-query";
 
-import { getClerkAuthToken } from "@/lib/clerk";
+import { TRPCProvider } from "@/features/platform/api/trpc";
+import { getClerkAuthToken } from "@/features/platform/auth/clerk-token";
 
-import { TRPCProvider } from "./lib/trpc";
 import { routeTree } from "./routeTree.gen";
 
 function createQueryClient() {
