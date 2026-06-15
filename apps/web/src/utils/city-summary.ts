@@ -7,31 +7,31 @@ type ProjectOnRequestProtocol =
   RouterOutputs["requestProtocol"]["getProjects"][number];
 
 export interface CitySummaryRow {
-  atrasado: number;
-  atencao: number;
-  caminhoCritico: number;
+  attention: number;
+  critical: number;
   cidade: string;
   mediaDias: number;
-  noPrazo: number;
+  onTime: number;
+  overdue: number;
   total: number;
 }
 
 interface CityAccumulator {
-  atrasado: number;
-  atencao: number;
-  caminhoCritico: number;
+  attention: number;
+  critical: number;
   diasSum: number;
-  noPrazo: number;
+  onTime: number;
+  overdue: number;
   total: number;
 }
 
 function createEmptyAccumulator(): CityAccumulator {
   return {
-    atencao: 0,
-    atrasado: 0,
-    caminhoCritico: 0,
+    attention: 0,
+    critical: 0,
     diasSum: 0,
-    noPrazo: 0,
+    onTime: 0,
+    overdue: 0,
     total: 0,
   };
 }
@@ -81,13 +81,13 @@ export function getCitySummaryByOccurrence(
 
   return [...byCity.entries()]
     .map(([cidade, accumulator]) => ({
-      atencao: accumulator.atencao,
-      atrasado: accumulator.atrasado,
-      caminhoCritico: accumulator.caminhoCritico,
+      attention: accumulator.attention,
       cidade,
+      critical: accumulator.critical,
       mediaDias:
         accumulator.total === 0 ? 0 : accumulator.diasSum / accumulator.total,
-      noPrazo: accumulator.noPrazo,
+      onTime: accumulator.onTime,
+      overdue: accumulator.overdue,
       total: accumulator.total,
     }))
     .toSorted((a, b) => {

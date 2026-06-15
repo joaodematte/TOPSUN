@@ -1,11 +1,14 @@
 import { ClerkProvider, useAuth } from "@clerk/tanstack-react-start";
+import { TanStackDevtools } from "@tanstack/react-devtools";
 import type { QueryClient } from "@tanstack/react-query";
+import { ReactQueryDevtoolsPanel } from "@tanstack/react-query-devtools";
 import {
   HeadContent,
   Outlet,
   Scripts,
   createRootRouteWithContext,
 } from "@tanstack/react-router";
+import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import type { AppRouter } from "@topsun/api/routers/index";
 import type { TRPCOptionsProxy } from "@trpc/tanstack-react-query";
 import { useEffect } from "react";
@@ -76,6 +79,18 @@ function RootDocument() {
           <ClerkApiAuthBridge />
           <Outlet />
           <Toaster position="top-right" theme="light" />
+          <TanStackDevtools
+            plugins={[
+              {
+                name: "TanStack Query",
+                render: <ReactQueryDevtoolsPanel />,
+              },
+              {
+                name: "TanStack Router",
+                render: <TanStackRouterDevtoolsPanel />,
+              },
+            ]}
+          />
         </ClerkProvider>
         <Scripts />
       </body>

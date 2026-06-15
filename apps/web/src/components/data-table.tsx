@@ -112,8 +112,8 @@ export function DataTable<TData, TValue>({
 
   return (
     <TooltipProvider delay={0}>
-      <div>
-        <div className="overflow-hidden rounded-[min(var(--radius-4xl),24px)] border">
+      <div className="w-full min-w-0">
+        <div className="overflow-x-auto rounded-[min(var(--radius-4xl),24px)] border">
           <Table>
             <colgroup>
               {table.getAllLeafColumns().map((column) => (

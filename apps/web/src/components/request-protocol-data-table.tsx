@@ -132,17 +132,20 @@ function createProjectsOnRequestProtocolColumns(
 
 interface RequestProtocolDataTableProps {
   data: ProjectOnRequestProtocol[];
+  pageSize?: number;
   thresholds: RequestProtocolStatusThresholds;
 }
 
 export function RequestProtocolDataTable({
   data,
+  pageSize = 15,
   thresholds,
 }: RequestProtocolDataTableProps) {
   return (
     <DataTable
       columns={createProjectsOnRequestProtocolColumns(thresholds)}
       data={data}
+      pageSize={pageSize}
     />
   );
 }

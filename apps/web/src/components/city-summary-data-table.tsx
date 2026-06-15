@@ -7,7 +7,7 @@ import type { CitySummaryRow } from "@/utils/city-summary";
 import { formatValue } from "@/utils/table";
 import { formatAverageDays } from "@/utils/utility-summary";
 
-const SOLICITADOS_MOCK = "—";
+const REQUESTED_MOCK = "—";
 
 const numericCellClassName = "block text-right tabular-nums";
 
@@ -29,7 +29,7 @@ const citySummaryColumns: ColumnDef<CitySummaryRow>[] = [
     size: 75,
   },
   {
-    accessorKey: "noPrazo",
+    accessorKey: "onTime",
     cell: ({ getValue }) => (
       <span className={numericCellClassName}>{getValue<number>()}</span>
     ),
@@ -37,7 +37,7 @@ const citySummaryColumns: ColumnDef<CitySummaryRow>[] = [
     size: 75,
   },
   {
-    accessorKey: "atencao",
+    accessorKey: "attention",
     cell: ({ getValue }) => (
       <span className={numericCellClassName}>{getValue<number>()}</span>
     ),
@@ -45,7 +45,7 @@ const citySummaryColumns: ColumnDef<CitySummaryRow>[] = [
     size: 75,
   },
   {
-    accessorKey: "caminhoCritico",
+    accessorKey: "critical",
     cell: ({ getValue }) => (
       <span className={numericCellClassName}>{getValue<number>()}</span>
     ),
@@ -53,7 +53,7 @@ const citySummaryColumns: ColumnDef<CitySummaryRow>[] = [
     size: 75,
   },
   {
-    accessorKey: "atrasado",
+    accessorKey: "overdue",
     cell: ({ getValue }) => (
       <span className={numericCellClassName}>{getValue<number>()}</span>
     ),
@@ -61,9 +61,7 @@ const citySummaryColumns: ColumnDef<CitySummaryRow>[] = [
     size: 75,
   },
   {
-    cell: () => (
-      <span className={numericCellClassName}>{SOLICITADOS_MOCK}</span>
-    ),
+    cell: () => <span className={numericCellClassName}>{REQUESTED_MOCK}</span>,
     header: () => <div className="text-right">Pr. Solicitado</div>,
     id: "prSolicitado",
     size: 75,

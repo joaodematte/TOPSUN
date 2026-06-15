@@ -7,21 +7,21 @@ type ProjectOnRequestProtocol =
   RouterOutputs["requestProtocol"]["getProjects"][number];
 
 export interface UtilitySummaryRow {
-  atrasado: number;
-  atencao: number;
-  caminhoCritico: number;
+  attention: number;
   concessionaria: string;
+  critical: number;
   mediaDias: number;
-  noPrazo: number;
+  onTime: number;
+  overdue: number;
   total: number;
 }
 
 interface UtilityAccumulator {
-  atrasado: number;
-  atencao: number;
-  caminhoCritico: number;
+  attention: number;
+  critical: number;
   diasSum: number;
-  noPrazo: number;
+  onTime: number;
+  overdue: number;
   total: number;
 }
 
@@ -36,11 +36,11 @@ export function formatAverageDays(value: number): string {
 
 function createEmptyAccumulator(): UtilityAccumulator {
   return {
-    atencao: 0,
-    atrasado: 0,
-    caminhoCritico: 0,
+    attention: 0,
+    critical: 0,
     diasSum: 0,
-    noPrazo: 0,
+    onTime: 0,
+    overdue: 0,
     total: 0,
   };
 }
@@ -75,13 +75,13 @@ export function getUtilitySummaryByConcessionaria(
 
   return [...byConcessionaria.entries()]
     .map(([concessionaria, accumulator]) => ({
-      atencao: accumulator.atencao,
-      atrasado: accumulator.atrasado,
-      caminhoCritico: accumulator.caminhoCritico,
+      attention: accumulator.attention,
       concessionaria,
+      critical: accumulator.critical,
       mediaDias:
         accumulator.total === 0 ? 0 : accumulator.diasSum / accumulator.total,
-      noPrazo: accumulator.noPrazo,
+      onTime: accumulator.onTime,
+      overdue: accumulator.overdue,
       total: accumulator.total,
     }))
     .toSorted((a, b) => {

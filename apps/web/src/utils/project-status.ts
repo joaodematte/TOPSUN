@@ -4,16 +4,27 @@ type ProjectOnRequestProtocol =
   RouterOutputs["requestProtocol"]["getProjects"][number];
 
 export type ProjectStatusCategory =
-  | "noPrazo"
-  | "atencao"
-  | "caminhoCritico"
-  | "atrasado";
+  | "onTime"
+  | "attention"
+  | "critical"
+  | "overdue";
+
+export type ProjectStatusFilter = ProjectStatusCategory | "total";
+
+export const PROJECT_STATUS_FILTER_LABEL: Record<ProjectStatusFilter, string> =
+  {
+    attention: "Atenção",
+    critical: "Críticos",
+    onTime: "No prazo",
+    overdue: "Atrasados",
+    total: "Total",
+  };
 
 export const PROJECT_STATUS_CLASSNAME: Record<ProjectStatusCategory, string> = {
-  atencao: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
-  atrasado: "bg-red-500/10 text-red-600 dark:text-red-400",
-  caminhoCritico: "bg-orange-500/10 text-orange-600 dark:text-orange-400",
-  noPrazo: "bg-green-500/10 text-green-600 dark:text-green-400",
+  attention: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
+  critical: "bg-orange-500/10 text-orange-600 dark:text-orange-400",
+  onTime: "bg-green-500/10 text-green-600 dark:text-green-400",
+  overdue: "bg-red-500/10 text-red-600 dark:text-red-400",
 };
 
 export interface RequestProtocolStatusThresholds {
@@ -23,18 +34,18 @@ export interface RequestProtocolStatusThresholds {
 }
 
 export interface ProjectStatusStats {
-  atrasado: number;
-  atencao: number;
-  caminhoCritico: number;
-  noPrazo: number;
+  attention: number;
+  critical: number;
+  onTime: number;
+  overdue: number;
   total: number;
 }
 
 interface ProjectStatusStatsWithPercentage extends ProjectStatusStats {
-  atrasadoPercentage: number;
-  atencaoPercentage: number;
-  caminhoCriticoPercentage: number;
-  noPrazoPercentage: number;
+  attentionPercentage: number;
+  criticalPercentage: number;
+  onTimePercentage: number;
+  overduePercentage: number;
 }
 
 function toPercentage(count: number, total: number) {
@@ -52,19 +63,19 @@ export function classifyProjectStatus(
   const { attention, critical, onTime } = thresholds;
 
   if (diasEtapa >= 0 && diasEtapa <= onTime) {
-    return "noPrazo";
+    return "onTime";
   }
 
   if (diasEtapa > onTime && diasEtapa <= attention) {
-    return "atencao";
+    return "attention";
   }
 
   if (diasEtapa > attention && diasEtapa <= critical) {
-    return "caminhoCritico";
+    return "critical";
   }
 
   if (diasEtapa > critical) {
-    return "atrasado";
+    return "overdue";
   }
 
   return null;
@@ -83,15 +94,29 @@ export function getProjectStatusClassName(
   return PROJECT_STATUS_CLASSNAME[status];
 }
 
+export function filterProjectsByStatus(
+  projects: ProjectOnRequestProtocol[],
+  thresholds: RequestProtocolStatusThresholds,
+  status: ProjectStatusFilter
+): ProjectOnRequestProtocol[] {
+  if (status === "total") {
+    return projects;
+  }
+
+  return projects.filter(
+    (project) => classifyProjectStatus(project.diasEtapa, thresholds) === status
+  );
+}
+
 export function getProjectStatusStats(
   projects: ProjectOnRequestProtocol[],
   thresholds: RequestProtocolStatusThresholds
 ): ProjectStatusStatsWithPercentage {
   const stats: ProjectStatusStats = {
-    atencao: 0,
-    atrasado: 0,
-    caminhoCritico: 0,
-    noPrazo: 0,
+    attention: 0,
+    critical: 0,
+    onTime: 0,
+    overdue: 0,
     total: projects.length,
   };
 
@@ -105,9 +130,9 @@ export function getProjectStatusStats(
 
   return {
     ...stats,
-    atencaoPercentage: toPercentage(stats.atencao, stats.total),
-    atrasadoPercentage: toPercentage(stats.atrasado, stats.total),
-    caminhoCriticoPercentage: toPercentage(stats.caminhoCritico, stats.total),
-    noPrazoPercentage: toPercentage(stats.noPrazo, stats.total),
+    attentionPercentage: toPercentage(stats.attention, stats.total),
+    criticalPercentage: toPercentage(stats.critical, stats.total),
+    onTimePercentage: toPercentage(stats.onTime, stats.total),
+    overduePercentage: toPercentage(stats.overdue, stats.total),
   };
 }
