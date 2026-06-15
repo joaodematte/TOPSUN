@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import {
   Card,
   CardContent,
@@ -9,7 +8,8 @@ import {
 import { Skeleton } from "@topsun/ui/components/skeleton";
 
 import { UtilitySummaryDataTable } from "@/components/utility-summary-data-table";
-import { useTRPC } from "@/lib/trpc";
+import { useDashboardData } from "@/hooks/use-dashboard-data";
+import type { DashboardSource } from "@/utils/dashboard-source";
 import { getUtilitySummaryByConcessionaria } from "@/utils/utility-summary";
 
 export function UtilitySummaryByConcessionariaSkeleton() {
@@ -26,18 +26,16 @@ export function UtilitySummaryByConcessionariaSkeleton() {
   );
 }
 
-export function UtilitySummaryByConcessionaria() {
-  const trpc = useTRPC();
+interface UtilitySummaryByConcessionariaProps {
+  source?: DashboardSource;
+}
 
-  const { data: projects, isLoading: isLoadingProjects } = useQuery(
-    trpc.requestProtocol.getProjects.queryOptions()
-  );
+export function UtilitySummaryByConcessionaria({
+  source = "requestProtocol",
+}: UtilitySummaryByConcessionariaProps) {
+  const { isLoading, projects, thresholds } = useDashboardData(source);
 
-  const { data: thresholds, isLoading: isLoadingThresholds } = useQuery(
-    trpc.requestProtocol.getStatusThresholds.queryOptions()
-  );
-
-  if (isLoadingProjects || isLoadingThresholds || !projects || !thresholds) {
+  if (isLoading || !projects || !thresholds) {
     return <UtilitySummaryByConcessionariaSkeleton />;
   }
 

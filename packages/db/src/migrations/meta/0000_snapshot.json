@@ -1,0 +1,127 @@
+{
+  "id": "41fc26e2-65e0-4ff7-bcc6-a62fd91c3b18",
+  "prevId": "00000000-0000-0000-0000-000000000000",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.inspection_approval_status_thresholds": {
+      "name": "inspection_approval_status_thresholds",
+      "schema": "",
+      "columns": {
+        "attention": {
+          "name": "attention",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "critical": {
+          "name": "critical",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "'00000000-0000-4000-8000-000000000002'::uuid"
+        },
+        "on_time": {
+          "name": "on_time",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "inspection_approval_status_thresholds_singleton": {
+          "name": "inspection_approval_status_thresholds_singleton",
+          "value": "\"inspection_approval_status_thresholds\".\"id\" = '00000000-0000-4000-8000-000000000002'::uuid"
+        },
+        "inspection_approval_status_thresholds_order": {
+          "name": "inspection_approval_status_thresholds_order",
+          "value": "\"inspection_approval_status_thresholds\".\"on_time\" <= \"inspection_approval_status_thresholds\".\"attention\" AND \"inspection_approval_status_thresholds\".\"attention\" <= \"inspection_approval_status_thresholds\".\"critical\""
+        }
+      },
+      "isRLSEnabled": false
+    },
+    "public.request_protocol_status_thresholds": {
+      "name": "request_protocol_status_thresholds",
+      "schema": "",
+      "columns": {
+        "attention": {
+          "name": "attention",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "critical": {
+          "name": "critical",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "'00000000-0000-4000-8000-000000000001'::uuid"
+        },
+        "on_time": {
+          "name": "on_time",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp with time zone",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {
+        "request_protocol_status_thresholds_singleton": {
+          "name": "request_protocol_status_thresholds_singleton",
+          "value": "\"request_protocol_status_thresholds\".\"id\" = '00000000-0000-4000-8000-000000000001'::uuid"
+        },
+        "request_protocol_status_thresholds_order": {
+          "name": "request_protocol_status_thresholds_order",
+          "value": "\"request_protocol_status_thresholds\".\"on_time\" <= \"request_protocol_status_thresholds\".\"attention\" AND \"request_protocol_status_thresholds\".\"attention\" <= \"request_protocol_status_thresholds\".\"critical\""
+        }
+      },
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

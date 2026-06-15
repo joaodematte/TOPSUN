@@ -5,16 +5,18 @@ import { Button } from "@topsun/ui/components/button";
 import { useState } from "react";
 
 import { ConfigDialog } from "@/components/config-dialog";
+import type { DashboardSource } from "@/utils/dashboard-source";
+import type { ProjectStatusThresholds } from "@/utils/project-status";
 
 interface ConfigDialogButtonProps {
-  defaultValues: {
-    attention: number;
-    critical: number;
-    onTime: number;
-  };
+  defaultValues: ProjectStatusThresholds;
+  source?: DashboardSource;
 }
 
-export function ConfigDialogButton({ defaultValues }: ConfigDialogButtonProps) {
+export function ConfigDialogButton({
+  defaultValues,
+  source = "requestProtocol",
+}: ConfigDialogButtonProps) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -27,6 +29,7 @@ export function ConfigDialogButton({ defaultValues }: ConfigDialogButtonProps) {
         defaultValues={defaultValues}
         onOpenChange={setOpen}
         open={open}
+        source={source}
       />
     </>
   );

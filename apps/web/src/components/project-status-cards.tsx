@@ -6,7 +6,6 @@ import {
   IconFoldersFilled,
   IconSendFilled,
 } from "@tabler/icons-react";
-import { useQuery } from "@tanstack/react-query";
 import {
   Card,
   CardContent,
@@ -20,8 +19,14 @@ import type { ComponentType } from "react";
 
 import { ConfigDialogButton } from "@/components/config-dialog-button";
 import { ProjectStatusProjectsDialog } from "@/components/project-status-projects-dialog";
-import { useTRPC } from "@/lib/trpc";
+import { useDashboardData } from "@/hooks/use-dashboard-data";
+import type {
+  ProjectOnInspectionApproval,
+  ProjectOnRequestProtocol,
+} from "@/hooks/use-dashboard-data";
 import { useProjectStatusDialogStore } from "@/stores/project-status-dialog-store";
+import { DASHBOARD_SOURCE_CONFIG } from "@/utils/dashboard-source";
+import type { DashboardSource } from "@/utils/dashboard-source";
 import {
   getProjectStatusStats,
   PROJECT_STATUS_CLASSNAME,
@@ -42,17 +47,21 @@ const REQUESTED_MOCK = {
   percentage: "--",
 };
 
-export function ProjectStatusCardsSkeleton() {
+interface ProjectStatusCardsSkeletonProps {
+  source: DashboardSource;
+}
+
+export function ProjectStatusCardsSkeleton({
+  source,
+}: ProjectStatusCardsSkeletonProps) {
+  const config = DASHBOARD_SOURCE_CONFIG[source];
+
   return (
     <Card>
       <CardHeader className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div className="space-y-1">
-          <CardTitle>
-            Resumo de projetos na etapa "Solicitação de protocolo"
-          </CardTitle>
-          <CardDescription>
-            Resumo de projetos em andamento na etapa de solicitação de protocolo
-          </CardDescription>
+          <CardTitle>{config.statusCardTitle}</CardTitle>
+          <CardDescription>{config.statusCardDescription}</CardDescription>
         </div>
       </CardHeader>
       <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
@@ -114,20 +123,19 @@ function StatusCard({
   );
 }
 
-export function ProjectStatusCards() {
-  const trpc = useTRPC();
+interface ProjectStatusCardsProps {
+  source?: DashboardSource;
+}
+
+export function ProjectStatusCards({
+  source = "requestProtocol",
+}: ProjectStatusCardsProps) {
   const openDialog = useProjectStatusDialogStore((state) => state.openDialog);
+  const { isLoading, projects, thresholds } = useDashboardData(source);
+  const config = DASHBOARD_SOURCE_CONFIG[source];
 
-  const { data: projects, isLoading: isLoadingProjects } = useQuery(
-    trpc.requestProtocol.getProjects.queryOptions()
-  );
-
-  const { data: thresholds, isLoading: isLoadingThresholds } = useQuery(
-    trpc.requestProtocol.getStatusThresholds.queryOptions()
-  );
-
-  if (isLoadingProjects || isLoadingThresholds || !projects || !thresholds) {
-    return <ProjectStatusCardsSkeleton />;
+  if (isLoading || !projects || !thresholds) {
+    return <ProjectStatusCardsSkeleton source={source} />;
   }
 
   const stats = getProjectStatusStats(projects, thresholds);
@@ -186,26 +194,28 @@ export function ProjectStatusCards() {
     <Card>
       <CardHeader className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <div className="space-y-1">
-          <CardTitle>
-            Resumo de projetos na etapa "Solicitação de protocolo"
-          </CardTitle>
-          <CardDescription>
-            Resumo de projetos em andamento na etapa de solicitação de protocolo
-          </CardDescription>
+          <CardTitle>{config.statusCardTitle}</CardTitle>
+          <CardDescription>{config.statusCardDescription}</CardDescription>
         </div>
-        <ConfigDialogButton defaultValues={thresholds} />
+        <ConfigDialogButton defaultValues={thresholds} source={source} />
       </CardHeader>
       <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
         {statusCards.map((card) => (
           <StatusCard key={card.label} {...card} />
         ))}
       </CardContent>
-      {projects !== undefined && thresholds !== undefined ? (
+      {source === "inspectionApproval" ? (
         <ProjectStatusProjectsDialog
-          projects={projects}
+          projects={projects as ProjectOnInspectionApproval}
+          source="inspectionApproval"
           thresholds={thresholds}
         />
-      ) : null}
+      ) : (
+        <ProjectStatusProjectsDialog
+          projects={projects as ProjectOnRequestProtocol}
+          thresholds={thresholds}
+        />
+      )}
     </Card>
   );
 }

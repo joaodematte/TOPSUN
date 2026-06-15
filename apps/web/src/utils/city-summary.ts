@@ -1,10 +1,8 @@
-import type { RouterOutputs } from "@topsun/api/routers/index";
-
 import { classifyProjectStatus } from "@/utils/project-status";
-import type { RequestProtocolStatusThresholds } from "@/utils/project-status";
-
-type ProjectOnRequestProtocol =
-  RouterOutputs["requestProtocol"]["getProjects"][number];
+import type {
+  ProjectStatusThresholds,
+  ProjectWithDiasEtapa,
+} from "@/utils/project-status";
 
 export interface CitySummaryRow {
   attention: number;
@@ -36,7 +34,12 @@ function createEmptyAccumulator(): CityAccumulator {
   };
 }
 
-function getCityLabel(project: ProjectOnRequestProtocol): string | null {
+function getCityLabel(
+  project: ProjectWithDiasEtapa & {
+    cidadeInstalacao: string | null;
+    estadoInstalacao?: string | null;
+  }
+): string | null {
   const cidade = project.cidadeInstalacao?.trim();
 
   if (!cidade) {
@@ -52,10 +55,12 @@ function getCityLabel(project: ProjectOnRequestProtocol): string | null {
   return cidade;
 }
 
-export function getCitySummaryByOccurrence(
-  projects: ProjectOnRequestProtocol[],
-  thresholds: RequestProtocolStatusThresholds
-): CitySummaryRow[] {
+export function getCitySummaryByOccurrence<
+  T extends ProjectWithDiasEtapa & {
+    cidadeInstalacao: string | null;
+    estadoInstalacao?: string | null;
+  },
+>(projects: T[], thresholds: ProjectStatusThresholds): CitySummaryRow[] {
   const byCity = new Map<string, CityAccumulator>();
 
   for (const project of projects) {

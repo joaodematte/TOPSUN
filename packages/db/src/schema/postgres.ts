@@ -4,6 +4,9 @@ import { check, integer, pgTable, timestamp, uuid } from "drizzle-orm/pg-core";
 export const PROJECT_STATUS_THRESHOLDS_ID =
   "00000000-0000-4000-8000-000000000001";
 
+export const INSPECTION_APPROVAL_STATUS_THRESHOLDS_ID =
+  "00000000-0000-4000-8000-000000000002";
+
 export const requestProtocolStatusThresholds = pgTable(
   "request_protocol_status_thresholds",
   {
@@ -35,3 +38,35 @@ export type RequestProtocolStatusThresholds =
 
 export type NewRequestProtocolStatusThresholds =
   typeof requestProtocolStatusThresholds.$inferInsert;
+
+export const inspectionApprovalStatusThresholds = pgTable(
+  "inspection_approval_status_thresholds",
+  {
+    attention: integer("attention").notNull(),
+    critical: integer("critical").notNull(),
+    id: uuid("id")
+      .primaryKey()
+      .default(sql`'00000000-0000-4000-8000-000000000002'::uuid`),
+    onTime: integer("on_time").notNull(),
+    updatedAt: timestamp("updated_at", { mode: "date", withTimezone: true })
+      .notNull()
+      .defaultNow()
+      .$onUpdate(() => new Date()),
+  },
+  (table) => [
+    check(
+      "inspection_approval_status_thresholds_singleton",
+      sql`${table.id} = '00000000-0000-4000-8000-000000000002'::uuid`
+    ),
+    check(
+      "inspection_approval_status_thresholds_order",
+      sql`${table.onTime} <= ${table.attention} AND ${table.attention} <= ${table.critical}`
+    ),
+  ]
+);
+
+export type InspectionApprovalStatusThresholds =
+  typeof inspectionApprovalStatusThresholds.$inferSelect;
+
+export type NewInspectionApprovalStatusThresholds =
+  typeof inspectionApprovalStatusThresholds.$inferInsert;

@@ -2,6 +2,8 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { inspectionApprovalStatusThresholdsSchema } from "@topsun/api/schemas/inspection-approval-status-thresholds";
+import type { InspectionApprovalStatusThresholdsInput } from "@topsun/api/schemas/inspection-approval-status-thresholds";
 import { requestProtocolStatusThresholdsSchema } from "@topsun/api/schemas/request-protocol-status-thresholds";
 import type { RequestProtocolStatusThresholdsInput } from "@topsun/api/schemas/request-protocol-status-thresholds";
 import { Button } from "@topsun/ui/components/button";
@@ -28,17 +30,21 @@ import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 import { useTRPC } from "@/lib/trpc";
+import type { DashboardSource } from "@/utils/dashboard-source";
+import type { ProjectStatusThresholds } from "@/utils/project-status";
 
 interface ConfigDialogProps {
-  defaultValues: RequestProtocolStatusThresholdsInput;
+  defaultValues: ProjectStatusThresholds;
   onOpenChange: (open: boolean) => void;
   open: boolean;
+  source?: DashboardSource;
 }
 
 export function ConfigDialog({
   defaultValues,
   onOpenChange,
   open,
+  source = "requestProtocol",
 }: ConfigDialogProps) {
   const formId = useId();
   const onTimeId = useId();
@@ -47,12 +53,21 @@ export function ConfigDialog({
   const trpc = useTRPC();
   const queryClient = useQueryClient();
 
-  const form = useForm<RequestProtocolStatusThresholdsInput>({
+  const isInspectionApproval = source === "inspectionApproval";
+
+  const form = useForm<
+    | RequestProtocolStatusThresholdsInput
+    | InspectionApprovalStatusThresholdsInput
+  >({
     defaultValues,
-    resolver: zodResolver(requestProtocolStatusThresholdsSchema),
+    resolver: zodResolver(
+      isInspectionApproval
+        ? inspectionApprovalStatusThresholdsSchema
+        : requestProtocolStatusThresholdsSchema
+    ),
   });
 
-  const saveThresholds = useMutation(
+  const saveRequestProtocolThresholds = useMutation(
     trpc.requestProtocol.saveStatusThresholds.mutationOptions({
       onError: (error) => {
         toast.error(error.message);
@@ -69,13 +84,38 @@ export function ConfigDialog({
     })
   );
 
+  const saveInspectionApprovalThresholds = useMutation(
+    trpc.inspectionApproval.saveStatusThresholds.mutationOptions({
+      onError: (error) => {
+        toast.error(error.message);
+      },
+      onSuccess: async () => {
+        toast.success("Configurações atualizadas com sucesso");
+
+        await queryClient.invalidateQueries(
+          trpc.inspectionApproval.getStatusThresholds.queryFilter()
+        );
+
+        onOpenChange(false);
+      },
+    })
+  );
+
+  const saveThresholds = isInspectionApproval
+    ? saveInspectionApprovalThresholds
+    : saveRequestProtocolThresholds;
+
   useEffect(() => {
     if (open) {
       form.reset(defaultValues);
     }
   }, [defaultValues, form, open]);
 
-  function onSubmit(data: RequestProtocolStatusThresholdsInput) {
+  function onSubmit(
+    data:
+      | RequestProtocolStatusThresholdsInput
+      | InspectionApprovalStatusThresholdsInput
+  ) {
     saveThresholds.mutate(data);
   }
 

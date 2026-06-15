@@ -1,9 +1,14 @@
 import { postgresDb } from ".";
 import {
+  INSPECTION_APPROVAL_STATUS_THRESHOLDS_ID,
+  inspectionApprovalStatusThresholds,
   PROJECT_STATUS_THRESHOLDS_ID,
   requestProtocolStatusThresholds,
 } from "./schema/postgres";
-import type { RequestProtocolStatusThresholds } from "./schema/postgres";
+import type {
+  InspectionApprovalStatusThresholds,
+  RequestProtocolStatusThresholds,
+} from "./schema/postgres";
 
 export const DEFAULT_PROJECT_STATUS_THRESHOLDS = {
   attention: 14,
@@ -50,6 +55,47 @@ export async function upsertRequestProtocolStatusThresholds(
       attention: requestProtocolStatusThresholds.attention,
       critical: requestProtocolStatusThresholds.critical,
       onTime: requestProtocolStatusThresholds.onTime,
+    });
+
+  return row;
+}
+
+export async function getInspectionApprovalStatusThresholds(): Promise<
+  Pick<InspectionApprovalStatusThresholds, "attention" | "critical" | "onTime">
+> {
+  const [row] = await postgresDb
+    .select({
+      attention: inspectionApprovalStatusThresholds.attention,
+      critical: inspectionApprovalStatusThresholds.critical,
+      onTime: inspectionApprovalStatusThresholds.onTime,
+    })
+    .from(inspectionApprovalStatusThresholds)
+    .limit(1);
+
+  return row ?? DEFAULT_PROJECT_STATUS_THRESHOLDS;
+}
+
+export async function upsertInspectionApprovalStatusThresholds(
+  values: Pick<
+    InspectionApprovalStatusThresholds,
+    "attention" | "critical" | "onTime"
+  >
+) {
+  const [row] = await postgresDb
+    .insert(inspectionApprovalStatusThresholds)
+    .values({ id: INSPECTION_APPROVAL_STATUS_THRESHOLDS_ID, ...values })
+    .onConflictDoUpdate({
+      set: {
+        attention: values.attention,
+        critical: values.critical,
+        onTime: values.onTime,
+      },
+      target: inspectionApprovalStatusThresholds.id,
+    })
+    .returning({
+      attention: inspectionApprovalStatusThresholds.attention,
+      critical: inspectionApprovalStatusThresholds.critical,
+      onTime: inspectionApprovalStatusThresholds.onTime,
     });
 
   return row;

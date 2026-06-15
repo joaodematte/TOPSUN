@@ -1,10 +1,8 @@
-import type { RouterOutputs } from "@topsun/api/routers/index";
-
 import { classifyProjectStatus } from "@/utils/project-status";
-import type { RequestProtocolStatusThresholds } from "@/utils/project-status";
-
-type ProjectOnRequestProtocol =
-  RouterOutputs["requestProtocol"]["getProjects"][number];
+import type {
+  ProjectStatusThresholds,
+  ProjectWithDiasEtapa,
+} from "@/utils/project-status";
 
 export interface UtilitySummaryRow {
   attention: number;
@@ -45,10 +43,9 @@ function createEmptyAccumulator(): UtilityAccumulator {
   };
 }
 
-export function getUtilitySummaryByConcessionaria(
-  projects: ProjectOnRequestProtocol[],
-  thresholds: RequestProtocolStatusThresholds
-): UtilitySummaryRow[] {
+export function getUtilitySummaryByConcessionaria<
+  T extends ProjectWithDiasEtapa & { concessionaria: string | null },
+>(projects: T[], thresholds: ProjectStatusThresholds): UtilitySummaryRow[] {
   const byConcessionaria = new Map<string, UtilityAccumulator>();
 
   for (const project of projects) {

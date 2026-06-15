@@ -1,8 +1,3 @@
-import type { RouterOutputs } from "@topsun/api/routers/index";
-
-type ProjectOnRequestProtocol =
-  RouterOutputs["requestProtocol"]["getProjects"][number];
-
 export type ProjectStatusCategory =
   | "onTime"
   | "attention"
@@ -27,11 +22,24 @@ export const PROJECT_STATUS_CLASSNAME: Record<ProjectStatusCategory, string> = {
   overdue: "bg-red-500/10 text-red-600 dark:text-red-400",
 };
 
-export interface RequestProtocolStatusThresholds {
+export interface ProjectWithDiasEtapa {
+  diasEtapa: number;
+}
+
+export type DashboardProject = ProjectWithDiasEtapa & {
+  cidadeInstalacao: string | null;
+  concessionaria: string | null;
+  estadoInstalacao?: string | null;
+};
+
+export interface ProjectStatusThresholds {
   attention: number;
   critical: number;
   onTime: number;
 }
+
+/** @deprecated Use ProjectStatusThresholds */
+export type RequestProtocolStatusThresholds = ProjectStatusThresholds;
 
 export interface ProjectStatusStats {
   attention: number;
@@ -58,7 +66,7 @@ function toPercentage(count: number, total: number) {
 
 export function classifyProjectStatus(
   diasEtapa: number,
-  thresholds: RequestProtocolStatusThresholds
+  thresholds: ProjectStatusThresholds
 ): ProjectStatusCategory | null {
   const { attention, critical, onTime } = thresholds;
 
@@ -83,7 +91,7 @@ export function classifyProjectStatus(
 
 export function getProjectStatusClassName(
   diasEtapa: number,
-  thresholds: RequestProtocolStatusThresholds
+  thresholds: ProjectStatusThresholds
 ): string | undefined {
   const status = classifyProjectStatus(diasEtapa, thresholds);
 
@@ -94,11 +102,11 @@ export function getProjectStatusClassName(
   return PROJECT_STATUS_CLASSNAME[status];
 }
 
-export function filterProjectsByStatus(
-  projects: ProjectOnRequestProtocol[],
-  thresholds: RequestProtocolStatusThresholds,
+export function filterProjectsByStatus<T extends ProjectWithDiasEtapa>(
+  projects: T[],
+  thresholds: ProjectStatusThresholds,
   status: ProjectStatusFilter
-): ProjectOnRequestProtocol[] {
+): T[] {
   if (status === "total") {
     return projects;
   }
@@ -108,9 +116,9 @@ export function filterProjectsByStatus(
   );
 }
 
-export function getProjectStatusStats(
-  projects: ProjectOnRequestProtocol[],
-  thresholds: RequestProtocolStatusThresholds
+export function getProjectStatusStats<T extends ProjectWithDiasEtapa>(
+  projects: T[],
+  thresholds: ProjectStatusThresholds
 ): ProjectStatusStatsWithPercentage {
   const stats: ProjectStatusStats = {
     attention: 0,

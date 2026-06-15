@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import {
   Card,
   CardContent,
@@ -9,8 +8,9 @@ import {
 import { Skeleton } from "@topsun/ui/components/skeleton";
 
 import { CitySummaryDataTable } from "@/components/city-summary-data-table";
-import { useTRPC } from "@/lib/trpc";
+import { useDashboardData } from "@/hooks/use-dashboard-data";
 import { getCitySummaryByOccurrence } from "@/utils/city-summary";
+import type { DashboardSource } from "@/utils/dashboard-source";
 
 function CitySummaryByOccurrenceSkeleton() {
   return (
@@ -28,18 +28,16 @@ function CitySummaryByOccurrenceSkeleton() {
   );
 }
 
-export function CitySummaryByOccurrence() {
-  const trpc = useTRPC();
+interface CitySummaryByOccurrenceProps {
+  source?: DashboardSource;
+}
 
-  const { data: projects, isLoading: isLoadingProjects } = useQuery(
-    trpc.requestProtocol.getProjects.queryOptions()
-  );
+export function CitySummaryByOccurrence({
+  source = "requestProtocol",
+}: CitySummaryByOccurrenceProps) {
+  const { isLoading, projects, thresholds } = useDashboardData(source);
 
-  const { data: thresholds, isLoading: isLoadingThresholds } = useQuery(
-    trpc.requestProtocol.getStatusThresholds.queryOptions()
-  );
-
-  if (isLoadingProjects || isLoadingThresholds || !projects || !thresholds) {
+  if (isLoading || !projects || !thresholds) {
     return <CitySummaryByOccurrenceSkeleton />;
   }
 
