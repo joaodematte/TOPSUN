@@ -12,4 +12,12 @@ export const Route = createFileRoute("/_protected/inspection-approval/")({
       },
     ],
   }),
+  loader: ({ context }) => {
+    context.queryClient.prefetchQuery(
+      context.trpc.inspectionApproval.getProjects.queryOptions()
+    );
+    context.queryClient.prefetchQuery(
+      context.trpc.inspectionApproval.getStatusThresholds.queryOptions()
+    );
+  },
 });

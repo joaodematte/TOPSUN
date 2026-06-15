@@ -12,4 +12,12 @@ export const Route = createFileRoute("/_protected/")({
       },
     ],
   }),
+  loader: ({ context }) => {
+    context.queryClient.prefetchQuery(
+      context.trpc.requestProtocol.getProjects.queryOptions()
+    );
+    context.queryClient.prefetchQuery(
+      context.trpc.requestProtocol.getStatusThresholds.queryOptions()
+    );
+  },
 });
