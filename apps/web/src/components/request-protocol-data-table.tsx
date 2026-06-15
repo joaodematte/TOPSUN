@@ -72,7 +72,7 @@ function createProjectsOnRequestProtocolColumns(
         const value = getValue<string>();
         return formatLocalizedDate(value);
       },
-      header: "Abertura da Etapa",
+      header: "Abertura da etapa",
     },
     {
       accessorKey: "fechamentoVenda",
@@ -80,7 +80,7 @@ function createProjectsOnRequestProtocolColumns(
         const value = getValue<string>();
         return formatLocalizedDate(value);
       },
-      header: "Fechamento da Venda",
+      header: "Fechamento da venda",
     },
     {
       accessorKey: "aprovacaoCredito",
@@ -88,7 +88,7 @@ function createProjectsOnRequestProtocolColumns(
         const value = getValue<string>();
         return formatLocalizedDate(value);
       },
-      header: "Aprovação Crédito",
+      header: "Aprovação crédito",
     },
     {
       accessorKey: "dataFaturamento",
@@ -96,7 +96,7 @@ function createProjectsOnRequestProtocolColumns(
         const value = getValue<string>();
         return formatLocalizedDate(value);
       },
-      header: "Data do Faturamento",
+      header: "Data do faturamento",
     },
     {
       accessorKey: "diasEtapa",
@@ -116,7 +116,7 @@ function createProjectsOnRequestProtocolColumns(
           </span>
         );
       },
-      header: "Dias na Etapa",
+      header: "Dias na etapa",
     },
     {
       accessorKey: "obsEtapa",
@@ -124,7 +124,7 @@ function createProjectsOnRequestProtocolColumns(
         const value = getValue<string>();
         return formatValue(value);
       },
-      header: "Observação da Etapa",
+      header: "Observação da etapa",
       size: 256,
     },
   ];

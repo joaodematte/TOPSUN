@@ -16,7 +16,7 @@ function CitySummaryByOccurrenceSkeleton() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Cidades por Ocorrência</CardTitle>
+        <CardTitle>Cidades por ocorrência</CardTitle>
         <CardDescription>
           Resumo de volumes e atrasos por cidade
         </CardDescription>
@@ -48,7 +48,7 @@ export function CitySummaryByOccurrence() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Cidades por Ocorrência</CardTitle>
+        <CardTitle>Cidades por ocorrência</CardTitle>
         <CardDescription>
           Resumo de volumes e atrasos por cidade
         </CardDescription>

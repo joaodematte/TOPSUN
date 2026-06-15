@@ -33,7 +33,7 @@ const utilitySummaryColumns: ColumnDef<UtilitySummaryRow>[] = [
     cell: ({ getValue }) => (
       <span className={numericCellClassName}>{getValue<number>()}</span>
     ),
-    header: () => <div className="text-right">No Prazo</div>,
+    header: () => <div className="text-right">No prazo</div>,
     size: 75,
   },
   {
@@ -62,7 +62,7 @@ const utilitySummaryColumns: ColumnDef<UtilitySummaryRow>[] = [
   },
   {
     cell: () => <span className={numericCellClassName}>{REQUESTED_MOCK}</span>,
-    header: () => <div className="text-right">Pr. Solicitado</div>,
+    header: () => <div className="text-right">Solicitado</div>,
     id: "prSolicitado",
     size: 75,
   },

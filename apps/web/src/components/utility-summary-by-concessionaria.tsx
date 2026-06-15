@@ -16,7 +16,7 @@ export function UtilitySummaryByConcessionariaSkeleton() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Resumo por Concessionária</CardTitle>
+        <CardTitle>Resumo por concessionária</CardTitle>
         <CardDescription>Resumo de projetos por concessionária</CardDescription>
       </CardHeader>
       <CardContent>
@@ -46,7 +46,7 @@ export function UtilitySummaryByConcessionaria() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Resumo por Concessionária</CardTitle>
+        <CardTitle>Resumo por concessionária</CardTitle>
         <CardDescription>Resumo de projetos por concessionária</CardDescription>
       </CardHeader>
       <CardContent>

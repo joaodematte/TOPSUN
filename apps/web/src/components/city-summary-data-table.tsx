@@ -33,7 +33,7 @@ const citySummaryColumns: ColumnDef<CitySummaryRow>[] = [
     cell: ({ getValue }) => (
       <span className={numericCellClassName}>{getValue<number>()}</span>
     ),
-    header: () => <div className="text-right">No Prazo</div>,
+    header: () => <div className="text-right">No prazo</div>,
     size: 75,
   },
   {
@@ -62,7 +62,7 @@ const citySummaryColumns: ColumnDef<CitySummaryRow>[] = [
   },
   {
     cell: () => <span className={numericCellClassName}>{REQUESTED_MOCK}</span>,
-    header: () => <div className="text-right">Pr. Solicitado</div>,
+    header: () => <div className="text-right">Solicitado</div>,
     id: "prSolicitado",
     size: 75,
   },
@@ -73,7 +73,7 @@ const citySummaryColumns: ColumnDef<CitySummaryRow>[] = [
         {formatAverageDays(getValue<number>())}
       </span>
     ),
-    header: () => <div className="text-right">Média Dias</div>,
+    header: () => <div className="text-right">Média dias</div>,
     size: 75,
   },
 ];
