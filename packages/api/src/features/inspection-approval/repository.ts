@@ -10,7 +10,7 @@ import {
   etapas,
   usuarios,
 } from "@topsun/db/schema/topsun";
-import { and, asc, eq, isNotNull, sql } from "drizzle-orm";
+import { and, asc, desc, eq, isNotNull, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/mysql-core";
 
 import { DEFAULT_STATUS_THRESHOLDS } from "../shared/status-thresholds.constants";
@@ -21,6 +21,8 @@ const e22 = alias(etapas, "e22");
 const e24 = alias(etapas, "e24");
 
 export function listInspectionApprovalProjects() {
+  const diasEtapa = sql<number>`DATEDIFF(CURDATE(), DATE(${e24.datahoraAberturaEtapa}))`;
+
   return topsunDb
     .select({
       aprovacaoCredito: sql<string>`DATE(${e13.datahoraConclusaoEtapa})`.as(
@@ -29,10 +31,7 @@ export function listInspectionApprovalProjects() {
       cidadeInstalacao: coletaDados.cidadeUcColeta,
       cliente: clientes.nomeCliente,
       concessionaria: coletaDados.concessionariaColeta,
-      diasEtapa:
-        sql<number>`DATEDIFF(CURDATE(), DATE(${e24.datahoraAberturaEtapa}))`.as(
-          "dias_etapa"
-        ),
+      diasEtapa: diasEtapa.as("dias_etapa"),
       obsAprovVistoria: e24.obsEtapa,
       obsSolicVistoria: e22.obsEtapa,
       projeto: coletaDados.idColeta,
@@ -62,7 +61,7 @@ export function listInspectionApprovalProjects() {
         isNotNull(e24.datahoraAberturaEtapa)
       )
     )
-    .orderBy(asc(coletaDados.idColeta));
+    .orderBy(desc(diasEtapa), asc(coletaDados.idColeta));
 }
 
 export async function getInspectionApprovalStatusThresholds(): Promise<StatusThresholds> {

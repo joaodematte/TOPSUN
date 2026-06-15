@@ -11,7 +11,7 @@ import {
   regioesVenda,
   usuarios,
 } from "@topsun/db/schema/topsun";
-import { and, asc, eq, isNotNull, sql } from "drizzle-orm";
+import { and, asc, desc, eq, isNotNull, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/mysql-core";
 
 import { DEFAULT_STATUS_THRESHOLDS } from "../shared/status-thresholds.constants";
@@ -23,6 +23,8 @@ const e13 = alias(etapas, "e13");
 const e19 = alias(etapas, "e19");
 
 export function listRequestProtocolProjects() {
+  const diasEtapa = sql<number>`DATEDIFF(CURDATE(), DATE(${e42.datahoraAberturaEtapa}))`;
+
   return topsunDb
     .select({
       aberturaEtapa: sql<string>`DATE(${e42.datahoraAberturaEtapa})`.as(
@@ -37,10 +39,7 @@ export function listRequestProtocolProjects() {
       dataFaturamento: sql<string>`DATE(${e19.data1Etapa})`.as(
         "data_faturamento"
       ),
-      diasEtapa:
-        sql<number>`DATEDIFF(CURDATE(), DATE(${e42.datahoraAberturaEtapa}))`.as(
-          "dias_etapa"
-        ),
+      diasEtapa: diasEtapa.as("dias_etapa"),
       estadoInstalacao: coletaDados.estadoUcColeta,
       fechamentoVenda: sql<string>`DATE(${e4.datahoraAberturaEtapa})`.as(
         "fechamento_venda"
@@ -81,7 +80,7 @@ export function listRequestProtocolProjects() {
         isNotNull(e42.datahoraAberturaEtapa)
       )
     )
-    .orderBy(asc(coletaDados.idColeta));
+    .orderBy(desc(diasEtapa), asc(coletaDados.idColeta));
 }
 
 export async function getRequestProtocolStatusThresholds(): Promise<StatusThresholds> {
