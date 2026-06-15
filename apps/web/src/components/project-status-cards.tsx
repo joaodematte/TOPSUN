@@ -33,7 +33,7 @@ interface StatusCardConfig {
   icon: ComponentType<{ className?: string }>;
   iconClassName: string;
   label: string;
-  onOpen?: () => void;
+  onOpen: () => void;
   percentage?: number | string;
 }
 
@@ -75,10 +75,17 @@ function StatusCard({
   onOpen,
   percentage,
 }: StatusCardConfig) {
-  const isInteractive = onOpen !== undefined;
-
-  const content = (
-    <>
+  const isInteractive = count !== "--" && Number(count) > 0;
+  return (
+    <button
+      className={cn(
+        "bg-card hover:bg-muted focus-visible:border-ring focus-visible:ring-ring/30 flex flex-col gap-3 rounded-[min(var(--radius-4xl),24px)] border p-4 transition-all duration-150 outline-none focus-visible:ring-3",
+        !isInteractive && "cursor-not-allowed"
+      )}
+      onClick={onOpen}
+      type="button"
+      disabled={!isInteractive}
+    >
       <div className="flex items-center gap-2.5">
         <span
           aria-hidden="true"
@@ -103,27 +110,6 @@ function StatusCard({
           </p>
         )}
       </div>
-    </>
-  );
-
-  if (!isInteractive) {
-    return (
-      <div
-        aria-disabled="true"
-        className="bg-card flex flex-col gap-3 rounded-[min(var(--radius-4xl),24px)] border p-4"
-      >
-        {content}
-      </div>
-    );
-  }
-
-  return (
-    <button
-      className="bg-card hover:bg-muted flex flex-col gap-3 rounded-[min(var(--radius-4xl),24px)] border p-4 transition-colors duration-150"
-      onClick={onOpen}
-      type="button"
-    >
-      {content}
     </button>
   );
 }
@@ -191,6 +177,7 @@ export function ProjectStatusCards() {
       icon: IconSendFilled,
       iconClassName: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
       label: "Solicitados",
+      onOpen: () => null,
       percentage: REQUESTED_MOCK.percentage,
     },
   ];
