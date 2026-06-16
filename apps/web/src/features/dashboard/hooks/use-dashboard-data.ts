@@ -24,6 +24,9 @@ type ProjectOnUtilityInspectionRequest =
 type ProjectOnInstallationCompletion =
   RouterOutputs["installationCompletion"]["getProjects"];
 
+type ProjectOnCompletionValidation =
+  RouterOutputs["completionValidation"]["getProjects"];
+
 type ProjectOnTechnicalInspectionValidation =
   RouterOutputs["technicalInspectionValidation"]["getProjects"];
 
@@ -66,6 +69,11 @@ export function useDashboardData(source: DashboardSource): DashboardDataResult {
     enabled: source === "installationCompletion",
   });
 
+  const completionValidationProjectsQuery = useQuery({
+    ...trpc.completionValidation.getProjects.queryOptions(),
+    enabled: source === "completionValidation",
+  });
+
   const technicalInspectionValidationProjectsQuery = useQuery({
     ...trpc.technicalInspectionValidation.getProjects.queryOptions(),
     enabled: source === "technicalInspectionValidation",
@@ -99,6 +107,11 @@ export function useDashboardData(source: DashboardSource): DashboardDataResult {
   const installationCompletionThresholdsQuery = useQuery({
     ...trpc.installationCompletion.getStatusThresholds.queryOptions(),
     enabled: source === "installationCompletion",
+  });
+
+  const completionValidationThresholdsQuery = useQuery({
+    ...trpc.completionValidation.getStatusThresholds.queryOptions(),
+    enabled: source === "completionValidation",
   });
 
   const technicalInspectionValidationThresholdsQuery = useQuery({
@@ -166,6 +179,18 @@ export function useDashboardData(source: DashboardSource): DashboardDataResult {
     };
   }
 
+  if (source === "completionValidation") {
+    return {
+      isLoading:
+        completionValidationProjectsQuery.isLoading ||
+        completionValidationThresholdsQuery.isLoading,
+      projects: completionValidationProjectsQuery.data as
+        | DashboardProject[]
+        | undefined,
+      thresholds: completionValidationThresholdsQuery.data,
+    };
+  }
+
   if (source === "technicalInspectionValidation") {
     return {
       isLoading:
@@ -194,6 +219,7 @@ export type {
   ProjectOnArtAccessRequirement,
   ProjectOnInspectionApproval,
   ProjectOnInstallationCompletion,
+  ProjectOnCompletionValidation,
   ProjectOnRequestProtocol,
   ProjectOnTechnicalInspectionValidation,
   ProjectOnUtilityInspectionRequest,

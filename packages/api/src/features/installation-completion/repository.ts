@@ -11,9 +11,10 @@ import {
   etapas,
   usuarios,
 } from "@topsun/db/schema/topsun";
-import { and, asc, desc, eq, isNotNull, sql } from "drizzle-orm";
+import { and, eq, isNotNull, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/mysql-core";
 
+import { orderProjectsByDiasEtapaThenId } from "../shared/project-list-order";
 import { DEFAULT_STATUS_THRESHOLDS } from "../shared/status-thresholds.constants";
 import type { StatusThresholds } from "../shared/status-thresholds.constants";
 
@@ -69,7 +70,7 @@ export function listInstallationCompletionProjects() {
         isNotNull(e35.datahoraAberturaEtapa)
       )
     )
-    .orderBy(desc(diasEtapa), asc(coletaDados.idColeta));
+    .orderBy(...orderProjectsByDiasEtapaThenId(diasEtapa));
 }
 
 export async function getInstallationCompletionStatusThresholds(): Promise<StatusThresholds> {

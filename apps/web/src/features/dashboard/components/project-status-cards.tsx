@@ -23,6 +23,7 @@ import { useDashboardData } from "@/features/dashboard/hooks/use-dashboard-data"
 import type {
   ProjectOnAccessRequest,
   ProjectOnArtAccessRequirement,
+  ProjectOnCompletionValidation,
   ProjectOnInspectionApproval,
   ProjectOnInstallationCompletion,
   ProjectOnRequestProtocol,
@@ -33,6 +34,7 @@ import { useProjectStatusDialogStore } from "@/features/dashboard/stores/project
 import {
   DASHBOARD_SOURCE_CONFIG,
   showsSolicitadoInfo,
+  usesRealSolicitadoData,
 } from "@/features/dashboard/utils/dashboard-source";
 import type { DashboardSource } from "@/features/dashboard/utils/dashboard-source";
 import {
@@ -44,6 +46,7 @@ import type {
   DashboardProject,
   ProjectStatusThresholds,
 } from "@/features/dashboard/utils/project-status";
+import { getSolicitadoStats } from "@/features/dashboard/utils/solicitado";
 
 interface StatusCardConfig {
   count: number | string;
@@ -55,8 +58,8 @@ interface StatusCardConfig {
 }
 
 const REQUESTED_MOCK = {
-  count: "--",
-  percentage: "--",
+  count: "—",
+  percentage: "—",
 };
 
 interface ProjectStatusCardsSkeletonProps {
@@ -96,7 +99,7 @@ function StatusCard({
   onOpen,
   percentage,
 }: StatusCardConfig) {
-  const isInteractive = count !== "--" && Number(count) > 0;
+  const isInteractive = count !== "—" && Number(count) > 0;
   return (
     <button
       className={cn(
@@ -127,7 +130,7 @@ function StatusCard({
         </p>
         {percentage === undefined ? null : (
           <p className="text-muted-foreground ml-auto text-sm tabular-nums">
-            {percentage}%
+            {typeof percentage === "number" ? `${percentage}%` : percentage}
           </p>
         )}
       </div>
@@ -198,6 +201,16 @@ function ProjectStatusProjectsDialogBySource({
     );
   }
 
+  if (source === "completionValidation") {
+    return (
+      <ProjectStatusProjectsDialog
+        projects={projects as unknown as ProjectOnCompletionValidation}
+        source="completionValidation"
+        thresholds={thresholds}
+      />
+    );
+  }
+
   if (source === "technicalInspectionValidation") {
     return (
       <ProjectStatusProjectsDialog
@@ -228,6 +241,10 @@ export function ProjectStatusCards({
   }
 
   const stats = getProjectStatusStats(projects, thresholds);
+  const useRealSolicitado = usesRealSolicitadoData(source);
+  const solicitadoStats = useRealSolicitado
+    ? getSolicitadoStats(projects)
+    : null;
 
   const statusCards: StatusCardConfig[] = [
     {
@@ -272,12 +289,18 @@ export function ProjectStatusCards({
     ...(showsSolicitadoInfo(source)
       ? [
           {
-            count: REQUESTED_MOCK.count,
+            count: useRealSolicitado
+              ? (solicitadoStats?.count ?? 0)
+              : REQUESTED_MOCK.count,
             icon: IconSendFilled,
             iconClassName: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
-            label: "Solicitados",
-            onOpen: () => null,
-            percentage: REQUESTED_MOCK.percentage,
+            label: PROJECT_STATUS_FILTER_LABEL.solicitado,
+            onOpen: useRealSolicitado
+              ? () => openDialog("solicitado")
+              : () => null,
+            percentage: useRealSolicitado
+              ? (solicitadoStats?.percentage ?? 0)
+              : REQUESTED_MOCK.percentage,
           } satisfies StatusCardConfig,
         ]
       : []),

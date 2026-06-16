@@ -62,10 +62,19 @@ const baseCitySummaryColumns: ColumnDef<CitySummaryRow>[] = [
   },
 ];
 
-const solicitadoColumn: ColumnDef<CitySummaryRow> = {
+const solicitadoMockColumn: ColumnDef<CitySummaryRow> = {
   cell: () => <span className={numericCellClassName}>{REQUESTED_MOCK}</span>,
   header: () => <div className="text-right">Solicitado</div>,
   id: "prSolicitado",
+  size: 75,
+};
+
+const solicitadoRealColumn: ColumnDef<CitySummaryRow> = {
+  accessorKey: "solicitado",
+  cell: ({ getValue }) => (
+    <span className={numericCellClassName}>{getValue<number>()}</span>
+  ),
+  header: () => <div className="text-right">Solicitado</div>,
   size: 75,
 };
 
@@ -83,12 +92,18 @@ const mediaDiasColumn: ColumnDef<CitySummaryRow> = {
 interface CitySummaryTableProps {
   data: CitySummaryRow[];
   showSolicitado?: boolean;
+  useRealSolicitado?: boolean;
 }
 
 export function CitySummaryTable({
   data,
   showSolicitado = true,
+  useRealSolicitado = false,
 }: CitySummaryTableProps) {
+  const solicitadoColumn = useRealSolicitado
+    ? solicitadoRealColumn
+    : solicitadoMockColumn;
+
   const columns = showSolicitado
     ? [...baseCitySummaryColumns, solicitadoColumn, mediaDiasColumn]
     : [...baseCitySummaryColumns, mediaDiasColumn];

@@ -6,6 +6,8 @@ import { accessRequestStatusThresholdsSchema } from "@topsun/api/features/access
 import type { AccessRequestStatusThresholdsInput } from "@topsun/api/features/access-request/schema";
 import { artAccessRequirementStatusThresholdsSchema } from "@topsun/api/features/art-access-requirement/schema";
 import type { ArtAccessRequirementStatusThresholdsInput } from "@topsun/api/features/art-access-requirement/schema";
+import { completionValidationStatusThresholdsSchema } from "@topsun/api/features/completion-validation/schema";
+import type { CompletionValidationStatusThresholdsInput } from "@topsun/api/features/completion-validation/schema";
 import { inspectionApprovalStatusThresholdsSchema } from "@topsun/api/features/inspection-approval/schema";
 import type { InspectionApprovalStatusThresholdsInput } from "@topsun/api/features/inspection-approval/schema";
 import { installationCompletionStatusThresholdsSchema } from "@topsun/api/features/installation-completion/schema";
@@ -50,6 +52,7 @@ type StatusThresholdsFormInput =
   | ArtAccessRequirementStatusThresholdsInput
   | UtilityInspectionRequestStatusThresholdsInput
   | InstallationCompletionStatusThresholdsInput
+  | CompletionValidationStatusThresholdsInput
   | TechnicalInspectionValidationStatusThresholdsInput;
 
 interface StatusThresholdsDialogProps {
@@ -78,6 +81,10 @@ function getSchemaForSource(source: DashboardSource) {
 
   if (source === "installationCompletion") {
     return installationCompletionStatusThresholdsSchema;
+  }
+
+  if (source === "completionValidation") {
+    return completionValidationStatusThresholdsSchema;
   }
 
   if (source === "technicalInspectionValidation") {
@@ -207,6 +214,23 @@ export function StatusThresholdsDialog({
     })
   );
 
+  const saveCompletionValidationThresholds = useMutation(
+    trpc.completionValidation.saveStatusThresholds.mutationOptions({
+      onError: (error) => {
+        toast.error(error.message);
+      },
+      onSuccess: async () => {
+        toast.success("Configurações atualizadas com sucesso");
+
+        await queryClient.invalidateQueries(
+          trpc.completionValidation.getStatusThresholds.queryFilter()
+        );
+
+        onOpenChange(false);
+      },
+    })
+  );
+
   const saveTechnicalInspectionValidationThresholds = useMutation(
     trpc.technicalInspectionValidation.saveStatusThresholds.mutationOptions({
       onError: (error) => {
@@ -243,6 +267,10 @@ export function StatusThresholdsDialog({
 
     if (source === "installationCompletion") {
       return saveInstallationCompletionThresholds;
+    }
+
+    if (source === "completionValidation") {
+      return saveCompletionValidationThresholds;
     }
 
     if (source === "technicalInspectionValidation") {

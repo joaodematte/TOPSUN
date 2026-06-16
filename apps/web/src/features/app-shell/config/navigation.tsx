@@ -1,5 +1,6 @@
 import {
   IconClipboardCheck,
+  IconCircleCheck,
   IconFileCertificate,
   IconKey,
   IconReportSearch,
@@ -18,19 +19,9 @@ interface SidebarItem {
 
 export const SIDEBAR_ITEMS: SidebarItem[] = [
   {
-    href: "/",
-    icon: <IconTicket />,
-    title: "Solicitação de protocolo",
-  },
-  {
-    href: "/inspection-approval",
-    icon: <IconZoom />,
-    title: "Aprovação de vistoria (concessionária)",
-  },
-  {
-    href: "/access-request",
-    icon: <IconKey />,
-    title: "Solicitação de acesso",
+    href: "/technical-inspection-validation",
+    icon: <IconClipboardCheck />,
+    title: "Validação da vistoria técnica",
   },
   {
     href: "/art-access-requirement",
@@ -38,9 +29,14 @@ export const SIDEBAR_ITEMS: SidebarItem[] = [
     title: "Emissão de ART e requerimento de acesso",
   },
   {
-    href: "/utility-inspection-request",
-    icon: <IconReportSearch />,
-    title: "Solicitação de vistoria pela concessionária",
+    href: "/",
+    icon: <IconTicket />,
+    title: "Solicitação de protocolo",
+  },
+  {
+    href: "/access-request",
+    icon: <IconKey />,
+    title: "Solicitação de acesso",
   },
   {
     href: "/installation-completion",
@@ -48,8 +44,18 @@ export const SIDEBAR_ITEMS: SidebarItem[] = [
     title: "Conclusão da instalação",
   },
   {
-    href: "/technical-inspection-validation",
-    icon: <IconClipboardCheck />,
-    title: "Validação da vistoria técnica",
+    href: "/completion-validation",
+    icon: <IconCircleCheck />,
+    title: "Validação da conclusão",
+  },
+  {
+    href: "/utility-inspection-request",
+    icon: <IconReportSearch />,
+    title: "Solicitação de vistoria (concessionária)",
+  },
+  {
+    href: "/inspection-approval",
+    icon: <IconZoom />,
+    title: "Aprovação de vistoria (concessionária)",
   },
 ];

@@ -41,3 +41,8 @@ export {
   technicalInspectionValidationStatusThresholdsSchema,
   type TechnicalInspectionValidationStatusThresholdsInput,
 } from "./features/technical-inspection-validation/schema";
+
+export {
+  completionValidationStatusThresholdsSchema,
+  type CompletionValidationStatusThresholdsInput,
+} from "./features/completion-validation/schema";

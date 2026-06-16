@@ -8,7 +8,11 @@ import {
 import { Skeleton } from "@topsun/ui/components/skeleton";
 
 import { useDashboardData } from "@/features/dashboard/hooks/use-dashboard-data";
-import type { ProjectOnInstallationCompletion } from "@/features/dashboard/hooks/use-dashboard-data";
+import type {
+  ProjectOnCompletionValidation,
+  ProjectOnInstallationCompletion,
+} from "@/features/dashboard/hooks/use-dashboard-data";
+import type { DashboardSource } from "@/features/dashboard/utils/dashboard-source";
 import { InstallerSummaryTable } from "@/features/installation-completion/components/installer-summary-table";
 import { getInstallerSummaryByInstalador } from "@/features/installation-completion/utils/installer-summary";
 
@@ -26,17 +30,30 @@ export function InstallerSummaryCardSkeleton() {
   );
 }
 
-export function InstallerSummaryCard() {
-  const { isLoading, projects, thresholds } = useDashboardData(
-    "installationCompletion"
-  );
+type InstallerSummarySource = Extract<
+  DashboardSource,
+  "installationCompletion" | "completionValidation"
+>;
+
+type ProjectWithInstaller =
+  | ProjectOnInstallationCompletion[number]
+  | ProjectOnCompletionValidation[number];
+
+interface InstallerSummaryCardProps {
+  source?: InstallerSummarySource;
+}
+
+export function InstallerSummaryCard({
+  source = "installationCompletion",
+}: InstallerSummaryCardProps) {
+  const { isLoading, projects, thresholds } = useDashboardData(source);
 
   if (isLoading || !projects || !thresholds) {
     return <InstallerSummaryCardSkeleton />;
   }
 
   const rows = getInstallerSummaryByInstalador(
-    projects as unknown as ProjectOnInstallationCompletion,
+    projects as unknown as ProjectWithInstaller[],
     thresholds
   );
 

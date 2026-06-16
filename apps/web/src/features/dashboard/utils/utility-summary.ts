@@ -3,6 +3,7 @@ import type {
   ProjectStatusThresholds,
   ProjectWithDiasEtapa,
 } from "@/features/dashboard/utils/project-status";
+import { isProjectSolicitado } from "@/features/dashboard/utils/solicitado";
 
 export interface UtilitySummaryRow {
   attention: number;
@@ -11,6 +12,7 @@ export interface UtilitySummaryRow {
   mediaDias: number;
   onTime: number;
   overdue: number;
+  solicitado: number;
   total: number;
 }
 
@@ -20,6 +22,7 @@ interface UtilityAccumulator {
   diasSum: number;
   onTime: number;
   overdue: number;
+  solicitado: number;
   total: number;
 }
 
@@ -39,13 +42,21 @@ function createEmptyAccumulator(): UtilityAccumulator {
     diasSum: 0,
     onTime: 0,
     overdue: 0,
+    solicitado: 0,
     total: 0,
   };
 }
 
 export function getUtilitySummaryByConcessionaria<
-  T extends ProjectWithDiasEtapa & { concessionaria: string | null },
->(projects: T[], thresholds: ProjectStatusThresholds): UtilitySummaryRow[] {
+  T extends ProjectWithDiasEtapa & {
+    concessionaria: string | null;
+    dataSolicitado?: string | null;
+  },
+>(
+  projects: T[],
+  thresholds: ProjectStatusThresholds,
+  options?: { includeSolicitado?: boolean }
+): UtilitySummaryRow[] {
   const byConcessionaria = new Map<string, UtilityAccumulator>();
 
   for (const project of projects) {
@@ -67,6 +78,13 @@ export function getUtilitySummaryByConcessionaria<
       accumulator[status] += 1;
     }
 
+    if (
+      options?.includeSolicitado &&
+      isProjectSolicitado(project.dataSolicitado)
+    ) {
+      accumulator.solicitado += 1;
+    }
+
     byConcessionaria.set(concessionaria, accumulator);
   }
 
@@ -79,6 +97,7 @@ export function getUtilitySummaryByConcessionaria<
         accumulator.total === 0 ? 0 : accumulator.diasSum / accumulator.total,
       onTime: accumulator.onTime,
       overdue: accumulator.overdue,
+      solicitado: accumulator.solicitado,
       total: accumulator.total,
     }))
     .toSorted((a, b) => {

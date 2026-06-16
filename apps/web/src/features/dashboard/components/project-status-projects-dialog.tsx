@@ -11,6 +11,7 @@ import {
 
 import { AccessRequestDataTable } from "@/features/access-request/components/access-request-data-table";
 import { ArtAccessRequirementDataTable } from "@/features/art-access-requirement/components/art-access-requirement-data-table";
+import { CompletionValidationDataTable } from "@/features/completion-validation/components/completion-validation-data-table";
 import { useProjectStatusDialogStore } from "@/features/dashboard/stores/project-status-dialog-store";
 import {
   filterProjectsByStatus,
@@ -40,6 +41,9 @@ type ProjectOnUtilityInspectionRequest =
 
 type ProjectOnInstallationCompletion =
   RouterOutputs["installationCompletion"]["getProjects"][number];
+
+type ProjectOnCompletionValidation =
+  RouterOutputs["completionValidation"]["getProjects"][number];
 
 type ProjectOnTechnicalInspectionValidation =
   RouterOutputs["technicalInspectionValidation"]["getProjects"][number];
@@ -78,6 +82,11 @@ interface InstallationCompletionProjectStatusProjectsDialogProps extends Project
   source: "installationCompletion";
 }
 
+interface CompletionValidationProjectStatusProjectsDialogProps extends ProjectStatusProjectsDialogBaseProps {
+  projects: ProjectOnCompletionValidation[];
+  source: "completionValidation";
+}
+
 interface TechnicalInspectionValidationProjectStatusProjectsDialogProps extends ProjectStatusProjectsDialogBaseProps {
   projects: ProjectOnTechnicalInspectionValidation[];
   source: "technicalInspectionValidation";
@@ -90,6 +99,7 @@ type ProjectStatusProjectsDialogProps =
   | ArtAccessRequirementProjectStatusProjectsDialogProps
   | UtilityInspectionRequestProjectStatusProjectsDialogProps
   | InstallationCompletionProjectStatusProjectsDialogProps
+  | CompletionValidationProjectStatusProjectsDialogProps
   | TechnicalInspectionValidationProjectStatusProjectsDialogProps;
 
 function ProjectStatusProjectsDialogContent({
@@ -259,6 +269,28 @@ function InstallationCompletionProjectStatusProjectsDialog({
   );
 }
 
+function CompletionValidationProjectStatusProjectsDialog({
+  projects,
+  thresholds,
+}: CompletionValidationProjectStatusProjectsDialogProps) {
+  const { selectedStatus } = useProjectStatusDialogStore();
+
+  const filteredProjects =
+    selectedStatus === null
+      ? []
+      : filterProjectsByStatus(projects, thresholds, selectedStatus);
+
+  return (
+    <ProjectStatusProjectsDialogContent filteredProjects={filteredProjects}>
+      <CompletionValidationDataTable
+        data={filteredProjects}
+        pageSize={10}
+        thresholds={thresholds}
+      />
+    </ProjectStatusProjectsDialogContent>
+  );
+}
+
 function TechnicalInspectionValidationProjectStatusProjectsDialog({
   projects,
   thresholds,
@@ -302,6 +334,10 @@ export function ProjectStatusProjectsDialog(
 
   if (props.source === "installationCompletion") {
     return <InstallationCompletionProjectStatusProjectsDialog {...props} />;
+  }
+
+  if (props.source === "completionValidation") {
+    return <CompletionValidationProjectStatusProjectsDialog {...props} />;
   }
 
   if (props.source === "technicalInspectionValidation") {

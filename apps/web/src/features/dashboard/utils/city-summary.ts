@@ -3,6 +3,7 @@ import type {
   ProjectStatusThresholds,
   ProjectWithDiasEtapa,
 } from "@/features/dashboard/utils/project-status";
+import { isProjectSolicitado } from "@/features/dashboard/utils/solicitado";
 
 export interface CitySummaryRow {
   attention: number;
@@ -11,6 +12,7 @@ export interface CitySummaryRow {
   mediaDias: number;
   onTime: number;
   overdue: number;
+  solicitado: number;
   total: number;
 }
 
@@ -20,6 +22,7 @@ interface CityAccumulator {
   diasSum: number;
   onTime: number;
   overdue: number;
+  solicitado: number;
   total: number;
 }
 
@@ -30,6 +33,7 @@ function createEmptyAccumulator(): CityAccumulator {
     diasSum: 0,
     onTime: 0,
     overdue: 0,
+    solicitado: 0,
     total: 0,
   };
 }
@@ -58,9 +62,14 @@ function getCityLabel(
 export function getCitySummaryByOccurrence<
   T extends ProjectWithDiasEtapa & {
     cidadeInstalacao: string | null;
+    dataSolicitado?: string | null;
     estadoInstalacao?: string | null;
   },
->(projects: T[], thresholds: ProjectStatusThresholds): CitySummaryRow[] {
+>(
+  projects: T[],
+  thresholds: ProjectStatusThresholds,
+  options?: { includeSolicitado?: boolean }
+): CitySummaryRow[] {
   const byCity = new Map<string, CityAccumulator>();
 
   for (const project of projects) {
@@ -81,6 +90,13 @@ export function getCitySummaryByOccurrence<
       accumulator[status] += 1;
     }
 
+    if (
+      options?.includeSolicitado &&
+      isProjectSolicitado(project.dataSolicitado)
+    ) {
+      accumulator.solicitado += 1;
+    }
+
     byCity.set(cidade, accumulator);
   }
 
@@ -93,6 +109,7 @@ export function getCitySummaryByOccurrence<
         accumulator.total === 0 ? 0 : accumulator.diasSum / accumulator.total,
       onTime: accumulator.onTime,
       overdue: accumulator.overdue,
+      solicitado: accumulator.solicitado,
       total: accumulator.total,
     }))
     .toSorted((a, b) => {

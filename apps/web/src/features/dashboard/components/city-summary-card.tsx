@@ -12,6 +12,7 @@ import { useDashboardData } from "@/features/dashboard/hooks/use-dashboard-data"
 import { getCitySummaryByOccurrence } from "@/features/dashboard/utils/city-summary";
 import { showsSolicitadoInfo } from "@/features/dashboard/utils/dashboard-source";
 import type { DashboardSource } from "@/features/dashboard/utils/dashboard-source";
+import { usesRealSolicitadoData } from "@/features/dashboard/utils/dashboard-source";
 
 function CitySummaryCardSkeleton() {
   return (
@@ -42,7 +43,10 @@ export function CitySummaryCard({
     return <CitySummaryCardSkeleton />;
   }
 
-  const rows = getCitySummaryByOccurrence(projects, thresholds);
+  const includeSolicitado = usesRealSolicitadoData(source);
+  const rows = getCitySummaryByOccurrence(projects, thresholds, {
+    includeSolicitado,
+  });
 
   return (
     <Card>
@@ -56,6 +60,7 @@ export function CitySummaryCard({
         <CitySummaryTable
           data={rows}
           showSolicitado={showsSolicitadoInfo(source)}
+          useRealSolicitado={includeSolicitado}
         />
       </CardContent>
     </Card>

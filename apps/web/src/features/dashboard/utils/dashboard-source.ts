@@ -5,16 +5,28 @@ export type DashboardSource =
   | "artAccessRequirement"
   | "utilityInspectionRequest"
   | "installationCompletion"
+  | "completionValidation"
   | "technicalInspectionValidation";
 
 export const DASHBOARD_SOURCES_WITHOUT_SOLICITADO = [
   "installationCompletion",
+  "completionValidation",
   "technicalInspectionValidation",
 ] as const satisfies readonly DashboardSource[];
 
 export function showsSolicitadoInfo(source: DashboardSource): boolean {
   return !DASHBOARD_SOURCES_WITHOUT_SOLICITADO.includes(
     source as (typeof DASHBOARD_SOURCES_WITHOUT_SOLICITADO)[number]
+  );
+}
+
+export const DASHBOARD_SOURCES_WITH_REAL_SOLICITADO = [
+  "utilityInspectionRequest",
+] as const satisfies readonly DashboardSource[];
+
+export function usesRealSolicitadoData(source: DashboardSource): boolean {
+  return DASHBOARD_SOURCES_WITH_REAL_SOLICITADO.includes(
+    source as (typeof DASHBOARD_SOURCES_WITH_REAL_SOLICITADO)[number]
   );
 }
 
@@ -35,6 +47,13 @@ export const DASHBOARD_SOURCE_CONFIG = {
       "Projetos aguardando emissão de ART e requerimento de acesso",
     tableTitle:
       "Listagem de projetos (emissão de ART e requerimento de acesso)",
+  },
+  completionValidation: {
+    statusCardDescription:
+      "Resumo de projetos em andamento na etapa de validação da conclusão",
+    statusCardTitle: 'Resumo de projetos na etapa "Validação da conclusão"',
+    tableDescription: "Projetos aguardando validação da conclusão",
+    tableTitle: "Listagem de projetos (validação da conclusão)",
   },
   inspectionApproval: {
     statusCardDescription:

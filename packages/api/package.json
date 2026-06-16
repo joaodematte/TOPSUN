@@ -23,6 +23,9 @@
     "./features/art-access-requirement/schema": {
       "default": "./src/features/art-access-requirement/schema.ts"
     },
+    "./features/completion-validation/schema": {
+      "default": "./src/features/completion-validation/schema.ts"
+    },
     "./features/utility-inspection-request/schema": {
       "default": "./src/features/utility-inspection-request/schema.ts"
     },

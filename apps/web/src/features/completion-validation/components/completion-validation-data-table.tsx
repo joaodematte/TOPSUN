@@ -10,12 +10,12 @@ import { DataTable } from "@/shared/components/data-table";
 import { formatLocalizedDate } from "@/shared/utils/format-date";
 import { formatValue } from "@/shared/utils/format-value";
 
-type ProjectOnUtilityInspectionRequest =
-  RouterOutputs["utilityInspectionRequest"]["getProjects"][number];
+type ProjectOnCompletionValidation =
+  RouterOutputs["completionValidation"]["getProjects"][number];
 
-function createProjectsOnUtilityInspectionRequestColumns(
+function createProjectsOnCompletionValidationColumns(
   thresholds: ProjectStatusThresholds
-): ColumnDef<ProjectOnUtilityInspectionRequest>[] {
+): ColumnDef<ProjectOnCompletionValidation>[] {
   return [
     {
       accessorKey: "projeto",
@@ -43,20 +43,20 @@ function createProjectsOnUtilityInspectionRequestColumns(
       header: "Cidade",
     },
     {
-      accessorKey: "concessionaria",
-      cell: ({ getValue }) => {
-        const value = getValue<string>();
-        return formatValue(value);
-      },
-      header: "Concessionária",
-    },
-    {
       accessorKey: "representante",
       cell: ({ getValue }) => {
         const value = getValue<string>();
         return formatValue(value);
       },
       header: "Representante",
+    },
+    {
+      accessorKey: "instaladorNome",
+      cell: ({ getValue }) => {
+        const value = getValue<string>();
+        return formatValue(value);
+      },
+      header: "Instalador",
     },
     {
       accessorKey: "aprovacaoCredito",
@@ -67,12 +67,28 @@ function createProjectsOnUtilityInspectionRequestColumns(
       header: "Aprovação crédito",
     },
     {
-      accessorKey: "dataSolicitado",
+      accessorKey: "fechamentoVenda",
       cell: ({ getValue }) => {
         const value = getValue<string>();
         return formatLocalizedDate(value);
       },
-      header: "Data solicitado",
+      header: "Fechamento venda",
+    },
+    {
+      accessorKey: "aberturaEtapa",
+      cell: ({ getValue }) => {
+        const value = getValue<string>();
+        return formatLocalizedDate(value);
+      },
+      header: "Abertura etapa",
+    },
+    {
+      accessorKey: "conclusaoInstalacao",
+      cell: ({ getValue }) => {
+        const value = getValue<string>();
+        return formatLocalizedDate(value);
+      },
+      header: "Conclusão instalação",
     },
     {
       accessorKey: "diasEtapa",
@@ -106,20 +122,20 @@ function createProjectsOnUtilityInspectionRequestColumns(
   ];
 }
 
-interface UtilityInspectionRequestDataTableProps {
-  data: ProjectOnUtilityInspectionRequest[];
+interface CompletionValidationDataTableProps {
+  data: ProjectOnCompletionValidation[];
   pageSize?: number;
   thresholds: ProjectStatusThresholds;
 }
 
-export function UtilityInspectionRequestDataTable({
+export function CompletionValidationDataTable({
   data,
   pageSize = 15,
   thresholds,
-}: UtilityInspectionRequestDataTableProps) {
+}: CompletionValidationDataTableProps) {
   return (
     <DataTable
-      columns={createProjectsOnUtilityInspectionRequestColumns(thresholds)}
+      columns={createProjectsOnCompletionValidationColumns(thresholds)}
       data={data}
       pageSize={pageSize}
     />

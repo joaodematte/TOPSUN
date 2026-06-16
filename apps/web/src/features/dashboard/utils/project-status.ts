@@ -1,10 +1,15 @@
+import { isProjectSolicitado } from "@/features/dashboard/utils/solicitado";
+
 export type ProjectStatusCategory =
   | "onTime"
   | "attention"
   | "critical"
   | "overdue";
 
-export type ProjectStatusFilter = ProjectStatusCategory | "total";
+export type ProjectStatusFilter =
+  | ProjectStatusCategory
+  | "total"
+  | "solicitado";
 
 export const PROJECT_STATUS_FILTER_LABEL: Record<ProjectStatusFilter, string> =
   {
@@ -12,6 +17,7 @@ export const PROJECT_STATUS_FILTER_LABEL: Record<ProjectStatusFilter, string> =
     critical: "Caminho crítico",
     onTime: "No prazo",
     overdue: "Atrasados",
+    solicitado: "Solicitados",
     total: "Total",
   };
 
@@ -29,6 +35,7 @@ export interface ProjectWithDiasEtapa {
 export type DashboardProject = ProjectWithDiasEtapa & {
   cidadeInstalacao: string | null;
   concessionaria: string | null;
+  dataSolicitado?: string | null;
   estadoInstalacao?: string | null;
 };
 
@@ -105,6 +112,14 @@ export function filterProjectsByStatus<T extends ProjectWithDiasEtapa>(
 ): T[] {
   if (status === "total") {
     return projects;
+  }
+
+  if (status === "solicitado") {
+    return projects.filter((project) =>
+      isProjectSolicitado(
+        (project as T & { dataSolicitado?: string | null }).dataSolicitado
+      )
+    );
   }
 
   return projects.filter(

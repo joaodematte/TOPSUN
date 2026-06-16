@@ -10,6 +10,7 @@ import { Skeleton } from "@topsun/ui/components/skeleton";
 import { UtilitySummaryTable } from "@/features/dashboard/components/utility-summary-table";
 import { useDashboardData } from "@/features/dashboard/hooks/use-dashboard-data";
 import type { DashboardSource } from "@/features/dashboard/utils/dashboard-source";
+import { usesRealSolicitadoData } from "@/features/dashboard/utils/dashboard-source";
 import { getUtilitySummaryByConcessionaria } from "@/features/dashboard/utils/utility-summary";
 
 export function UtilitySummaryCardSkeleton() {
@@ -39,7 +40,10 @@ export function UtilitySummaryCard({
     return <UtilitySummaryCardSkeleton />;
   }
 
-  const rows = getUtilitySummaryByConcessionaria(projects, thresholds);
+  const includeSolicitado = usesRealSolicitadoData(source);
+  const rows = getUtilitySummaryByConcessionaria(projects, thresholds, {
+    includeSolicitado,
+  });
 
   return (
     <Card>
@@ -48,7 +52,10 @@ export function UtilitySummaryCard({
         <CardDescription>Resumo de projetos por concessionária</CardDescription>
       </CardHeader>
       <CardContent>
-        <UtilitySummaryTable data={rows} />
+        <UtilitySummaryTable
+          data={rows}
+          useRealSolicitado={includeSolicitado}
+        />
       </CardContent>
     </Card>
   );
