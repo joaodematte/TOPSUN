@@ -26,6 +26,12 @@
     "./features/utility-inspection-request/schema": {
       "default": "./src/features/utility-inspection-request/schema.ts"
     },
+    "./features/installation-completion/schema": {
+      "default": "./src/features/installation-completion/schema.ts"
+    },
+    "./features/technical-inspection-validation/schema": {
+      "default": "./src/features/technical-inspection-validation/schema.ts"
+    },
     "./*": {
       "default": "./src/*.ts"
     }

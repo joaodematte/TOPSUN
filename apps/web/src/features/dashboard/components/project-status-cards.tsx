@@ -24,11 +24,16 @@ import type {
   ProjectOnAccessRequest,
   ProjectOnArtAccessRequirement,
   ProjectOnInspectionApproval,
+  ProjectOnInstallationCompletion,
   ProjectOnRequestProtocol,
+  ProjectOnTechnicalInspectionValidation,
   ProjectOnUtilityInspectionRequest,
 } from "@/features/dashboard/hooks/use-dashboard-data";
 import { useProjectStatusDialogStore } from "@/features/dashboard/stores/project-status-dialog-store";
-import { DASHBOARD_SOURCE_CONFIG } from "@/features/dashboard/utils/dashboard-source";
+import {
+  DASHBOARD_SOURCE_CONFIG,
+  showsSolicitadoInfo,
+} from "@/features/dashboard/utils/dashboard-source";
 import type { DashboardSource } from "@/features/dashboard/utils/dashboard-source";
 import {
   getProjectStatusStats,
@@ -183,6 +188,26 @@ function ProjectStatusProjectsDialogBySource({
     );
   }
 
+  if (source === "installationCompletion") {
+    return (
+      <ProjectStatusProjectsDialog
+        projects={projects as unknown as ProjectOnInstallationCompletion}
+        source="installationCompletion"
+        thresholds={thresholds}
+      />
+    );
+  }
+
+  if (source === "technicalInspectionValidation") {
+    return (
+      <ProjectStatusProjectsDialog
+        projects={projects as unknown as ProjectOnTechnicalInspectionValidation}
+        source="technicalInspectionValidation"
+        thresholds={thresholds}
+      />
+    );
+  }
+
   return (
     <ProjectStatusProjectsDialog
       projects={projects as ProjectOnRequestProtocol}
@@ -244,14 +269,18 @@ export function ProjectStatusCards({
       onOpen: () => openDialog("overdue"),
       percentage: stats.overduePercentage,
     },
-    {
-      count: REQUESTED_MOCK.count,
-      icon: IconSendFilled,
-      iconClassName: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
-      label: "Solicitados",
-      onOpen: () => null,
-      percentage: REQUESTED_MOCK.percentage,
-    },
+    ...(showsSolicitadoInfo(source)
+      ? [
+          {
+            count: REQUESTED_MOCK.count,
+            icon: IconSendFilled,
+            iconClassName: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+            label: "Solicitados",
+            onOpen: () => null,
+            percentage: REQUESTED_MOCK.percentage,
+          } satisfies StatusCardConfig,
+        ]
+      : []),
   ];
 
   return (
@@ -266,7 +295,12 @@ export function ProjectStatusCards({
           source={source}
         />
       </CardHeader>
-      <CardContent className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-6">
+      <CardContent
+        className={cn(
+          "grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3",
+          statusCards.length === 6 ? "2xl:grid-cols-6" : "2xl:grid-cols-5"
+        )}
+      >
         {statusCards.map((card) => (
           <StatusCard key={card.label} {...card} />
         ))}

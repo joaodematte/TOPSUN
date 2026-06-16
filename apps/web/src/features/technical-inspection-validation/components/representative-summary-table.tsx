@@ -2,23 +2,21 @@
 
 import type { ColumnDef } from "@tanstack/react-table";
 
-import type { CitySummaryRow } from "@/features/dashboard/utils/city-summary";
-import { formatAverageDays } from "@/features/dashboard/utils/utility-summary";
+import { formatAverageDays } from "@/features/technical-inspection-validation/utils/representative-summary";
+import type { RepresentativeSummaryRow } from "@/features/technical-inspection-validation/utils/representative-summary";
 import { DataTable } from "@/shared/components/data-table";
 import { formatValue } from "@/shared/utils/format-value";
 
-const REQUESTED_MOCK = "—";
-
 const numericCellClassName = "block text-right tabular-nums";
 
-const baseCitySummaryColumns: ColumnDef<CitySummaryRow>[] = [
+const representativeSummaryColumns: ColumnDef<RepresentativeSummaryRow>[] = [
   {
-    accessorKey: "cidade",
+    accessorKey: "representante",
     cell: ({ getValue }) => {
       const value = getValue<string>();
       return <span className="font-medium">{formatValue(value)}</span>;
     },
-    header: "Cidade",
+    header: "Representante",
   },
   {
     accessorKey: "total",
@@ -60,38 +58,30 @@ const baseCitySummaryColumns: ColumnDef<CitySummaryRow>[] = [
     header: () => <div className="text-right">Atrasado</div>,
     size: 75,
   },
+  {
+    accessorKey: "mediaDias",
+    cell: ({ getValue }) => (
+      <span className={numericCellClassName}>
+        {formatAverageDays(getValue<number>())}
+      </span>
+    ),
+    header: () => <div className="text-right">Média Dias</div>,
+    size: 75,
+  },
 ];
 
-const solicitadoColumn: ColumnDef<CitySummaryRow> = {
-  cell: () => <span className={numericCellClassName}>{REQUESTED_MOCK}</span>,
-  header: () => <div className="text-right">Solicitado</div>,
-  id: "prSolicitado",
-  size: 75,
-};
-
-const mediaDiasColumn: ColumnDef<CitySummaryRow> = {
-  accessorKey: "mediaDias",
-  cell: ({ getValue }) => (
-    <span className={numericCellClassName}>
-      {formatAverageDays(getValue<number>())}
-    </span>
-  ),
-  header: () => <div className="text-right">Média dias</div>,
-  size: 75,
-};
-
-interface CitySummaryTableProps {
-  data: CitySummaryRow[];
-  showSolicitado?: boolean;
+interface RepresentativeSummaryTableProps {
+  data: RepresentativeSummaryRow[];
 }
 
-export function CitySummaryTable({
+export function RepresentativeSummaryTable({
   data,
-  showSolicitado = true,
-}: CitySummaryTableProps) {
-  const columns = showSolicitado
-    ? [...baseCitySummaryColumns, solicitadoColumn, mediaDiasColumn]
-    : [...baseCitySummaryColumns, mediaDiasColumn];
-
-  return <DataTable columns={columns} data={data} pageSize={5} />;
+}: RepresentativeSummaryTableProps) {
+  return (
+    <DataTable
+      columns={representativeSummaryColumns}
+      data={data}
+      pageSize={5}
+    />
+  );
 }

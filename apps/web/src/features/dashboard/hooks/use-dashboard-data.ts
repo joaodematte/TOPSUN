@@ -21,6 +21,12 @@ type ProjectOnArtAccessRequirement =
 type ProjectOnUtilityInspectionRequest =
   RouterOutputs["utilityInspectionRequest"]["getProjects"];
 
+type ProjectOnInstallationCompletion =
+  RouterOutputs["installationCompletion"]["getProjects"];
+
+type ProjectOnTechnicalInspectionValidation =
+  RouterOutputs["technicalInspectionValidation"]["getProjects"];
+
 interface DashboardDataResult {
   isLoading: boolean;
   projects: DashboardProject[] | undefined;
@@ -55,6 +61,16 @@ export function useDashboardData(source: DashboardSource): DashboardDataResult {
     enabled: source === "utilityInspectionRequest",
   });
 
+  const installationCompletionProjectsQuery = useQuery({
+    ...trpc.installationCompletion.getProjects.queryOptions(),
+    enabled: source === "installationCompletion",
+  });
+
+  const technicalInspectionValidationProjectsQuery = useQuery({
+    ...trpc.technicalInspectionValidation.getProjects.queryOptions(),
+    enabled: source === "technicalInspectionValidation",
+  });
+
   const requestProtocolThresholdsQuery = useQuery({
     ...trpc.requestProtocol.getStatusThresholds.queryOptions(),
     enabled: source === "requestProtocol",
@@ -78,6 +94,16 @@ export function useDashboardData(source: DashboardSource): DashboardDataResult {
   const utilityInspectionRequestThresholdsQuery = useQuery({
     ...trpc.utilityInspectionRequest.getStatusThresholds.queryOptions(),
     enabled: source === "utilityInspectionRequest",
+  });
+
+  const installationCompletionThresholdsQuery = useQuery({
+    ...trpc.installationCompletion.getStatusThresholds.queryOptions(),
+    enabled: source === "installationCompletion",
+  });
+
+  const technicalInspectionValidationThresholdsQuery = useQuery({
+    ...trpc.technicalInspectionValidation.getStatusThresholds.queryOptions(),
+    enabled: source === "technicalInspectionValidation",
   });
 
   if (source === "inspectionApproval") {
@@ -128,6 +154,30 @@ export function useDashboardData(source: DashboardSource): DashboardDataResult {
     };
   }
 
+  if (source === "installationCompletion") {
+    return {
+      isLoading:
+        installationCompletionProjectsQuery.isLoading ||
+        installationCompletionThresholdsQuery.isLoading,
+      projects: installationCompletionProjectsQuery.data as
+        | DashboardProject[]
+        | undefined,
+      thresholds: installationCompletionThresholdsQuery.data,
+    };
+  }
+
+  if (source === "technicalInspectionValidation") {
+    return {
+      isLoading:
+        technicalInspectionValidationProjectsQuery.isLoading ||
+        technicalInspectionValidationThresholdsQuery.isLoading,
+      projects: technicalInspectionValidationProjectsQuery.data as
+        | DashboardProject[]
+        | undefined,
+      thresholds: technicalInspectionValidationThresholdsQuery.data,
+    };
+  }
+
   return {
     isLoading:
       requestProtocolProjectsQuery.isLoading ||
@@ -143,6 +193,8 @@ export type {
   ProjectOnAccessRequest,
   ProjectOnArtAccessRequirement,
   ProjectOnInspectionApproval,
+  ProjectOnInstallationCompletion,
   ProjectOnRequestProtocol,
+  ProjectOnTechnicalInspectionValidation,
   ProjectOnUtilityInspectionRequest,
 };

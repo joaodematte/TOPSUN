@@ -3,7 +3,20 @@ export type DashboardSource =
   | "inspectionApproval"
   | "accessRequest"
   | "artAccessRequirement"
-  | "utilityInspectionRequest";
+  | "utilityInspectionRequest"
+  | "installationCompletion"
+  | "technicalInspectionValidation";
+
+export const DASHBOARD_SOURCES_WITHOUT_SOLICITADO = [
+  "installationCompletion",
+  "technicalInspectionValidation",
+] as const satisfies readonly DashboardSource[];
+
+export function showsSolicitadoInfo(source: DashboardSource): boolean {
+  return !DASHBOARD_SOURCES_WITHOUT_SOLICITADO.includes(
+    source as (typeof DASHBOARD_SOURCES_WITHOUT_SOLICITADO)[number]
+  );
+}
 
 export const DASHBOARD_SOURCE_CONFIG = {
   accessRequest: {
@@ -32,12 +45,27 @@ export const DASHBOARD_SOURCE_CONFIG = {
     tableTitle:
       "Listagem de projetos (aguardando aprovação de vistoria pela concessionária)",
   },
+  installationCompletion: {
+    statusCardDescription:
+      "Resumo de projetos em andamento na etapa de conclusão da instalação",
+    statusCardTitle: 'Resumo de projetos na etapa "Conclusão da instalação"',
+    tableDescription: "Projetos aguardando conclusão da instalação",
+    tableTitle: "Listagem de projetos (conclusão da instalação)",
+  },
   requestProtocol: {
     statusCardDescription:
       "Resumo de projetos em andamento na etapa de solicitação de protocolo",
     statusCardTitle: 'Resumo de projetos na etapa "Solicitação de protocolo"',
     tableDescription: "Projetos que ainda não solicitaram protocolo",
     tableTitle: "Listagem de projetos (sem protocolo solicitado)",
+  },
+  technicalInspectionValidation: {
+    statusCardDescription:
+      "Resumo de projetos em andamento na etapa de validação da vistoria técnica",
+    statusCardTitle:
+      'Resumo de projetos na etapa "Validação da vistoria técnica"',
+    tableDescription: "Projetos aguardando validação da vistoria técnica",
+    tableTitle: "Listagem de projetos (validação da vistoria técnica)",
   },
   utilityInspectionRequest: {
     statusCardDescription:

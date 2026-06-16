@@ -31,3 +31,13 @@ export {
   utilityInspectionRequestStatusThresholdsSchema,
   type UtilityInspectionRequestStatusThresholdsInput,
 } from "./features/utility-inspection-request/schema";
+
+export {
+  installationCompletionStatusThresholdsSchema,
+  type InstallationCompletionStatusThresholdsInput,
+} from "./features/installation-completion/schema";
+
+export {
+  technicalInspectionValidationStatusThresholdsSchema,
+  type TechnicalInspectionValidationStatusThresholdsInput,
+} from "./features/technical-inspection-validation/schema";

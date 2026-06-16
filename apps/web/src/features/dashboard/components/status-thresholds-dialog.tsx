@@ -8,8 +8,12 @@ import { artAccessRequirementStatusThresholdsSchema } from "@topsun/api/features
 import type { ArtAccessRequirementStatusThresholdsInput } from "@topsun/api/features/art-access-requirement/schema";
 import { inspectionApprovalStatusThresholdsSchema } from "@topsun/api/features/inspection-approval/schema";
 import type { InspectionApprovalStatusThresholdsInput } from "@topsun/api/features/inspection-approval/schema";
+import { installationCompletionStatusThresholdsSchema } from "@topsun/api/features/installation-completion/schema";
+import type { InstallationCompletionStatusThresholdsInput } from "@topsun/api/features/installation-completion/schema";
 import type { RequestProtocolStatusThresholdsInput } from "@topsun/api/features/request-protocol/schema";
 import { requestProtocolStatusThresholdsSchema } from "@topsun/api/features/request-protocol/schema";
+import { technicalInspectionValidationStatusThresholdsSchema } from "@topsun/api/features/technical-inspection-validation/schema";
+import type { TechnicalInspectionValidationStatusThresholdsInput } from "@topsun/api/features/technical-inspection-validation/schema";
 import { utilityInspectionRequestStatusThresholdsSchema } from "@topsun/api/features/utility-inspection-request/schema";
 import type { UtilityInspectionRequestStatusThresholdsInput } from "@topsun/api/features/utility-inspection-request/schema";
 import { Button } from "@topsun/ui/components/button";
@@ -44,7 +48,9 @@ type StatusThresholdsFormInput =
   | InspectionApprovalStatusThresholdsInput
   | AccessRequestStatusThresholdsInput
   | ArtAccessRequirementStatusThresholdsInput
-  | UtilityInspectionRequestStatusThresholdsInput;
+  | UtilityInspectionRequestStatusThresholdsInput
+  | InstallationCompletionStatusThresholdsInput
+  | TechnicalInspectionValidationStatusThresholdsInput;
 
 interface StatusThresholdsDialogProps {
   defaultValues: ProjectStatusThresholds;
@@ -68,6 +74,14 @@ function getSchemaForSource(source: DashboardSource) {
 
   if (source === "utilityInspectionRequest") {
     return utilityInspectionRequestStatusThresholdsSchema;
+  }
+
+  if (source === "installationCompletion") {
+    return installationCompletionStatusThresholdsSchema;
+  }
+
+  if (source === "technicalInspectionValidation") {
+    return technicalInspectionValidationStatusThresholdsSchema;
   }
 
   return requestProtocolStatusThresholdsSchema;
@@ -176,6 +190,40 @@ export function StatusThresholdsDialog({
     })
   );
 
+  const saveInstallationCompletionThresholds = useMutation(
+    trpc.installationCompletion.saveStatusThresholds.mutationOptions({
+      onError: (error) => {
+        toast.error(error.message);
+      },
+      onSuccess: async () => {
+        toast.success("Configurações atualizadas com sucesso");
+
+        await queryClient.invalidateQueries(
+          trpc.installationCompletion.getStatusThresholds.queryFilter()
+        );
+
+        onOpenChange(false);
+      },
+    })
+  );
+
+  const saveTechnicalInspectionValidationThresholds = useMutation(
+    trpc.technicalInspectionValidation.saveStatusThresholds.mutationOptions({
+      onError: (error) => {
+        toast.error(error.message);
+      },
+      onSuccess: async () => {
+        toast.success("Configurações atualizadas com sucesso");
+
+        await queryClient.invalidateQueries(
+          trpc.technicalInspectionValidation.getStatusThresholds.queryFilter()
+        );
+
+        onOpenChange(false);
+      },
+    })
+  );
+
   function getSaveThresholdsMutation() {
     if (source === "inspectionApproval") {
       return saveInspectionApprovalThresholds;
@@ -191,6 +239,14 @@ export function StatusThresholdsDialog({
 
     if (source === "utilityInspectionRequest") {
       return saveUtilityInspectionRequestThresholds;
+    }
+
+    if (source === "installationCompletion") {
+      return saveInstallationCompletionThresholds;
+    }
+
+    if (source === "technicalInspectionValidation") {
+      return saveTechnicalInspectionValidationThresholds;
     }
 
     return saveRequestProtocolThresholds;

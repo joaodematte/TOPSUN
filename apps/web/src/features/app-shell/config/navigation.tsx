@@ -1,8 +1,10 @@
 import {
+  IconClipboardCheck,
   IconFileCertificate,
   IconKey,
   IconReportSearch,
   IconTicket,
+  IconTools,
   IconZoom,
 } from "@tabler/icons-react";
 
@@ -39,5 +41,15 @@ export const SIDEBAR_ITEMS: SidebarItem[] = [
     href: "/utility-inspection-request",
     icon: <IconReportSearch />,
     title: "Solicitação de vistoria pela concessionária",
+  },
+  {
+    href: "/installation-completion",
+    icon: <IconTools />,
+    title: "Conclusão da instalação",
+  },
+  {
+    href: "/technical-inspection-validation",
+    icon: <IconClipboardCheck />,
+    title: "Validação da vistoria técnica",
   },
 ];

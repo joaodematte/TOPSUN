@@ -18,7 +18,9 @@ import {
 } from "@/features/dashboard/utils/project-status";
 import type { ProjectStatusThresholds } from "@/features/dashboard/utils/project-status";
 import { InspectionApprovalDataTable } from "@/features/inspection-approval/components/inspection-approval-data-table";
+import { InstallationCompletionDataTable } from "@/features/installation-completion/components/installation-completion-data-table";
 import { RequestProtocolDataTable } from "@/features/request-protocol/components/request-protocol-data-table";
+import { TechnicalInspectionValidationDataTable } from "@/features/technical-inspection-validation/components/technical-inspection-validation-data-table";
 import { UtilityInspectionRequestDataTable } from "@/features/utility-inspection-request/components/utility-inspection-request-data-table";
 
 type ProjectOnRequestProtocol =
@@ -35,6 +37,12 @@ type ProjectOnArtAccessRequirement =
 
 type ProjectOnUtilityInspectionRequest =
   RouterOutputs["utilityInspectionRequest"]["getProjects"][number];
+
+type ProjectOnInstallationCompletion =
+  RouterOutputs["installationCompletion"]["getProjects"][number];
+
+type ProjectOnTechnicalInspectionValidation =
+  RouterOutputs["technicalInspectionValidation"]["getProjects"][number];
 
 interface ProjectStatusProjectsDialogBaseProps {
   thresholds: ProjectStatusThresholds;
@@ -65,12 +73,24 @@ interface UtilityInspectionRequestProjectStatusProjectsDialogProps extends Proje
   source: "utilityInspectionRequest";
 }
 
+interface InstallationCompletionProjectStatusProjectsDialogProps extends ProjectStatusProjectsDialogBaseProps {
+  projects: ProjectOnInstallationCompletion[];
+  source: "installationCompletion";
+}
+
+interface TechnicalInspectionValidationProjectStatusProjectsDialogProps extends ProjectStatusProjectsDialogBaseProps {
+  projects: ProjectOnTechnicalInspectionValidation[];
+  source: "technicalInspectionValidation";
+}
+
 type ProjectStatusProjectsDialogProps =
   | RequestProtocolProjectStatusProjectsDialogProps
   | InspectionApprovalProjectStatusProjectsDialogProps
   | AccessRequestProjectStatusProjectsDialogProps
   | ArtAccessRequirementProjectStatusProjectsDialogProps
-  | UtilityInspectionRequestProjectStatusProjectsDialogProps;
+  | UtilityInspectionRequestProjectStatusProjectsDialogProps
+  | InstallationCompletionProjectStatusProjectsDialogProps
+  | TechnicalInspectionValidationProjectStatusProjectsDialogProps;
 
 function ProjectStatusProjectsDialogContent({
   children,
@@ -217,6 +237,50 @@ function UtilityInspectionRequestProjectStatusProjectsDialog({
   );
 }
 
+function InstallationCompletionProjectStatusProjectsDialog({
+  projects,
+  thresholds,
+}: InstallationCompletionProjectStatusProjectsDialogProps) {
+  const { selectedStatus } = useProjectStatusDialogStore();
+
+  const filteredProjects =
+    selectedStatus === null
+      ? []
+      : filterProjectsByStatus(projects, thresholds, selectedStatus);
+
+  return (
+    <ProjectStatusProjectsDialogContent filteredProjects={filteredProjects}>
+      <InstallationCompletionDataTable
+        data={filteredProjects}
+        pageSize={10}
+        thresholds={thresholds}
+      />
+    </ProjectStatusProjectsDialogContent>
+  );
+}
+
+function TechnicalInspectionValidationProjectStatusProjectsDialog({
+  projects,
+  thresholds,
+}: TechnicalInspectionValidationProjectStatusProjectsDialogProps) {
+  const { selectedStatus } = useProjectStatusDialogStore();
+
+  const filteredProjects =
+    selectedStatus === null
+      ? []
+      : filterProjectsByStatus(projects, thresholds, selectedStatus);
+
+  return (
+    <ProjectStatusProjectsDialogContent filteredProjects={filteredProjects}>
+      <TechnicalInspectionValidationDataTable
+        data={filteredProjects}
+        pageSize={10}
+        thresholds={thresholds}
+      />
+    </ProjectStatusProjectsDialogContent>
+  );
+}
+
 export function ProjectStatusProjectsDialog(
   props: ProjectStatusProjectsDialogProps
 ) {
@@ -234,6 +298,16 @@ export function ProjectStatusProjectsDialog(
 
   if (props.source === "utilityInspectionRequest") {
     return <UtilityInspectionRequestProjectStatusProjectsDialog {...props} />;
+  }
+
+  if (props.source === "installationCompletion") {
+    return <InstallationCompletionProjectStatusProjectsDialog {...props} />;
+  }
+
+  if (props.source === "technicalInspectionValidation") {
+    return (
+      <TechnicalInspectionValidationProjectStatusProjectsDialog {...props} />
+    );
   }
 
   return <RequestProtocolProjectStatusProjectsDialog {...props} />;

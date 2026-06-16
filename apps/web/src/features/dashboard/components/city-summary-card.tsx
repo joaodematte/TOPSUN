@@ -10,6 +10,7 @@ import { Skeleton } from "@topsun/ui/components/skeleton";
 import { CitySummaryTable } from "@/features/dashboard/components/city-summary-table";
 import { useDashboardData } from "@/features/dashboard/hooks/use-dashboard-data";
 import { getCitySummaryByOccurrence } from "@/features/dashboard/utils/city-summary";
+import { showsSolicitadoInfo } from "@/features/dashboard/utils/dashboard-source";
 import type { DashboardSource } from "@/features/dashboard/utils/dashboard-source";
 
 function CitySummaryCardSkeleton() {
@@ -52,7 +53,10 @@ export function CitySummaryCard({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <CitySummaryTable data={rows} />
+        <CitySummaryTable
+          data={rows}
+          showSolicitado={showsSolicitadoInfo(source)}
+        />
       </CardContent>
     </Card>
   );

@@ -29,6 +29,20 @@
       "when": 1781554865181,
       "tag": "0003_utility_inspection_request_status_thresholds",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1781558465181,
+      "tag": "0004_installation_completion_status_thresholds",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1781562065181,
+      "tag": "0005_technical_inspection_validation_status_thresholds",
+      "breakpoints": true
     }
   ]
 }
