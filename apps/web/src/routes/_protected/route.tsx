@@ -16,6 +16,7 @@ export const Route = createFileRoute("/_protected")({
     return { userId };
   },
   component: RouteComponent,
+  ssr: "data-only",
 });
 
 function RouteComponent() {
