@@ -5,6 +5,16 @@ services:
       dockerfile: apps/server/Dockerfile
     env_file:
       - .env
+    environment:
+      AUTOMATION_OUTPUT_DIR: /app/automation-runs
+      CHROME_PATH: /usr/bin/chromium
+      HOSTNAME: 0.0.0.0
     ports:
       - "8024:${PORT}"
     restart: unless-stopped
+    shm_size: "1gb"
+    volumes:
+      - automation-runs:/app/automation-runs
+
+volumes:
+  automation-runs:

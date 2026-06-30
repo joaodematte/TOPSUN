@@ -1,3 +1,4 @@
+import { mkdir } from "node:fs/promises";
 import path from "node:path";
 
 import {
@@ -11,9 +12,24 @@ import * as automationRepository from "./repository";
 
 const runningKinds = new Set<AutomationKind>();
 
+function getAutomationBaseDir() {
+  const configured = process.env.AUTOMATION_OUTPUT_DIR?.trim();
+
+  if (configured) {
+    return path.resolve(configured);
+  }
+
+  return path.resolve(process.cwd(), "automation-runs");
+}
+
 function getOutputDir(runId: string) {
-  const baseDir = process.env.AUTOMATION_OUTPUT_DIR ?? "./automation-runs";
-  return path.join(baseDir, runId);
+  return path.join(getAutomationBaseDir(), runId);
+}
+
+async function ensureOutputDir(runId: string) {
+  const outputDir = getOutputDir(runId);
+  await mkdir(outputDir, { recursive: true });
+  return outputDir;
 }
 
 const PERSISTED_LOG_LEVELS = new Set(["step", "success", "error"]);
@@ -34,8 +50,8 @@ async function handleProgress(runId: string, event: AutomationProgressEvent) {
   }
 }
 
-function executeAutomation(kind: AutomationKind, runId: string) {
-  const outputDir = getOutputDir(runId);
+async function executeAutomation(kind: AutomationKind, runId: string) {
+  const outputDir = await ensureOutputDir(runId);
   const headless = process.env.AUTOMATION_HEADLESS !== "false";
   const onProgress = (event: AutomationProgressEvent) =>
     handleProgress(runId, event);
