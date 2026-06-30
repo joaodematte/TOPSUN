@@ -43,6 +43,7 @@ interface ScrapedProtocolEntry {
 }
 
 interface OpenProjectWithProtocol {
+  dataRetorno: string;
   idColeta: number | null;
   nomeCliente: string | null;
   numeroProtocolo: string;
@@ -169,14 +170,16 @@ async function getEmails(
   );
 }
 
-async function fillRequestProtocolModal(page: Page, numeroProtocolo: string) {
+async function fillRequestProtocolModal(
+  page: Page,
+  numeroProtocolo: string,
+  dataRetorno: string
+) {
   const dataEtapa = page.locator(TOPSUN_SELECTORS.dataEtapa);
-  const dataInputValue = await dataEtapa.inputValue();
-  const dataValue = dataInputValue.trim();
+  const dataValue =
+    dataRetorno.trim() || new Intl.DateTimeFormat("pt-BR").format(new Date());
 
-  if (!dataValue) {
-    throw new Error("SEM DATA PREENCHIDA");
-  }
+  await dataEtapa.fill(dataValue);
 
   const numeroProtocoloInput = page.locator(TOPSUN_SELECTORS.numeroProtocolo);
   const currentNumeroProtocolo = await numeroProtocoloInput.inputValue();
@@ -225,7 +228,11 @@ async function runCloseEtapaAttempt(
     await waitForColetaFiltroToLoad(page);
     await selectProject(page, project.idColeta);
     await openRequestProtocolModal(page);
-    await fillRequestProtocolModal(page, project.numeroProtocolo);
+    await fillRequestProtocolModal(
+      page,
+      project.numeroProtocolo,
+      project.dataRetorno
+    );
     await saveRequestProtocolStep(page);
 
     await onProgress?.({
@@ -234,13 +241,11 @@ async function runCloseEtapaAttempt(
     });
 
     return true;
-  } catch (error) {
-    if (!(error instanceof Error && error.message === "SEM DATA PREENCHIDA")) {
-      await onProgress?.({
-        level: "error",
-        message: `Erro ao fechar etapa na Topsun: ${project.idColeta} - ${project.nomeCliente}`,
-      });
-    }
+  } catch {
+    await onProgress?.({
+      level: "error",
+      message: `Erro ao fechar etapa na Topsun: ${project.idColeta} - ${project.nomeCliente}`,
+    });
 
     return false;
   } finally {
@@ -405,6 +410,7 @@ export async function runValidateProtocolReturn(
 
       return {
         ...openProject,
+        dataRetorno: protocolEntry.dataEmail,
         numeroProtocolo: protocolEntry.numeroProtocolo,
       };
     });
