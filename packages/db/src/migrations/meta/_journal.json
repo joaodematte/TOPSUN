@@ -50,6 +50,20 @@
       "when": 1781565665181,
       "tag": "0006_completion_validation_status_thresholds",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1781569265181,
+      "tag": "0007_summary_thresholds",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1781572865181,
+      "tag": "0008_automation",
+      "breakpoints": true
     }
   ]
 }

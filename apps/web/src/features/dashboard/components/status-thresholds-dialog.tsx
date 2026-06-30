@@ -2,22 +2,8 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { accessRequestStatusThresholdsSchema } from "@topsun/api/features/access-request/schema";
-import type { AccessRequestStatusThresholdsInput } from "@topsun/api/features/access-request/schema";
-import { artAccessRequirementStatusThresholdsSchema } from "@topsun/api/features/art-access-requirement/schema";
-import type { ArtAccessRequirementStatusThresholdsInput } from "@topsun/api/features/art-access-requirement/schema";
-import { completionValidationStatusThresholdsSchema } from "@topsun/api/features/completion-validation/schema";
-import type { CompletionValidationStatusThresholdsInput } from "@topsun/api/features/completion-validation/schema";
-import { inspectionApprovalStatusThresholdsSchema } from "@topsun/api/features/inspection-approval/schema";
-import type { InspectionApprovalStatusThresholdsInput } from "@topsun/api/features/inspection-approval/schema";
-import { installationCompletionStatusThresholdsSchema } from "@topsun/api/features/installation-completion/schema";
-import type { InstallationCompletionStatusThresholdsInput } from "@topsun/api/features/installation-completion/schema";
-import type { RequestProtocolStatusThresholdsInput } from "@topsun/api/features/request-protocol/schema";
-import { requestProtocolStatusThresholdsSchema } from "@topsun/api/features/request-protocol/schema";
-import { technicalInspectionValidationStatusThresholdsSchema } from "@topsun/api/features/technical-inspection-validation/schema";
-import type { TechnicalInspectionValidationStatusThresholdsInput } from "@topsun/api/features/technical-inspection-validation/schema";
-import { utilityInspectionRequestStatusThresholdsSchema } from "@topsun/api/features/utility-inspection-request/schema";
-import type { UtilityInspectionRequestStatusThresholdsInput } from "@topsun/api/features/utility-inspection-request/schema";
+import { statusThresholdsSchema } from "@topsun/api/features/shared/status-thresholds.schema";
+import type { StatusThresholdsInput } from "@topsun/api/features/shared/status-thresholds.schema";
 import { Button } from "@topsun/ui/components/button";
 import {
   Dialog,
@@ -45,16 +31,6 @@ import type { DashboardSource } from "@/features/dashboard/utils/dashboard-sourc
 import type { ProjectStatusThresholds } from "@/features/dashboard/utils/project-status";
 import { useTRPC } from "@/features/platform/api/trpc";
 
-type StatusThresholdsFormInput =
-  | RequestProtocolStatusThresholdsInput
-  | InspectionApprovalStatusThresholdsInput
-  | AccessRequestStatusThresholdsInput
-  | ArtAccessRequirementStatusThresholdsInput
-  | UtilityInspectionRequestStatusThresholdsInput
-  | InstallationCompletionStatusThresholdsInput
-  | CompletionValidationStatusThresholdsInput
-  | TechnicalInspectionValidationStatusThresholdsInput;
-
 interface StatusThresholdsDialogProps {
   defaultValues: ProjectStatusThresholds;
   onOpenChange: (open: boolean) => void;
@@ -62,36 +38,95 @@ interface StatusThresholdsDialogProps {
   source?: DashboardSource;
 }
 
-function getSchemaForSource(source: DashboardSource) {
-  if (source === "inspectionApproval") {
-    return inspectionApprovalStatusThresholdsSchema;
+function useSaveThresholdsMutations(onOpenChange: (open: boolean) => void) {
+  const trpc = useTRPC();
+  const queryClient = useQueryClient();
+
+  function createMutationOptions(
+    getMutationOptions: (
+      options: Parameters<
+        typeof trpc.requestProtocol.saveStatusThresholds.mutationOptions
+      >[0]
+    ) => ReturnType<
+      typeof trpc.requestProtocol.saveStatusThresholds.mutationOptions
+    >,
+    invalidateFilter: ReturnType<
+      typeof trpc.requestProtocol.getStatusThresholds.queryFilter
+    >
+  ) {
+    return getMutationOptions({
+      onError: (error) => {
+        toast.error(error.message);
+      },
+      onSuccess: async () => {
+        toast.success("Configurações atualizadas com sucesso");
+
+        await queryClient.invalidateQueries(invalidateFilter);
+
+        onOpenChange(false);
+      },
+    });
   }
 
-  if (source === "accessRequest") {
-    return accessRequestStatusThresholdsSchema;
-  }
+  const requestProtocol = useMutation(
+    createMutationOptions(
+      trpc.requestProtocol.saveStatusThresholds.mutationOptions,
+      trpc.requestProtocol.getStatusThresholds.queryFilter()
+    )
+  );
+  const inspectionApproval = useMutation(
+    createMutationOptions(
+      trpc.inspectionApproval.saveStatusThresholds.mutationOptions,
+      trpc.inspectionApproval.getStatusThresholds.queryFilter()
+    )
+  );
+  const accessRequest = useMutation(
+    createMutationOptions(
+      trpc.accessRequest.saveStatusThresholds.mutationOptions,
+      trpc.accessRequest.getStatusThresholds.queryFilter()
+    )
+  );
+  const artAccessRequirement = useMutation(
+    createMutationOptions(
+      trpc.artAccessRequirement.saveStatusThresholds.mutationOptions,
+      trpc.artAccessRequirement.getStatusThresholds.queryFilter()
+    )
+  );
+  const utilityInspectionRequest = useMutation(
+    createMutationOptions(
+      trpc.utilityInspectionRequest.saveStatusThresholds.mutationOptions,
+      trpc.utilityInspectionRequest.getStatusThresholds.queryFilter()
+    )
+  );
+  const installationCompletion = useMutation(
+    createMutationOptions(
+      trpc.installationCompletion.saveStatusThresholds.mutationOptions,
+      trpc.installationCompletion.getStatusThresholds.queryFilter()
+    )
+  );
+  const completionValidation = useMutation(
+    createMutationOptions(
+      trpc.completionValidation.saveStatusThresholds.mutationOptions,
+      trpc.completionValidation.getStatusThresholds.queryFilter()
+    )
+  );
+  const technicalInspectionValidation = useMutation(
+    createMutationOptions(
+      trpc.technicalInspectionValidation.saveStatusThresholds.mutationOptions,
+      trpc.technicalInspectionValidation.getStatusThresholds.queryFilter()
+    )
+  );
 
-  if (source === "artAccessRequirement") {
-    return artAccessRequirementStatusThresholdsSchema;
-  }
-
-  if (source === "utilityInspectionRequest") {
-    return utilityInspectionRequestStatusThresholdsSchema;
-  }
-
-  if (source === "installationCompletion") {
-    return installationCompletionStatusThresholdsSchema;
-  }
-
-  if (source === "completionValidation") {
-    return completionValidationStatusThresholdsSchema;
-  }
-
-  if (source === "technicalInspectionValidation") {
-    return technicalInspectionValidationStatusThresholdsSchema;
-  }
-
-  return requestProtocolStatusThresholdsSchema;
+  return {
+    accessRequest,
+    artAccessRequirement,
+    completionValidation,
+    inspectionApproval,
+    installationCompletion,
+    requestProtocol,
+    technicalInspectionValidation,
+    utilityInspectionRequest,
+  };
 }
 
 export function StatusThresholdsDialog({
@@ -104,183 +139,13 @@ export function StatusThresholdsDialog({
   const onTimeId = useId();
   const attentionId = useId();
   const criticalId = useId();
-  const trpc = useTRPC();
-  const queryClient = useQueryClient();
+  const saveMutations = useSaveThresholdsMutations(onOpenChange);
+  const saveThresholds = saveMutations[source];
 
-  const form = useForm<StatusThresholdsFormInput>({
+  const form = useForm<StatusThresholdsInput>({
     defaultValues,
-    resolver: zodResolver(getSchemaForSource(source)),
+    resolver: zodResolver(statusThresholdsSchema),
   });
-
-  const saveRequestProtocolThresholds = useMutation(
-    trpc.requestProtocol.saveStatusThresholds.mutationOptions({
-      onError: (error) => {
-        toast.error(error.message);
-      },
-      onSuccess: async () => {
-        toast.success("Configurações atualizadas com sucesso");
-
-        await queryClient.invalidateQueries(
-          trpc.requestProtocol.getStatusThresholds.queryFilter()
-        );
-
-        onOpenChange(false);
-      },
-    })
-  );
-
-  const saveInspectionApprovalThresholds = useMutation(
-    trpc.inspectionApproval.saveStatusThresholds.mutationOptions({
-      onError: (error) => {
-        toast.error(error.message);
-      },
-      onSuccess: async () => {
-        toast.success("Configurações atualizadas com sucesso");
-
-        await queryClient.invalidateQueries(
-          trpc.inspectionApproval.getStatusThresholds.queryFilter()
-        );
-
-        onOpenChange(false);
-      },
-    })
-  );
-
-  const saveAccessRequestThresholds = useMutation(
-    trpc.accessRequest.saveStatusThresholds.mutationOptions({
-      onError: (error) => {
-        toast.error(error.message);
-      },
-      onSuccess: async () => {
-        toast.success("Configurações atualizadas com sucesso");
-
-        await queryClient.invalidateQueries(
-          trpc.accessRequest.getStatusThresholds.queryFilter()
-        );
-
-        onOpenChange(false);
-      },
-    })
-  );
-
-  const saveArtAccessRequirementThresholds = useMutation(
-    trpc.artAccessRequirement.saveStatusThresholds.mutationOptions({
-      onError: (error) => {
-        toast.error(error.message);
-      },
-      onSuccess: async () => {
-        toast.success("Configurações atualizadas com sucesso");
-
-        await queryClient.invalidateQueries(
-          trpc.artAccessRequirement.getStatusThresholds.queryFilter()
-        );
-
-        onOpenChange(false);
-      },
-    })
-  );
-
-  const saveUtilityInspectionRequestThresholds = useMutation(
-    trpc.utilityInspectionRequest.saveStatusThresholds.mutationOptions({
-      onError: (error) => {
-        toast.error(error.message);
-      },
-      onSuccess: async () => {
-        toast.success("Configurações atualizadas com sucesso");
-
-        await queryClient.invalidateQueries(
-          trpc.utilityInspectionRequest.getStatusThresholds.queryFilter()
-        );
-
-        onOpenChange(false);
-      },
-    })
-  );
-
-  const saveInstallationCompletionThresholds = useMutation(
-    trpc.installationCompletion.saveStatusThresholds.mutationOptions({
-      onError: (error) => {
-        toast.error(error.message);
-      },
-      onSuccess: async () => {
-        toast.success("Configurações atualizadas com sucesso");
-
-        await queryClient.invalidateQueries(
-          trpc.installationCompletion.getStatusThresholds.queryFilter()
-        );
-
-        onOpenChange(false);
-      },
-    })
-  );
-
-  const saveCompletionValidationThresholds = useMutation(
-    trpc.completionValidation.saveStatusThresholds.mutationOptions({
-      onError: (error) => {
-        toast.error(error.message);
-      },
-      onSuccess: async () => {
-        toast.success("Configurações atualizadas com sucesso");
-
-        await queryClient.invalidateQueries(
-          trpc.completionValidation.getStatusThresholds.queryFilter()
-        );
-
-        onOpenChange(false);
-      },
-    })
-  );
-
-  const saveTechnicalInspectionValidationThresholds = useMutation(
-    trpc.technicalInspectionValidation.saveStatusThresholds.mutationOptions({
-      onError: (error) => {
-        toast.error(error.message);
-      },
-      onSuccess: async () => {
-        toast.success("Configurações atualizadas com sucesso");
-
-        await queryClient.invalidateQueries(
-          trpc.technicalInspectionValidation.getStatusThresholds.queryFilter()
-        );
-
-        onOpenChange(false);
-      },
-    })
-  );
-
-  function getSaveThresholdsMutation() {
-    if (source === "inspectionApproval") {
-      return saveInspectionApprovalThresholds;
-    }
-
-    if (source === "accessRequest") {
-      return saveAccessRequestThresholds;
-    }
-
-    if (source === "artAccessRequirement") {
-      return saveArtAccessRequirementThresholds;
-    }
-
-    if (source === "utilityInspectionRequest") {
-      return saveUtilityInspectionRequestThresholds;
-    }
-
-    if (source === "installationCompletion") {
-      return saveInstallationCompletionThresholds;
-    }
-
-    if (source === "completionValidation") {
-      return saveCompletionValidationThresholds;
-    }
-
-    if (source === "technicalInspectionValidation") {
-      return saveTechnicalInspectionValidationThresholds;
-    }
-
-    return saveRequestProtocolThresholds;
-  }
-
-  const saveThresholds = getSaveThresholdsMutation();
 
   useEffect(() => {
     if (open) {
@@ -288,7 +153,7 @@ export function StatusThresholdsDialog({
     }
   }, [defaultValues, form, open]);
 
-  function onSubmit(data: StatusThresholdsFormInput) {
+  function onSubmit(data: StatusThresholdsInput) {
     saveThresholds.mutate(data);
   }
 

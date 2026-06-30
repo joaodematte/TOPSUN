@@ -1,9 +1,4 @@
-import { postgresDb, topsunDb } from "@topsun/db";
-import {
-  TECHNICAL_INSPECTION_VALIDATION_STATUS_THRESHOLDS_ID,
-  technicalInspectionValidationStatusThresholds,
-} from "@topsun/db/schema/postgres";
-import type { TechnicalInspectionValidationStatusThresholds } from "@topsun/db/schema/postgres";
+import { topsunDb } from "@topsun/db";
 import {
   clientes,
   coletaDados,
@@ -14,8 +9,11 @@ import { and, eq, isNotNull, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/mysql-core";
 
 import { orderProjectsByDiasEtapaThenId } from "../shared/project-list-order";
-import { DEFAULT_STATUS_THRESHOLDS } from "../shared/status-thresholds.constants";
 import type { StatusThresholds } from "../shared/status-thresholds.constants";
+import {
+  getStatusThresholdsByKind,
+  upsertStatusThresholdsByKind,
+} from "../shared/summary-thresholds.repository";
 
 const e38 = alias(etapas, "e38");
 const e13 = alias(etapas, "e13");
@@ -67,44 +65,15 @@ export function listTechnicalInspectionValidationProjects() {
     .orderBy(...orderProjectsByDiasEtapaThenId(diasEtapa));
 }
 
-export async function getTechnicalInspectionValidationStatusThresholds(): Promise<StatusThresholds> {
-  const [row] = await postgresDb
-    .select({
-      attention: technicalInspectionValidationStatusThresholds.attention,
-      critical: technicalInspectionValidationStatusThresholds.critical,
-      onTime: technicalInspectionValidationStatusThresholds.onTime,
-    })
-    .from(technicalInspectionValidationStatusThresholds)
-    .limit(1);
-
-  return row ?? DEFAULT_STATUS_THRESHOLDS;
+export function getTechnicalInspectionValidationStatusThresholds(): Promise<StatusThresholds> {
+  return getStatusThresholdsByKind("technical_inspection_validation");
 }
 
-export async function upsertTechnicalInspectionValidationStatusThresholds(
-  values: Pick<
-    TechnicalInspectionValidationStatusThresholds,
-    "attention" | "critical" | "onTime"
-  >
+export function upsertTechnicalInspectionValidationStatusThresholds(
+  values: StatusThresholds
 ) {
-  const [row] = await postgresDb
-    .insert(technicalInspectionValidationStatusThresholds)
-    .values({
-      id: TECHNICAL_INSPECTION_VALIDATION_STATUS_THRESHOLDS_ID,
-      ...values,
-    })
-    .onConflictDoUpdate({
-      set: {
-        attention: values.attention,
-        critical: values.critical,
-        onTime: values.onTime,
-      },
-      target: technicalInspectionValidationStatusThresholds.id,
-    })
-    .returning({
-      attention: technicalInspectionValidationStatusThresholds.attention,
-      critical: technicalInspectionValidationStatusThresholds.critical,
-      onTime: technicalInspectionValidationStatusThresholds.onTime,
-    });
-
-  return row;
+  return upsertStatusThresholdsByKind(
+    "technical_inspection_validation",
+    values
+  );
 }

@@ -35,6 +35,9 @@
     "./features/technical-inspection-validation/schema": {
       "default": "./src/features/technical-inspection-validation/schema.ts"
     },
+    "./features/shared/status-thresholds.schema": {
+      "default": "./src/features/shared/status-thresholds.schema.ts"
+    },
     "./*": {
       "default": "./src/*.ts"
     }
@@ -44,6 +47,7 @@
   },
   "dependencies": {
     "@clerk/backend": "^3.7.0",
+    "@topsun/automation": "workspace:*",
     "@topsun/db": "workspace:*",
     "@trpc/client": "catalog:",
     "@trpc/server": "catalog:",

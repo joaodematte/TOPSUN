@@ -1,9 +1,4 @@
-import { postgresDb, topsunDb } from "@topsun/db";
-import {
-  UTILITY_INSPECTION_REQUEST_STATUS_THRESHOLDS_ID,
-  utilityInspectionRequestStatusThresholds,
-} from "@topsun/db/schema/postgres";
-import type { UtilityInspectionRequestStatusThresholds } from "@topsun/db/schema/postgres";
+import { topsunDb } from "@topsun/db";
 import {
   clientes,
   coletaDados,
@@ -14,8 +9,11 @@ import { and, eq, isNotNull, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/mysql-core";
 
 import { orderProjectsByDiasEtapaThenId } from "../shared/project-list-order";
-import { DEFAULT_STATUS_THRESHOLDS } from "../shared/status-thresholds.constants";
 import type { StatusThresholds } from "../shared/status-thresholds.constants";
+import {
+  getStatusThresholdsByKind,
+  upsertStatusThresholdsByKind,
+} from "../shared/summary-thresholds.repository";
 
 const etapaVistoria = alias(etapas, "etapa_vistoria");
 const etapaCredito = alias(etapas, "etapa_credito");
@@ -66,41 +64,12 @@ export function listUtilityInspectionRequestProjects() {
     .orderBy(...orderProjectsByDiasEtapaThenId(diasEtapa));
 }
 
-export async function getUtilityInspectionRequestStatusThresholds(): Promise<StatusThresholds> {
-  const [row] = await postgresDb
-    .select({
-      attention: utilityInspectionRequestStatusThresholds.attention,
-      critical: utilityInspectionRequestStatusThresholds.critical,
-      onTime: utilityInspectionRequestStatusThresholds.onTime,
-    })
-    .from(utilityInspectionRequestStatusThresholds)
-    .limit(1);
-
-  return row ?? DEFAULT_STATUS_THRESHOLDS;
+export function getUtilityInspectionRequestStatusThresholds(): Promise<StatusThresholds> {
+  return getStatusThresholdsByKind("utility_inspection_request");
 }
 
-export async function upsertUtilityInspectionRequestStatusThresholds(
-  values: Pick<
-    UtilityInspectionRequestStatusThresholds,
-    "attention" | "critical" | "onTime"
-  >
+export function upsertUtilityInspectionRequestStatusThresholds(
+  values: StatusThresholds
 ) {
-  const [row] = await postgresDb
-    .insert(utilityInspectionRequestStatusThresholds)
-    .values({ id: UTILITY_INSPECTION_REQUEST_STATUS_THRESHOLDS_ID, ...values })
-    .onConflictDoUpdate({
-      set: {
-        attention: values.attention,
-        critical: values.critical,
-        onTime: values.onTime,
-      },
-      target: utilityInspectionRequestStatusThresholds.id,
-    })
-    .returning({
-      attention: utilityInspectionRequestStatusThresholds.attention,
-      critical: utilityInspectionRequestStatusThresholds.critical,
-      onTime: utilityInspectionRequestStatusThresholds.onTime,
-    });
-
-  return row;
+  return upsertStatusThresholdsByKind("utility_inspection_request", values);
 }

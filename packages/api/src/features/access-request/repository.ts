@@ -1,9 +1,4 @@
-import { postgresDb, topsunDb } from "@topsun/db";
-import {
-  ACCESS_REQUEST_STATUS_THRESHOLDS_ID,
-  accessRequestStatusThresholds,
-} from "@topsun/db/schema/postgres";
-import type { AccessRequestStatusThresholds } from "@topsun/db/schema/postgres";
+import { topsunDb } from "@topsun/db";
 import {
   clientes,
   coletaDados,
@@ -14,8 +9,11 @@ import { and, eq, isNotNull, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/mysql-core";
 
 import { orderProjectsByDiasEtapaThenId } from "../shared/project-list-order";
-import { DEFAULT_STATUS_THRESHOLDS } from "../shared/status-thresholds.constants";
 import type { StatusThresholds } from "../shared/status-thresholds.constants";
+import {
+  getStatusThresholdsByKind,
+  upsertStatusThresholdsByKind,
+} from "../shared/summary-thresholds.repository";
 
 const e14 = alias(etapas, "e14");
 const e13 = alias(etapas, "e13");
@@ -66,41 +64,10 @@ export function listAccessRequestProjects() {
     .orderBy(...orderProjectsByDiasEtapaThenId(diasEtapa));
 }
 
-export async function getAccessRequestStatusThresholds(): Promise<StatusThresholds> {
-  const [row] = await postgresDb
-    .select({
-      attention: accessRequestStatusThresholds.attention,
-      critical: accessRequestStatusThresholds.critical,
-      onTime: accessRequestStatusThresholds.onTime,
-    })
-    .from(accessRequestStatusThresholds)
-    .limit(1);
-
-  return row ?? DEFAULT_STATUS_THRESHOLDS;
+export function getAccessRequestStatusThresholds(): Promise<StatusThresholds> {
+  return getStatusThresholdsByKind("access_request");
 }
 
-export async function upsertAccessRequestStatusThresholds(
-  values: Pick<
-    AccessRequestStatusThresholds,
-    "attention" | "critical" | "onTime"
-  >
-) {
-  const [row] = await postgresDb
-    .insert(accessRequestStatusThresholds)
-    .values({ id: ACCESS_REQUEST_STATUS_THRESHOLDS_ID, ...values })
-    .onConflictDoUpdate({
-      set: {
-        attention: values.attention,
-        critical: values.critical,
-        onTime: values.onTime,
-      },
-      target: accessRequestStatusThresholds.id,
-    })
-    .returning({
-      attention: accessRequestStatusThresholds.attention,
-      critical: accessRequestStatusThresholds.critical,
-      onTime: accessRequestStatusThresholds.onTime,
-    });
-
-  return row;
+export function upsertAccessRequestStatusThresholds(values: StatusThresholds) {
+  return upsertStatusThresholdsByKind("access_request", values);
 }

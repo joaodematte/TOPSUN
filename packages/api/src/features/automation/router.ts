@@ -1,0 +1,45 @@
+import { TRPCError } from "@trpc/server";
+
+import { router } from "../../trpc/init";
+import { protectedProcedure } from "../../trpc/procedures";
+import { getAutomationByKindSchema, startAutomationSchema } from "./schema";
+import * as automationService from "./service";
+
+const VISIBLE_LOG_LEVELS = new Set(["step", "success", "error"]);
+
+export const automationRouter = router({
+  getLogs: protectedProcedure
+    .input(getAutomationByKindSchema)
+    .query(async ({ input }) => {
+      const logs = await automationService.getLogs(input.kind);
+
+      return logs
+        .filter((log) => VISIBLE_LOG_LEVELS.has(log.level))
+        .map((log) => ({
+          id: log.id,
+          level: log.level as "error" | "step" | "success",
+          message: log.message,
+          timestamp: log.createdAt.toISOString(),
+        }));
+    }),
+
+  getStatus: protectedProcedure
+    .input(getAutomationByKindSchema)
+    .query(({ input }) => automationService.getStatus(input.kind)),
+
+  start: protectedProcedure
+    .input(startAutomationSchema)
+    .mutation(async ({ input }) => {
+      try {
+        return await automationService.startAutomation(input.kind);
+      } catch (error) {
+        throw new TRPCError({
+          code: "CONFLICT",
+          message:
+            error instanceof Error
+              ? error.message
+              : "Não foi possível iniciar a automação.",
+        });
+      }
+    }),
+});

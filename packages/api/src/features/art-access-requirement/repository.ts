@@ -1,9 +1,4 @@
-import { postgresDb, topsunDb } from "@topsun/db";
-import {
-  ART_ACCESS_REQUIREMENT_STATUS_THRESHOLDS_ID,
-  artAccessRequirementStatusThresholds,
-} from "@topsun/db/schema/postgres";
-import type { ArtAccessRequirementStatusThresholds } from "@topsun/db/schema/postgres";
+import { topsunDb } from "@topsun/db";
 import {
   clientes,
   coletaDados,
@@ -14,8 +9,11 @@ import { and, eq, isNotNull, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/mysql-core";
 
 import { orderProjectsByDiasEtapaThenId } from "../shared/project-list-order";
-import { DEFAULT_STATUS_THRESHOLDS } from "../shared/status-thresholds.constants";
 import type { StatusThresholds } from "../shared/status-thresholds.constants";
+import {
+  getStatusThresholdsByKind,
+  upsertStatusThresholdsByKind,
+} from "../shared/summary-thresholds.repository";
 
 const e5 = alias(etapas, "e5");
 const e13 = alias(etapas, "e13");
@@ -58,41 +56,12 @@ export function listArtAccessRequirementProjects() {
     .orderBy(...orderProjectsByDiasEtapaThenId(diasEtapa));
 }
 
-export async function getArtAccessRequirementStatusThresholds(): Promise<StatusThresholds> {
-  const [row] = await postgresDb
-    .select({
-      attention: artAccessRequirementStatusThresholds.attention,
-      critical: artAccessRequirementStatusThresholds.critical,
-      onTime: artAccessRequirementStatusThresholds.onTime,
-    })
-    .from(artAccessRequirementStatusThresholds)
-    .limit(1);
-
-  return row ?? DEFAULT_STATUS_THRESHOLDS;
+export function getArtAccessRequirementStatusThresholds(): Promise<StatusThresholds> {
+  return getStatusThresholdsByKind("art_access_requirement");
 }
 
-export async function upsertArtAccessRequirementStatusThresholds(
-  values: Pick<
-    ArtAccessRequirementStatusThresholds,
-    "attention" | "critical" | "onTime"
-  >
+export function upsertArtAccessRequirementStatusThresholds(
+  values: StatusThresholds
 ) {
-  const [row] = await postgresDb
-    .insert(artAccessRequirementStatusThresholds)
-    .values({ id: ART_ACCESS_REQUIREMENT_STATUS_THRESHOLDS_ID, ...values })
-    .onConflictDoUpdate({
-      set: {
-        attention: values.attention,
-        critical: values.critical,
-        onTime: values.onTime,
-      },
-      target: artAccessRequirementStatusThresholds.id,
-    })
-    .returning({
-      attention: artAccessRequirementStatusThresholds.attention,
-      critical: artAccessRequirementStatusThresholds.critical,
-      onTime: artAccessRequirementStatusThresholds.onTime,
-    });
-
-  return row;
+  return upsertStatusThresholdsByKind("art_access_requirement", values);
 }

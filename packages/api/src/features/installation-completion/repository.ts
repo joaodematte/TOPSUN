@@ -1,9 +1,4 @@
-import { postgresDb, topsunDb } from "@topsun/db";
-import {
-  INSTALLATION_COMPLETION_STATUS_THRESHOLDS_ID,
-  installationCompletionStatusThresholds,
-} from "@topsun/db/schema/postgres";
-import type { InstallationCompletionStatusThresholds } from "@topsun/db/schema/postgres";
+import { topsunDb } from "@topsun/db";
 import {
   clientes,
   coletaDados,
@@ -15,8 +10,11 @@ import { and, eq, isNotNull, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/mysql-core";
 
 import { orderProjectsByDiasEtapaThenId } from "../shared/project-list-order";
-import { DEFAULT_STATUS_THRESHOLDS } from "../shared/status-thresholds.constants";
 import type { StatusThresholds } from "../shared/status-thresholds.constants";
+import {
+  getStatusThresholdsByKind,
+  upsertStatusThresholdsByKind,
+} from "../shared/summary-thresholds.repository";
 
 const e35 = alias(etapas, "e35");
 const e13 = alias(etapas, "e13");
@@ -73,41 +71,12 @@ export function listInstallationCompletionProjects() {
     .orderBy(...orderProjectsByDiasEtapaThenId(diasEtapa));
 }
 
-export async function getInstallationCompletionStatusThresholds(): Promise<StatusThresholds> {
-  const [row] = await postgresDb
-    .select({
-      attention: installationCompletionStatusThresholds.attention,
-      critical: installationCompletionStatusThresholds.critical,
-      onTime: installationCompletionStatusThresholds.onTime,
-    })
-    .from(installationCompletionStatusThresholds)
-    .limit(1);
-
-  return row ?? DEFAULT_STATUS_THRESHOLDS;
+export function getInstallationCompletionStatusThresholds(): Promise<StatusThresholds> {
+  return getStatusThresholdsByKind("installation_completion");
 }
 
-export async function upsertInstallationCompletionStatusThresholds(
-  values: Pick<
-    InstallationCompletionStatusThresholds,
-    "attention" | "critical" | "onTime"
-  >
+export function upsertInstallationCompletionStatusThresholds(
+  values: StatusThresholds
 ) {
-  const [row] = await postgresDb
-    .insert(installationCompletionStatusThresholds)
-    .values({ id: INSTALLATION_COMPLETION_STATUS_THRESHOLDS_ID, ...values })
-    .onConflictDoUpdate({
-      set: {
-        attention: values.attention,
-        critical: values.critical,
-        onTime: values.onTime,
-      },
-      target: installationCompletionStatusThresholds.id,
-    })
-    .returning({
-      attention: installationCompletionStatusThresholds.attention,
-      critical: installationCompletionStatusThresholds.critical,
-      onTime: installationCompletionStatusThresholds.onTime,
-    });
-
-  return row;
+  return upsertStatusThresholdsByKind("installation_completion", values);
 }

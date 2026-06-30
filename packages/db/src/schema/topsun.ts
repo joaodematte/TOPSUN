@@ -47,25 +47,23 @@ export const adicionaisProposta = mysqlTable(
 export const agendamentos = mysqlTable(
   "agendamentos",
   {
-    idAgendamento: int("id_agendamento").autoincrement().notNull(),
-    tipoAgendamento: int("tipo_agendamento"),
-    statusFollowupAgendamento: int("statusFollowup_agendamento").notNull(),
-    coletaAgendamento: int("coleta_agendamento"),
-    userColetaAgendamento: int("user_coleta_agendamento"),
-    codUsuario: int("cod_usuario").notNull(),
     codCliente: int("cod_cliente").notNull(),
-    urgenciaAgendamento: int("urgencia_agendamento").notNull(),
+    codUsuario: int("cod_usuario").notNull(),
+    coletaAgendamento: int("coleta_agendamento"),
     descricaoAgendamento: varchar("descricao_agendamento", {
       length: 2000,
     }).notNull(),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    dtInicioAgendamento: date("dt_inicio_agendamento", { mode: "string" }),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
     dtFimAgendamento: date("dt_fim_agendamento", { mode: "string" }),
-    horaInicioAgendamento: time("hora_inicio_agendamento"),
+    dtInicioAgendamento: date("dt_inicio_agendamento", { mode: "string" }),
     horaFimAgendamento: time("hora_fim_agendamento"),
+    horaInicioAgendamento: time("hora_inicio_agendamento"),
+    idAgendamento: int("id_agendamento").autoincrement().notNull(),
     obsFimAgendamento: varchar("obs_fim_agendamento", { length: 500 }),
     statusAgendamento: int("status_agendamento").notNull(),
+    statusFollowupAgendamento: int("statusFollowup_agendamento").notNull(),
+    tipoAgendamento: int("tipo_agendamento"),
+    urgenciaAgendamento: int("urgencia_agendamento").notNull(),
+    userColetaAgendamento: int("user_coleta_agendamento"),
   },
   (table) => [
     index("coleta_agendamento").on(table.coletaAgendamento),
@@ -324,12 +322,11 @@ export const calendarioAlteracoesInstaladores = mysqlTable(
 export const calendarioDatasBloqueadas = mysqlTable(
   "calendario_datas_bloqueadas",
   {
-    idDataBloqueada: int("id_data_bloqueada").autoincrement().notNull(),
-    instaladorDataBloqueada: int("instalador_data_bloqueada").notNull(),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
     dataDataBloqueada: date("data_data_bloqueada", {
       mode: "string",
     }).notNull(),
+    idDataBloqueada: int("id_data_bloqueada").autoincrement().notNull(),
+    instaladorDataBloqueada: int("instalador_data_bloqueada").notNull(),
     obsDataBloqueada: varchar("obs_data_bloqueada", { length: 500 }),
     statusDataBloqueada: int("status_data_bloqueada").default(1).notNull(),
   },
@@ -418,54 +415,50 @@ export const calendarioObrasIniciadas = mysqlTable(
 export const calendarioReagendamentos = mysqlTable(
   "calendario_reagendamentos",
   {
-    idCalendarioReagendamento: int("id_calendario_reagendamento")
-      .autoincrement()
-      .notNull(),
-    tipoServicoCalendarioReagendamento: int(
-      "tipoServico_calendario_reagendamento"
-    ).notNull(),
-    codProjetoCalendarioReagendamento: int(
-      "codProjeto_calendario_reagendamento"
-    ).notNull(),
     codChamadoCalendarioReagendamento: int(
       "codChamado_calendario_reagendamento"
     ),
     codOsCalendarioReagendamento: int("codOS_calendario_reagendamento"),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    dataInicioPrevistaCalendarioReagendamento: date(
-      "dataInicioPrevista_calendario_reagendamento",
-      { mode: "string" }
+    codProjetoCalendarioReagendamento: int(
+      "codProjeto_calendario_reagendamento"
     ).notNull(),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    dataInicioReagendadaCalendarioReagendamento: date(
-      "dataInicioReagendada_calendario_reagendamento",
-      { mode: "string" }
-    ).notNull(),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
     dataFimPrevistaCalendarioReagendamento: date(
       "dataFimPrevista_calendario_reagendamento",
       { mode: "string" }
     ).notNull(),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
     dataFimReagendadaCalendarioReagendamento: date(
       "dataFimReagendada_calendario_reagendamento",
       { mode: "string" }
     ).notNull(),
-    userCalendarioReagendamento: int("user_calendario_reagendamento").notNull(),
-    motivoCalendarioReagendamento: int(
-      "motivo_calendario_reagendamento"
+    dataInicioPrevistaCalendarioReagendamento: date(
+      "dataInicioPrevista_calendario_reagendamento",
+      { mode: "string" }
     ).notNull(),
-    justificativaCalendarioReagendamento: varchar(
-      "justificativa_calendario_reagendamento",
-      { length: 1000 }
+    dataInicioReagendadaCalendarioReagendamento: date(
+      "dataInicioReagendada_calendario_reagendamento",
+      { mode: "string" }
     ).notNull(),
     datetimeCalendarioReagendamento: datetime(
       "datetime_calendario_reagendamento",
       { mode: "string" }
     ).notNull(),
+    idCalendarioReagendamento: int("id_calendario_reagendamento")
+      .autoincrement()
+      .notNull(),
+    justificativaCalendarioReagendamento: varchar(
+      "justificativa_calendario_reagendamento",
+      { length: 1000 }
+    ).notNull(),
+    motivoCalendarioReagendamento: int(
+      "motivo_calendario_reagendamento"
+    ).notNull(),
     statusCalendarioReagendamento: int(
       "status_calendario_reagendamento"
     ).notNull(),
+    tipoServicoCalendarioReagendamento: int(
+      "tipoServico_calendario_reagendamento"
+    ).notNull(),
+    userCalendarioReagendamento: int("user_calendario_reagendamento").notNull(),
   },
   (table) => [
     index("codProjeto_calendario_reagendamento").on(
@@ -830,29 +823,28 @@ export const cidades = mysqlTable(
 export const clienteColigados = mysqlTable(
   "cliente_coligados",
   {
-    idColigado: int("id_coligado").autoincrement().notNull(),
-    pessoaColigado: varchar("pessoa_coligado", { length: 5 })
-      .default("f")
-      .notNull(),
+    bairroColigado: varchar("bairro_coligado", { length: 300 }),
+    cepColigado: varchar("cep_coligado", { length: 20 }),
+    cidadeColigado: varchar("cidade_coligado", { length: 100 }),
     codClienteColigado: int("cod_cliente_coligado").notNull(),
-    nomeColigado: varchar("nome_coligado", { length: 100 }).notNull(),
+    complementoColigado: varchar("complemento_coligado", { length: 200 }),
     cpfColigado: varchar("cpf_coligado", { length: 50 }).notNull(),
-    rgColigado: varchar("rg_coligado", { length: 30 }).notNull(),
-    telefoneColigado: varchar("telefone_coligado", { length: 50 }),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
+    emailColigado: varchar("email_coligado", { length: 500 }),
+    estadoColigado: varchar("estado_coligado", { length: 2 }),
+    idColigado: int("id_coligado").autoincrement().notNull(),
+    mesmoEnderecoColigado: int("mesmo_endereco_coligado"),
     nascimentoColigado: date("nascimento_coligado", {
       mode: "string",
     }).notNull(),
-    emailColigado: varchar("email_coligado", { length: 500 }),
-    mesmoEnderecoColigado: int("mesmo_endereco_coligado"),
-    cepColigado: varchar("cep_coligado", { length: 20 }),
-    ruaColigado: varchar("rua_coligado", { length: 200 }),
+    nomeColigado: varchar("nome_coligado", { length: 100 }).notNull(),
     nroColigado: varchar("nro_coligado", { length: 20 }),
-    complementoColigado: varchar("complemento_coligado", { length: 200 }),
-    bairroColigado: varchar("bairro_coligado", { length: 300 }),
-    cidadeColigado: varchar("cidade_coligado", { length: 100 }),
-    estadoColigado: varchar("estado_coligado", { length: 2 }),
+    pessoaColigado: varchar("pessoa_coligado", { length: 5 })
+      .default("f")
+      .notNull(),
+    rgColigado: varchar("rg_coligado", { length: 30 }).notNull(),
+    ruaColigado: varchar("rua_coligado", { length: 200 }),
     statusColigado: int("status_coligado").default(1).notNull(),
+    telefoneColigado: varchar("telefone_coligado", { length: 50 }),
   },
   (table) => [
     index("cod_cliente_coligado").on(table.codClienteColigado),
@@ -866,43 +858,41 @@ export const clienteColigados = mysqlTable(
 export const clientes = mysqlTable(
   "clientes",
   {
-    idCliente: int("id_cliente").autoincrement().notNull(),
-    codErpCliente: int("codErp_cliente"),
-    pessoaCliente: varchar("pessoa_cliente", { length: 5 }).notNull(),
-    razaosocialCliente: varchar("razaosocial_cliente", { length: 100 }),
-    fantasiaCliente: varchar("fantasia_cliente", { length: 100 }),
-    inscestadualCliente: varchar("inscestadual_cliente", { length: 30 }),
-    nomeCliente: varchar("nome_cliente", { length: 100 }),
-    origemCadastroCliente: int("origem_cadastro_cliente").default(0).notNull(),
-    cpfcnpjCliente: varchar("cpfcnpj_cliente", { length: 20 }),
-    rgCliente: varchar("rg_cliente", { length: 30 }),
-    nascAberturaCliente: varchar("nasc_abertura_cliente", { length: 15 }),
-    responsavelCliente: varchar("responsavel_cliente", { length: 150 }),
-    cepCliente: varchar("cep_cliente", { length: 20 }),
-    ruaCliente: varchar("rua_cliente", { length: 100 }),
     bairroCliente: varchar("bairro_cliente", { length: 100 }),
-    nroCliente: varchar("nro_cliente", { length: 20 }),
-    compCliente: varchar("comp_cliente", { length: 100 }),
-    cidadeCliente: varchar("cidade_cliente", { length: 100 }),
-    estadoCliente: varchar("estado_cliente", { length: 100 }),
-    telefone1Cliente: varchar("telefone1_cliente", { length: 20 }),
-    telefone2Cliente: varchar("telefone2_cliente", { length: 20 }),
-    emailCliente: varchar("email_cliente", { length: 100 }),
-    pastaCliente: varchar("pasta_cliente", { length: 350 }),
-    comoConheceuCliente: varchar("como_conheceu_cliente", { length: 150 }),
-    representanteCliente: int("representante_cliente").notNull(),
     bloqueioPosvCliente: int("bloqueio_posv_cliente").default(0).notNull(),
-    motivoBloqueioPosvCliente: varchar("motivoBloqueio_posv_cliente", {
-      length: 1000,
-    }),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
+    cepCliente: varchar("cep_cliente", { length: 20 }),
+    cidadeCliente: varchar("cidade_cliente", { length: 100 }),
+    codErpCliente: int("codErp_cliente"),
+    comoConheceuCliente: varchar("como_conheceu_cliente", { length: 150 }),
+    compCliente: varchar("comp_cliente", { length: 100 }),
+    cpfcnpjCliente: varchar("cpfcnpj_cliente", { length: 20 }),
     dataBloqueioPosvCliente: date("dataBloqueio_posv_cliente", {
       mode: "string",
     }),
-    usuarioBloqueioPosvCliente: int("usuarioBloqueio_posv_cliente"),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
     dataCadastroCliente: date("data_cadastro_cliente", { mode: "string" }),
+    emailCliente: varchar("email_cliente", { length: 100 }),
+    estadoCliente: varchar("estado_cliente", { length: 100 }),
+    fantasiaCliente: varchar("fantasia_cliente", { length: 100 }),
+    idCliente: int("id_cliente").autoincrement().notNull(),
+    inscestadualCliente: varchar("inscestadual_cliente", { length: 30 }),
+    motivoBloqueioPosvCliente: varchar("motivoBloqueio_posv_cliente", {
+      length: 1000,
+    }),
+    nascAberturaCliente: varchar("nasc_abertura_cliente", { length: 15 }),
+    nomeCliente: varchar("nome_cliente", { length: 100 }),
+    nroCliente: varchar("nro_cliente", { length: 20 }),
+    origemCadastroCliente: int("origem_cadastro_cliente").default(0).notNull(),
+    pastaCliente: varchar("pasta_cliente", { length: 350 }),
+    pessoaCliente: varchar("pessoa_cliente", { length: 5 }).notNull(),
+    razaosocialCliente: varchar("razaosocial_cliente", { length: 100 }),
+    representanteCliente: int("representante_cliente").notNull(),
+    responsavelCliente: varchar("responsavel_cliente", { length: 150 }),
+    rgCliente: varchar("rg_cliente", { length: 30 }),
+    ruaCliente: varchar("rua_cliente", { length: 100 }),
     statusCliente: int("status_cliente").notNull(),
+    telefone1Cliente: varchar("telefone1_cliente", { length: 20 }),
+    telefone2Cliente: varchar("telefone2_cliente", { length: 20 }),
+    usuarioBloqueioPosvCliente: int("usuarioBloqueio_posv_cliente"),
   },
   (table) => [
     index("cidade_cliente").on(table.cidadeCliente),
@@ -916,166 +906,163 @@ export const clientes = mysqlTable(
 export const coletaDados = mysqlTable(
   "coleta_dados",
   {
-    idColeta: int("id_coleta").autoincrement().notNull(),
-    simplificadaColeta: tinyint("simplificada_coleta").default(0).notNull(),
-    regiaoVendaColeta: int("regiaoVenda_coleta"),
-    statusFollowUpColeta: int("statusFollowUp_coleta"),
+    abatimentoColeta: decimal("abatimento_coleta", {
+      precision: 10,
+      scale: 2,
+    }).notNull(),
+    areaUtilColeta: int("areaUtil_coleta").notNull(),
+    caminhoSolicVistoriaColeta: varchar("caminhoSolicVistoria_coleta", {
+      length: 500,
+    }),
+    caminhoVistoriaColeta: varchar("caminhoVistoria_coleta", { length: 500 }),
+    cidadeUcColeta: varchar("cidadeUC_coleta", { length: 200 }),
+    classificacaoColeta: int("classificacao_coleta").notNull(),
+    clienteColeta: int("cliente_coleta").notNull(),
+    codEngenhariaErpColeta: varchar("codEngenhariaErp_coleta", { length: 100 }),
+    codSelecaoGeradaErpColeta: int("codSelecaoGeradaErp_coleta"),
     complementoStatusFollowUpColeta: varchar(
       "complementoStatusFollowUp_coleta",
       { length: 200 }
     ),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    dataFollowUpColeta: date("dataFollowUp_coleta", { mode: "string" }),
-    empresaColeta: int("empresa_coleta").notNull(),
-    userColeta: int("user_coleta").notNull(),
-    vendedorColeta: int("vendedor_coleta").notNull(),
-    clienteColeta: int("cliente_coleta").notNull(),
-    tipoVendaColeta: int("tipoVenda_coleta").notNull(),
-    grupoEmpresaColeta: varchar("grupoEmpresa_coleta", {
-      length: 50,
-    }).notNull(),
-    qtdUcColeta: int("qtdUC_coleta").notNull(),
-    ucPrincipalColeta: varchar("UCPrincipal_coleta", { length: 50 }).notNull(),
-    cidadeUcColeta: varchar("cidadeUC_coleta", { length: 200 }),
-    estadoUcColeta: varchar("estadoUC_coleta", { length: 2 }),
-    concessionariaColeta: varchar("concessionaria_coleta", {
-      length: 100,
-    }).notNull(),
-    mesRefFaturaColeta: varchar("mesRefFatura_coleta", {
-      length: 20,
-    }).notNull(),
-    potenciaModuloColeta: int("potenciaModulo_coleta").notNull(),
-    tensaoColeta: varchar("tensao_coleta", { length: 20 }).notNull(),
     compraEnergiaColeta: varchar("compraEnergia_coleta", {
       length: 200,
     }).notNull(),
-    grupoGeradorColeta: int("grupoGerador_coleta").notNull(),
-    tipoInstalacaoColeta: int("tipoInstalacao_coleta").notNull(),
-    qtdEstruturasColeta: int("qtdEstruturas_coleta").default(0).notNull(),
-    estruturaTelhadoColeta: int("estruturaTelhado_coleta").notNull(),
-    estruturaTelhado2Coleta: int("estruturaTelhado2_coleta"),
-    estruturaTelhado3Coleta: int("estruturaTelhado3_coleta"),
-    qtdTelhadosColeta: int("qtdTelhados_coleta").default(0).notNull(),
-    tipoTelhadoColeta: int("tipoTelhado_coleta").notNull(),
-    tipoTelhado2Coleta: int("tipoTelhado2_coleta"),
-    tipoTelhado3Coleta: int("tipoTelhado3_coleta"),
-    tipoColeta: varchar("tipo_coleta", { length: 50 }).notNull(),
-    revisaoAtualColeta: int("revisaoAtual_coleta").notNull(),
-    classificacaoColeta: int("classificacao_coleta").notNull(),
-    fatorAjusteColeta: varchar("fatorAjuste_coleta", { length: 200 }).notNull(),
-    demandaContratadaColeta: int("demandaContratada_coleta").notNull(),
-    disjuntorColeta: int("disjuntor_coleta").notNull(),
-    limitanteColeta: varchar("limitante_coleta", { length: 50 }).notNull(),
-    sombreamentosColeta: int("sombreamentos_coleta").notNull(),
-    areaUtilColeta: int("areaUtil_coleta").notNull(),
-    inclinacaoTelhadoColeta: varchar("inclinacaoTelhado_coleta", {
+    concessionariaColeta: varchar("concessionaria_coleta", {
       length: 100,
     }).notNull(),
-    orientacaoSolarColeta: int("orientacaoSolar_coleta").notNull(),
-    qtdModulos1Coleta: int("qtdModulos1_coleta"),
+    consumoTotalColeta: int("consumoTotal_coleta").notNull(),
+    dataFollowUpColeta: date("dataFollowUp_coleta", { mode: "string" }),
+    dataProjetoColeta: date("dataProjeto_coleta", { mode: "string" }),
+    dataReaberturaColeta: date("dataReabertura_coleta", { mode: "string" }),
+    dateEncaminhamentoColeta: datetime("dateEncaminhamento_coleta", {
+      mode: "string",
+    }),
+    datetimeColeta: datetime("datetime_coleta", { mode: "string" }).notNull(),
+    demandaContratadaColeta: int("demandaContratada_coleta").notNull(),
+    descricaoEngenhariaErpColeta: varchar("descricaoEngenhariaErp_coleta", {
+      length: 200,
+    }),
+    desvio1Coleta: decimal("desvio1_coleta", { precision: 10, scale: 2 }),
+    desvio2Coleta: decimal("desvio2_coleta", {
+      precision: 10,
+      scale: 2,
+    }).default("0.00"),
+    desvio3Coleta: decimal("desvio3_coleta", {
+      precision: 10,
+      scale: 2,
+    }).default("0.00"),
+    desvio4Coleta: decimal("desvio4_coleta", {
+      precision: 10,
+      scale: 2,
+    }).default("0.00"),
+    disjuntorColeta: int("disjuntor_coleta").notNull(),
+    empresaColeta: int("empresa_coleta").notNull(),
+    encaminhamentoColeta: int("encaminhamento_coleta").notNull(),
+    estadoUcColeta: varchar("estadoUC_coleta", { length: 2 }),
+    estimativaColeta: int("estimativa_coleta").notNull(),
     estruturaOrientacao1Coleta: int("estruturaOrientacao1_coleta")
       .default(0)
       .notNull(),
-    telhadoOrientacao1Coleta: int("telhadoOrientacao1_coleta")
+    estruturaOrientacao2Coleta: int("estruturaOrientacao2_coleta")
       .default(0)
       .notNull(),
-    orientacao1Coleta: int("orientacao1_coleta"),
+    estruturaOrientacao3Coleta: int("estruturaOrientacao3_coleta")
+      .default(0)
+      .notNull(),
+    estruturaOrientacao4Coleta: int("estruturaOrientacao4_coleta")
+      .default(0)
+      .notNull(),
+    estruturaTelhado2Coleta: int("estruturaTelhado2_coleta"),
+    estruturaTelhado3Coleta: int("estruturaTelhado3_coleta"),
+    estruturaTelhadoColeta: int("estruturaTelhado_coleta").notNull(),
+    fatorAjusteColeta: varchar("fatorAjuste_coleta", { length: 200 }).notNull(),
+    finameColeta: int("finame_coleta").default(0).notNull(),
+    grupoEmpresaColeta: varchar("grupoEmpresa_coleta", {
+      length: 50,
+    }).notNull(),
+    grupoGeradorColeta: int("grupoGerador_coleta").notNull(),
+    idColeta: int("id_coleta").autoincrement().notNull(),
+    idMotivoCancelColeta: int("idMotivoCancel_coleta"),
     inclinacao1Coleta: int("inclinacao1_coleta"),
-    desvio1Coleta: decimal("desvio1_coleta", { precision: 10, scale: 2 }),
+    inclinacao2Coleta: int("inclinacao2_coleta").default(0),
+    inclinacao3Coleta: int("inclinacao3_coleta").default(0),
+    inclinacao4Coleta: int("inclinacao4_coleta").default(0),
+    inclinacaoTelhadoColeta: varchar("inclinacaoTelhado_coleta", {
+      length: 100,
+    }).notNull(),
+    isAssinaturaColeta: int("is_assinatura_coleta").default(0),
+    kitColeta: int("kit_coleta"),
+    limitanteColeta: varchar("limitante_coleta", { length: 50 }).notNull(),
+    mesRefFaturaColeta: varchar("mesRefFatura_coleta", {
+      length: 20,
+    }).notNull(),
+    moduloColeta: int("modulo_coleta").notNull(),
+    modulosNecessariosColeta: decimal("modulosNecessarios_coleta", {
+      precision: 10,
+      scale: 1,
+    }).notNull(),
+    motivoCancelColeta: varchar("motivoCancel_coleta", { length: 1000 }),
+    motivoEncaminhamentoColeta: varchar("motivoEncaminhamento_coleta", {
+      length: 1000,
+    }),
+    motivoReaberturaColeta: varchar("motivoReabertura_coleta", {
+      length: 1000,
+    }),
+    obsColeta: varchar("obs_coleta", { length: 1000 }).notNull(),
+    obsVistoriaColeta: varchar("obsVistoria_coleta", { length: 2000 }),
+    orientacao1Coleta: int("orientacao1_coleta"),
+    orientacao2Coleta: int("orientacao2_coleta").default(0),
+    orientacao3Coleta: int("orientacao3_coleta").default(0),
+    orientacao4Coleta: int("orientacao4_coleta").default(0),
+    orientacaoSolarColeta: int("orientacaoSolar_coleta").notNull(),
+    performanceRationColeta: int("performanceRation_coleta").notNull(),
+    potenciaColeta: varchar("potencia_coleta", { length: 20 }).notNull(),
+    potenciaModuloColeta: int("potenciaModulo_coleta").notNull(),
+    potenciaTransformadorColeta: int("potenciaTransformador_coleta").notNull(),
+    pronafColeta: int("pronaf_coleta").notNull(),
+    qtdEstruturasColeta: int("qtdEstruturas_coleta").default(0).notNull(),
+    qtdModulos1Coleta: int("qtdModulos1_coleta"),
     qtdModulos2Coleta: int("qtdModulos2_coleta").default(0),
-    estruturaOrientacao2Coleta: int("estruturaOrientacao2_coleta")
+    qtdModulos3Coleta: int("qtdModulos3_coleta").default(0),
+    qtdModulos4Coleta: int("qtdModulos4_coleta").default(0),
+    qtdModulosColeta: int("qtdModulos_coleta").notNull(),
+    qtdOrientacoesColeta: int("qtdOrientacoes_coleta"),
+    qtdTelhadosColeta: int("qtdTelhados_coleta").default(0).notNull(),
+    qtdUcColeta: int("qtdUC_coleta").notNull(),
+    reaberturaColeta: int("reabertura_coleta"),
+    regiaoVendaColeta: int("regiaoVenda_coleta"),
+    revisaoAtualColeta: int("revisaoAtual_coleta").notNull(),
+    simplificadaColeta: tinyint("simplificada_coleta").default(0).notNull(),
+    sombreamentosColeta: int("sombreamentos_coleta").notNull(),
+    statusColeta: int("status_coleta").notNull(),
+    statusFollowUpColeta: int("statusFollowUp_coleta"),
+    telhadoOrientacao1Coleta: int("telhadoOrientacao1_coleta")
       .default(0)
       .notNull(),
     telhadoOrientacao2Coleta: int("telhadoOrientacao2_coleta")
       .default(0)
       .notNull(),
-    orientacao2Coleta: int("orientacao2_coleta").default(0),
-    inclinacao2Coleta: int("inclinacao2_coleta").default(0),
-    desvio2Coleta: decimal("desvio2_coleta", {
-      precision: 10,
-      scale: 2,
-    }).default("0.00"),
-    qtdModulos3Coleta: int("qtdModulos3_coleta").default(0),
-    estruturaOrientacao3Coleta: int("estruturaOrientacao3_coleta")
-      .default(0)
-      .notNull(),
     telhadoOrientacao3Coleta: int("telhadoOrientacao3_coleta")
-      .default(0)
-      .notNull(),
-    orientacao3Coleta: int("orientacao3_coleta").default(0),
-    inclinacao3Coleta: int("inclinacao3_coleta").default(0),
-    desvio3Coleta: decimal("desvio3_coleta", {
-      precision: 10,
-      scale: 2,
-    }).default("0.00"),
-    qtdModulos4Coleta: int("qtdModulos4_coleta").default(0),
-    estruturaOrientacao4Coleta: int("estruturaOrientacao4_coleta")
       .default(0)
       .notNull(),
     telhadoOrientacao4Coleta: int("telhadoOrientacao4_coleta")
       .default(0)
       .notNull(),
-    orientacao4Coleta: int("orientacao4_coleta").default(0),
-    inclinacao4Coleta: int("inclinacao4_coleta").default(0),
-    desvio4Coleta: decimal("desvio4_coleta", {
-      precision: 10,
-      scale: 2,
-    }).default("0.00"),
-    qtdOrientacoesColeta: int("qtdOrientacoes_coleta"),
-    estimativaColeta: int("estimativa_coleta").notNull(),
-    abatimentoColeta: decimal("abatimento_coleta", {
-      precision: 10,
-      scale: 2,
-    }).notNull(),
-    performanceRationColeta: int("performanceRation_coleta").notNull(),
-    pronafColeta: int("pronaf_coleta").notNull(),
-    finameColeta: int("finame_coleta").default(0).notNull(),
-    potenciaTransformadorColeta: int("potenciaTransformador_coleta").notNull(),
-    qtdModulosColeta: int("qtdModulos_coleta").notNull(),
-    modulosNecessariosColeta: decimal("modulosNecessarios_coleta", {
-      precision: 10,
-      scale: 1,
-    }).notNull(),
-    moduloColeta: int("modulo_coleta").notNull(),
-    potenciaColeta: varchar("potencia_coleta", { length: 20 }).notNull(),
-    consumoTotalColeta: int("consumoTotal_coleta").notNull(),
-    kitColeta: int("kit_coleta"),
-    encaminhamentoColeta: int("encaminhamento_coleta").notNull(),
+    tensaoColeta: varchar("tensao_coleta", { length: 20 }).notNull(),
+    tipoColeta: varchar("tipo_coleta", { length: 50 }).notNull(),
     tipoEncaminhamentoColeta: varchar("tipoEncaminhamento_coleta", {
       length: 200,
     }).notNull(),
-    obsColeta: varchar("obs_coleta", { length: 1000 }).notNull(),
-    datetimeColeta: datetime("datetime_coleta", { mode: "string" }).notNull(),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    dataProjetoColeta: date("dataProjeto_coleta", { mode: "string" }),
-    reaberturaColeta: int("reabertura_coleta"),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    dataReaberturaColeta: date("dataReabertura_coleta", { mode: "string" }),
-    userReaberturaColeta: int("userReabertura_coleta"),
-    motivoCancelColeta: varchar("motivoCancel_coleta", { length: 1000 }),
-    isAssinaturaColeta: int("is_assinatura_coleta").default(0),
-    idMotivoCancelColeta: int("idMotivoCancel_coleta"),
-    motivoReaberturaColeta: varchar("motivoReabertura_coleta", {
-      length: 1000,
-    }),
-    motivoEncaminhamentoColeta: varchar("motivoEncaminhamento_coleta", {
-      length: 1000,
-    }),
+    tipoInstalacaoColeta: int("tipoInstalacao_coleta").notNull(),
+    tipoTelhado2Coleta: int("tipoTelhado2_coleta"),
+    tipoTelhado3Coleta: int("tipoTelhado3_coleta"),
+    tipoTelhadoColeta: int("tipoTelhado_coleta").notNull(),
+    tipoVendaColeta: int("tipoVenda_coleta").notNull(),
+    ucPrincipalColeta: varchar("UCPrincipal_coleta", { length: 50 }).notNull(),
+    userColeta: int("user_coleta").notNull(),
     userEncaminhamentoColeta: int("userEncaminhamento_coleta"),
-    dateEncaminhamentoColeta: datetime("dateEncaminhamento_coleta", {
-      mode: "string",
-    }),
-    obsVistoriaColeta: varchar("obsVistoria_coleta", { length: 2000 }),
-    caminhoVistoriaColeta: varchar("caminhoVistoria_coleta", { length: 500 }),
-    caminhoSolicVistoriaColeta: varchar("caminhoSolicVistoria_coleta", {
-      length: 500,
-    }),
-    codEngenhariaErpColeta: varchar("codEngenhariaErp_coleta", { length: 100 }),
-    descricaoEngenhariaErpColeta: varchar("descricaoEngenhariaErp_coleta", {
-      length: 200,
-    }),
-    codSelecaoGeradaErpColeta: int("codSelecaoGeradaErp_coleta"),
-    statusColeta: int("status_coleta").notNull(),
+    userReaberturaColeta: int("userReabertura_coleta"),
+    vendedorColeta: int("vendedor_coleta").notNull(),
   },
   (table) => [
     index("cliente_coleta").on(table.clienteColeta),
@@ -1088,32 +1075,31 @@ export const coletaDados = mysqlTable(
 export const coligadosInativos = mysqlTable(
   "coligados_inativos",
   {
-    idColigadoInativo: int("id_coligado_inativo").autoincrement().notNull(),
-    clienteColigadoInativo: int("cliente_coligado_inativo").notNull(),
-    nomeColigadoInativo: varchar("nome_coligado_inativo", {
-      length: 200,
-    }).notNull(),
-    cpfColigadoInativo: varchar("cpf_coligado_inativo", {
-      length: 30,
-    }).notNull(),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    nascColigadoInativo: date("nasc_coligado_inativo", {
-      mode: "string",
-    }).notNull(),
-    rgColigadoInativo: int("rg_coligado_inativo").notNull(),
-    mesmoEnderecoInativo: int("mesmo_endereco_inativo"),
+    bairroColigadoInativo: varchar("bairro_coligado_inativo", { length: 300 }),
     cepColigadoInativo: varchar("cep_coligado_inativo", { length: 20 }),
-    ruaColigadoInativo: varchar("rua_coligado_inativo", { length: 200 }),
-    nroColigadoInativo: varchar("nro_coligado_inativo", { length: 20 }),
+    cidadeColigadoInativo: varchar("cidade_coligado_inativo", { length: 100 }),
+    clienteColigadoInativo: int("cliente_coligado_inativo").notNull(),
     complementoColigadoInativo: varchar("complemento_coligado_inativo", {
       length: 200,
     }),
-    bairroColigadoInativo: varchar("bairro_coligado_inativo", { length: 300 }),
-    cidadeColigadoInativo: varchar("cidade_coligado_inativo", { length: 100 }),
-    estadoColigadoInativo: varchar("estado_coligado_inativo", { length: 2 }),
+    cpfColigadoInativo: varchar("cpf_coligado_inativo", {
+      length: 30,
+    }).notNull(),
     dataAlteracaoInativo: datetime("dataAlteracao_inativo", {
       mode: "string",
     }).notNull(),
+    estadoColigadoInativo: varchar("estado_coligado_inativo", { length: 2 }),
+    idColigadoInativo: int("id_coligado_inativo").autoincrement().notNull(),
+    mesmoEnderecoInativo: int("mesmo_endereco_inativo"),
+    nascColigadoInativo: date("nasc_coligado_inativo", {
+      mode: "string",
+    }).notNull(),
+    nomeColigadoInativo: varchar("nome_coligado_inativo", {
+      length: 200,
+    }).notNull(),
+    nroColigadoInativo: varchar("nro_coligado_inativo", { length: 20 }),
+    rgColigadoInativo: int("rg_coligado_inativo").notNull(),
+    ruaColigadoInativo: varchar("rua_coligado_inativo", { length: 200 }),
     userInativo: int("user_inativo").notNull(),
   },
   (table) => [
@@ -1259,23 +1245,22 @@ export const comissoesVendedores = mysqlTable(
 export const contratos = mysqlTable(
   "contratos",
   {
-    idContrato: int("id_contrato").autoincrement().notNull(),
-    coletaContrato: int("coleta_contrato").notNull(),
-    revisaoContrato: int("revisao_contrato").notNull(),
-    clienteContrato: int("cliente_contrato").notNull(),
-    coligadoContrato: int("coligado_contrato").notNull(),
-    codColigadoContrato: int("cod_coligado_contrato"),
-    propostaContrato: int("proposta_contrato").notNull(),
-    rsiContrato: int("rsi_contrato").notNull(),
     caminhoContrato: varchar("caminho_contrato", { length: 1000 }),
+    clienteContrato: int("cliente_contrato").notNull(),
+    codColigadoContrato: int("cod_coligado_contrato"),
+    coletaContrato: int("coleta_contrato").notNull(),
+    coligadoContrato: int("coligado_contrato").notNull(),
     dataContrato: datetime("data_contrato", { mode: "string" }).notNull(),
-    userContrato: int("user_contrato").notNull(),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
     dataEmailContrato: date("dataEmail_contrato", { mode: "string" }),
     horaEmailContrato: time("horaEmail_contrato"),
-    userEmailContrato: int("userEmail_contrato"),
+    idContrato: int("id_contrato").autoincrement().notNull(),
     origemContrato: int("origem_contrato").default(1).notNull(),
+    propostaContrato: int("proposta_contrato").notNull(),
+    revisaoContrato: int("revisao_contrato").notNull(),
+    rsiContrato: int("rsi_contrato").notNull(),
     statusContrato: int("status_contrato").notNull(),
+    userContrato: int("user_contrato").notNull(),
+    userEmailContrato: int("userEmail_contrato"),
   },
   (table) => [
     index("coleta_contrato").on(table.coletaContrato),
@@ -1303,21 +1288,20 @@ export const custosAssumidos = mysqlTable(
 export const custosInstalacao = mysqlTable(
   "custos_instalacao",
   {
+    dataCustoinst: date("data_custoinst", { mode: "string" }).notNull(),
     idCustoinst: int("id_custoinst").autoincrement().notNull(),
-    tabelaCustoinst: int("tabela_custoinst").notNull(),
-    minModulosCustoinst: int("minModulos_custoinst").notNull(),
     maxModulosCustoinst: int("maxModulos_custoinst").notNull(),
-    valorCustoinst: decimal("valor_custoinst", {
-      precision: 10,
-      scale: 2,
-    }).notNull(),
+    minModulosCustoinst: int("minModulos_custoinst").notNull(),
+    statusCustoinst: int("status_custoinst").notNull(),
+    tabelaCustoinst: int("tabela_custoinst").notNull(),
     valorAmpliacaoCustoinst: decimal("valorAmpliacao_custoinst", {
       precision: 10,
       scale: 2,
     }),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    dataCustoinst: date("data_custoinst", { mode: "string" }).notNull(),
-    statusCustoinst: int("status_custoinst").notNull(),
+    valorCustoinst: decimal("valor_custoinst", {
+      precision: 10,
+      scale: 2,
+    }).notNull(),
   },
   (table) => [
     primaryKey({
@@ -1330,92 +1314,146 @@ export const custosInstalacao = mysqlTable(
 export const dadosEmissaoContrato = mysqlTable(
   "dados_emissao_contrato",
   {
-    idEmissao: int("id_emissao").autoincrement().notNull(),
-    assinaturaDigitalEmissao: int("assinatura_digital_emissao").default(0),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    dataEntregaAgendamentoEmissao: date("dataEntregaAgendamento_emissao", {
-      mode: "string",
-    }),
-    codColetaEmissao: int("cod_coleta_emissao").notNull(),
-    prazoInstEquipEmissao: int("prazo_inst_equip_emissao").default(90),
-    estaEmObrasEmissao: tinyint("esta_em_obras_emissao"),
-    estaEmObrasEmissaoAgendamento: int("esta_em_obras_emissao_agendamento"),
-    percComissaoPadraoVendedorEmissao: decimal(
-      "perc_comissaoPadrao_vendedor_emissao",
-      { precision: 10, scale: 2 }
-    ),
-    topsunManutencaoPreventivaEmissao: varchar(
-      "topsun_manutencao_preventiva_emissao",
-      { length: 45 }
-    ),
-    topsunSeguroEmissao: varchar("topsun_seguro_emissao", { length: 45 }),
-    topsunManutencaoSeguroEmissao: varchar("topsun_manutencao_seguro_emissao", {
-      length: 45,
-    }),
-    percComissaoVendedorEmissao: decimal("perc_comissao_vendedor_emissao", {
-      precision: 10,
-      scale: 2,
-    }),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    prevConclusaoObrasEmissao: date("prev_conclusao_obras_emissao", {
-      mode: "string",
-    }),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    prevConclusaoObrasAgendamentoEmissao: date(
-      "prev_conclusao_obras_agendamento_emissao",
-      { mode: "string" }
-    ),
-    instaladorEmissao: int("instalador_emissao"),
-    datasConsiderarEmissao: int("datas_considerar_emissao").default(0),
-    periodoInstalacaoEmissao: text("periodo_instalacao_emissao"),
-    qtdAjusteInclinacaoEmissao: int("qtd_ajuste_inclinacao_emissao"),
-    possuiFotovoltaicoEmissao: tinyint("possui_fotovoltaico_emissao"),
-    vendidoAquecimentoEmissao: tinyint("vendido_aquecimento_emissao"),
-    possuiAdeqSubestacaoEmissao: tinyint("possui_adeq_subestacao_emissao"),
+    adequacaoDisjuntorEmissao: int("adequacao_disjuntor_emissao"),
     adequacaoSubestacaoEmissao: decimal("adequacao_subestacao_emissao", {
       precision: 10,
       scale: 2,
     }),
-    tipoTrocaDisjuntorEmissao: varchar("tipo_troca_disjuntor_emissao", {
-      length: 50,
-    }),
-    adequacaoDisjuntorEmissao: int("adequacao_disjuntor_emissao"),
-    usarColigadoEmissao: tinyint("usar_coligado_emissao").default(0),
-    codColigadoEmissao: int("cod_coligado_emissao"),
-    localAcomodaEquipEmissao: varchar("local_acomoda_equip_emissao", {
-      length: 100,
-    }),
-    distAcomodaEquipEmissao: decimal("dist_acomoda_equip_emissao", {
-      precision: 10,
-      scale: 2,
+    agenciaIndicadorEmissao: varchar("agencia_indicador_emissao", {
+      length: 20,
     }),
     alturaTelhadoEmissao: decimal("altura_telhado_emissao", {
       precision: 10,
       scale: 2,
     }),
-    materialAdcPorContaEmissao: int("material_adc_por_conta_emissao"),
+    aprovacaoEmissao: tinyint("aprovacao_emissao").default(2),
+    assinaturaDigitalEmissao: int("assinatura_digital_emissao").default(0),
+    bancoFinanciamentoEmissao: varchar("banco_financiamento_emissao", {
+      length: 100,
+    }),
+    bancoIndicadorEmissao: varchar("banco_indicador_emissao", { length: 100 }),
+    bancorecEntradaEmissao: int("bancorec_entrada_emissao"),
+    bancorecFinanciamentoEmissao: int("bancorec_financiamento_emissao"),
+    carenciaEmissao: varchar("carencia_emissao", { length: 50 }),
+    codColetaEmissao: int("cod_coleta_emissao").notNull(),
+    codColigadoEmissao: int("cod_coligado_emissao"),
+    condicaoPgtoParcelaEmissao: varchar("condicao_pgto_parcela_emissao", {
+      length: 300,
+    }),
+    contaIndicadorEmissao: varchar("conta_indicador_emissao", { length: 20 }),
+    cpfIndicadorEmissao: varchar("cpf_indicador_emissao", { length: 20 }),
+    dataAvistaEntradaEmissao: date("data_avista_entrada_emissao", {
+      mode: "string",
+    }),
+    dataEntregaAgendamentoEmissao: date("dataEntregaAgendamento_emissao", {
+      mode: "string",
+    }),
+    dataPrevisaoEntradaEmissao: date("data_previsao_entrada_emissao", {
+      mode: "string",
+    }),
+    dataTabelaEmissao: varchar("data_tabela_emissao", { length: 15 }),
+    datasConsiderarEmissao: int("datas_considerar_emissao").default(0),
+    distAcomodaEquipEmissao: decimal("dist_acomoda_equip_emissao", {
+      precision: 10,
+      scale: 2,
+    }),
     estCustoMaterialAdcEmissao: decimal("est_custo_material_adc_emissao", {
       precision: 10,
       scale: 2,
     }),
-    possuiIndicadorEmissao: tinyint("possui_indicador_emissao"),
-    nomeIndicadorEmissao: varchar("nome_indicador_emissao", { length: 100 }),
-    cpfIndicadorEmissao: varchar("cpf_indicador_emissao", { length: 20 }),
-    bancoIndicadorEmissao: varchar("banco_indicador_emissao", { length: 100 }),
-    agenciaIndicadorEmissao: varchar("agencia_indicador_emissao", {
-      length: 20,
+    estaEmObrasEmissao: tinyint("esta_em_obras_emissao"),
+    estaEmObrasEmissaoAgendamento: int("esta_em_obras_emissao_agendamento"),
+    financPossuiEntradaEmissao: tinyint("financ_possui_entrada_emissao"),
+    formaPgtoEntradaEmissao: varchar("forma_pgto_entrada_emissao", {
+      length: 50,
     }),
-    contaIndicadorEmissao: varchar("conta_indicador_emissao", { length: 20 }),
-    pixIndicadorEmissao: varchar("pix_indicador_emissao", { length: 100 }),
+    formaPgtoSaldoEmissao: varchar("forma_pgto_saldo_emissao", { length: 50 }),
+    geraBoletoEmissao: tinyint("gera_boleto_emissao").default(0),
+    idEmissao: int("id_emissao").autoincrement().notNull(),
+    instaladorEmissao: int("instalador_emissao"),
+    iofEmissao: decimal("iof_emissao", { precision: 10, scale: 2 }),
+    jurosEmissao: decimal("juros_emissao", { precision: 10, scale: 2 }),
+    localAcomodaEquipEmissao: varchar("local_acomoda_equip_emissao", {
+      length: 100,
+    }),
+    materialAdcPorContaEmissao: int("material_adc_por_conta_emissao"),
+    nomeIndicadorEmissao: varchar("nome_indicador_emissao", { length: 100 }),
+    obsAprovacaoEmissao: varchar("obs_aprovacao_emissao", { length: 500 }),
+    obsAvistaOutrosEmissao: varchar("obs_avista_outros_emissao", {
+      length: 300,
+    }),
+    obsEntrada2Emissao: varchar("obs_entrada_2_emissao", { length: 500 }),
+    obsParaContratoEmissao: varchar("obs_para_contrato_emissao", {
+      length: 1000,
+    }),
+    obsParaGestaoEmissao: varchar("obs_para_gestao_emissao", { length: 1000 }),
+    obsPgtoEntradaEmissao: varchar("obs_pgto_entrada_emissao", { length: 300 }),
+    obsRecproprioOutrosEmissao: varchar("obs_recproprio_outros_emissao", {
+      length: 300,
+    }),
+    parcelasEmissao: int("parcelas_emissao"),
     percComissaoIndicadorEmissao: decimal("perc_comissao_indicador_emissao", {
       precision: 10,
       scale: 2,
     }).default("0.00"),
-    vlrComissaoIndicadorEmissao: decimal("vlr_comissao_indicador_emissao", {
+    percComissaoPadraoVendedorEmissao: decimal(
+      "perc_comissaoPadrao_vendedor_emissao",
+      { precision: 10, scale: 2 }
+    ),
+    percComissaoVendedorEmissao: decimal("perc_comissao_vendedor_emissao", {
       precision: 10,
       scale: 2,
-    }).default("0.00"),
+    }),
+    percMargemLucroEmissao: decimal("perc_margem_lucro_emissao", {
+      precision: 10,
+      scale: 2,
+    }),
+    percTotalComissaoEmissao: decimal("perc_total_comissao_emissao", {
+      precision: 10,
+      scale: 2,
+    }),
+    periodoInstalacaoEmissao: text("periodo_instalacao_emissao"),
+    pixIndicadorEmissao: varchar("pix_indicador_emissao", { length: 100 }),
+    possuiAdeqSubestacaoEmissao: tinyint("possui_adeq_subestacao_emissao"),
+    possuiFotovoltaicoEmissao: tinyint("possui_fotovoltaico_emissao"),
+    possuiIndicadorEmissao: tinyint("possui_indicador_emissao"),
+    prazoInstEquipEmissao: int("prazo_inst_equip_emissao").default(90),
     precoTabelaEmissao: decimal("preco_tabela_emissao", {
+      precision: 10,
+      scale: 2,
+    }),
+    prevConclusaoObrasAgendamentoEmissao: date(
+      "prev_conclusao_obras_agendamento_emissao",
+      { mode: "string" }
+    ),
+    prevConclusaoObrasEmissao: date("prev_conclusao_obras_emissao", {
+      mode: "string",
+    }),
+    qtdAjusteInclinacaoEmissao: int("qtd_ajuste_inclinacao_emissao"),
+    saldoRestanteEmissao: decimal("saldo_restante_emissao", {
+      precision: 10,
+      scale: 2,
+    }),
+    statusEmissao: int("status_emissao"),
+    tabelaCustoInstalacaoEmissao: int("tabela_custo_instalacao_emissao"),
+    tipoPgtoEmissao: int("tipo_pgto_emissao"),
+    tipoTrocaDisjuntorEmissao: varchar("tipo_troca_disjuntor_emissao", {
+      length: 50,
+    }),
+    topsunManutencaoPreventivaEmissao: varchar(
+      "topsun_manutencao_preventiva_emissao",
+      { length: 45 }
+    ),
+    topsunManutencaoSeguroEmissao: varchar("topsun_manutencao_seguro_emissao", {
+      length: 45,
+    }),
+    topsunSeguroEmissao: varchar("topsun_seguro_emissao", { length: 45 }),
+    usarColigadoEmissao: tinyint("usar_coligado_emissao").default(0),
+    valorEntrada2Emissao: decimal("valor_entrada_2_emissao", {
+      precision: 10,
+      scale: 2,
+    }),
+    valorEntradaEmissao: decimal("valor_entrada_emissao", {
       precision: 10,
       scale: 2,
     }),
@@ -1423,10 +1461,11 @@ export const dadosEmissaoContrato = mysqlTable(
       precision: 10,
       scale: 2,
     }),
-    bancorecEntradaEmissao: int("bancorec_entrada_emissao"),
-    bancorecFinanciamentoEmissao: int("bancorec_financiamento_emissao"),
-    tipoPgtoEmissao: int("tipo_pgto_emissao"),
-    geraBoletoEmissao: tinyint("gera_boleto_emissao").default(0),
+    valorParcelaEmissao: decimal("valor_parcela_emissao", {
+      precision: 10,
+      scale: 2,
+    }),
+    vendidoAquecimentoEmissao: tinyint("vendido_aquecimento_emissao"),
     vlrAvistaEntradaEmissao: decimal("vlr_avista_entrada_emissao", {
       precision: 10,
       scale: 2,
@@ -1443,43 +1482,38 @@ export const dadosEmissaoContrato = mysqlTable(
       precision: 10,
       scale: 2,
     }),
-    obsAvistaOutrosEmissao: varchar("obs_avista_outros_emissao", {
-      length: 300,
-    }),
-    financPossuiEntradaEmissao: tinyint("financ_possui_entrada_emissao"),
-    valorEntradaEmissao: decimal("valor_entrada_emissao", {
+    vlrComissaoIndicadorEmissao: decimal("vlr_comissao_indicador_emissao", {
+      precision: 10,
+      scale: 2,
+    }).default("0.00"),
+    vlrCustoFinanceiroCompraEmissao: decimal(
+      "vlr_custo_financeiro_compra_emissao",
+      { precision: 10, scale: 2 }
+    ),
+    vlrCustoFinanzeroEmissao: decimal("vlr_custo_finanzero_emissao", {
       precision: 10,
       scale: 2,
     }),
-    carenciaEmissao: varchar("carencia_emissao", { length: 50 }),
-    formaPgtoEntradaEmissao: varchar("forma_pgto_entrada_emissao", {
-      length: 50,
-    }),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    dataPrevisaoEntradaEmissao: date("data_previsao_entrada_emissao", {
-      mode: "string",
-    }),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    dataAvistaEntradaEmissao: date("data_avista_entrada_emissao", {
-      mode: "string",
-    }),
-    obsPgtoEntradaEmissao: varchar("obs_pgto_entrada_emissao", { length: 300 }),
-    saldoRestanteEmissao: decimal("saldo_restante_emissao", {
+    vlrCustoInstalacaoEmissao: decimal("vlr_custo_instalacao_emissao", {
       precision: 10,
       scale: 2,
     }),
-    parcelasEmissao: int("parcelas_emissao"),
-    iofEmissao: decimal("iof_emissao", { precision: 10, scale: 2 }),
-    jurosEmissao: decimal("juros_emissao", { precision: 10, scale: 2 }),
-    valorParcelaEmissao: decimal("valor_parcela_emissao", {
+    vlrCustoKitEmissao: decimal("vlr_custo_kit_emissao", {
       precision: 10,
       scale: 2,
     }),
-    formaPgtoSaldoEmissao: varchar("forma_pgto_saldo_emissao", { length: 50 }),
-    condicaoPgtoParcelaEmissao: varchar("condicao_pgto_parcela_emissao", {
-      length: 300,
+    vlrCustosTotaisEmissao: decimal("vlr_custos_totais_emissao", {
+      precision: 10,
+      scale: 2,
+    }).default("0.00"),
+    vlrCustounInstalacaoEmissao: decimal("vlr_custoun_instalacao_emissao", {
+      precision: 10,
+      scale: 2,
     }),
-    obsParaGestaoEmissao: varchar("obs_para_gestao_emissao", { length: 1000 }),
+    vlrEngenhariaEmissao: decimal("vlr_engenharia_emissao", {
+      precision: 10,
+      scale: 2,
+    }),
     vlrImpostosEmissao: decimal("vlr_impostos_emissao", {
       precision: 10,
       scale: 2,
@@ -1488,11 +1522,11 @@ export const dadosEmissaoContrato = mysqlTable(
       precision: 10,
       scale: 2,
     }),
-    vlrMaterialAdcEmissao: decimal("vlr_material_adc_emissao", {
+    vlrLucroLiquidoEmissao: decimal("vlr_lucro_liquido_emissao", {
       precision: 10,
       scale: 2,
     }),
-    vlrEngenhariaEmissao: decimal("vlr_engenharia_emissao", {
+    vlrMaterialAdcEmissao: decimal("vlr_material_adc_emissao", {
       precision: 10,
       scale: 2,
     }),
@@ -1500,48 +1534,6 @@ export const dadosEmissaoContrato = mysqlTable(
       precision: 10,
       scale: 2,
     }),
-    vlrCustoKitEmissao: decimal("vlr_custo_kit_emissao", {
-      precision: 10,
-      scale: 2,
-    }),
-    vlrtabCustounInstalacaoEmissao: decimal(
-      "vlrtab_custoun_instalacao_emissao",
-      { precision: 10, scale: 2 }
-    ),
-    vlrtabCustoInstalacaoEmissao: decimal("vlrtab_custo_instalacao_emissao", {
-      precision: 10,
-      scale: 2,
-    }),
-    vlrCustounInstalacaoEmissao: decimal("vlr_custoun_instalacao_emissao", {
-      precision: 10,
-      scale: 2,
-    }),
-    vlrCustoInstalacaoEmissao: decimal("vlr_custo_instalacao_emissao", {
-      precision: 10,
-      scale: 2,
-    }),
-    tabelaCustoInstalacaoEmissao: int("tabela_custo_instalacao_emissao"),
-    vlrCustoFinanzeroEmissao: decimal("vlr_custo_finanzero_emissao", {
-      precision: 10,
-      scale: 2,
-    }),
-    vlrCustoFinanceiroCompraEmissao: decimal(
-      "vlr_custo_financeiro_compra_emissao",
-      { precision: 10, scale: 2 }
-    ),
-    vlrTotalComissaoEmissao: decimal("vlr_total_comissao_emissao", {
-      precision: 10,
-      scale: 2,
-    }),
-    percTotalComissaoEmissao: decimal("perc_total_comissao_emissao", {
-      precision: 10,
-      scale: 2,
-    }),
-    obsParaContratoEmissao: varchar("obs_para_contrato_emissao", {
-      length: 1000,
-    }),
-    aprovacaoEmissao: tinyint("aprovacao_emissao").default(2),
-    obsAprovacaoEmissao: varchar("obs_aprovacao_emissao", { length: 500 }),
     vlrRecproprioFatEmissao: decimal("vlr_recproprio_fat_emissao", {
       precision: 10,
       scale: 2,
@@ -1554,31 +1546,18 @@ export const dadosEmissaoContrato = mysqlTable(
       precision: 10,
       scale: 2,
     }),
-    valorEntrada2Emissao: decimal("valor_entrada_2_emissao", {
+    vlrTotalComissaoEmissao: decimal("vlr_total_comissao_emissao", {
       precision: 10,
       scale: 2,
     }),
-    obsEntrada2Emissao: varchar("obs_entrada_2_emissao", { length: 500 }),
-    obsRecproprioOutrosEmissao: varchar("obs_recproprio_outros_emissao", {
-      length: 300,
-    }),
-    bancoFinanciamentoEmissao: varchar("banco_financiamento_emissao", {
-      length: 100,
-    }),
-    dataTabelaEmissao: varchar("data_tabela_emissao", { length: 15 }),
-    vlrCustosTotaisEmissao: decimal("vlr_custos_totais_emissao", {
-      precision: 10,
-      scale: 2,
-    }).default("0.00"),
-    vlrLucroLiquidoEmissao: decimal("vlr_lucro_liquido_emissao", {
+    vlrtabCustoInstalacaoEmissao: decimal("vlrtab_custo_instalacao_emissao", {
       precision: 10,
       scale: 2,
     }),
-    percMargemLucroEmissao: decimal("perc_margem_lucro_emissao", {
-      precision: 10,
-      scale: 2,
-    }),
-    statusEmissao: int("status_emissao"),
+    vlrtabCustounInstalacaoEmissao: decimal(
+      "vlrtab_custoun_instalacao_emissao",
+      { precision: 10, scale: 2 }
+    ),
   },
   (table) => [
     index("cod_coleta_emissao").on(table.codColetaEmissao),
@@ -1707,21 +1686,20 @@ export const dadosEtpLayout = mysqlTable(
 export const dadosEtpOs = mysqlTable(
   "dados_etp_os",
   {
-    idDados: int("id_dados").autoincrement().notNull(),
+    caminhoOsDados: varchar("caminho_os_dados", { length: 100 }),
     codColetaDados: int("cod_coleta_dados").notNull(),
-    medidorDados: varchar("medidor_dados", { length: 100 }),
-    diasPrevOsDados: int("dias_prev_os_dados"),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
     dataPrevInicioOsDados: date("data_prev_inicio_os_dados", {
       mode: "string",
     }),
+    diasPrevOsDados: int("dias_prev_os_dados"),
+    idDados: int("id_dados").autoincrement().notNull(),
     localInstInversorOsDados: varchar("local_inst_inversor_os_dados", {
       length: 100,
     }),
     materiaisFaltantesOsDados: varchar("materiais_faltantes_os_dados", {
       length: 500,
     }),
-    caminhoOsDados: varchar("caminho_os_dados", { length: 100 }),
+    medidorDados: varchar("medidor_dados", { length: 100 }),
   },
   (table) => [
     index("cod_coleta_dados").on(table.codColetaDados),
@@ -1732,20 +1710,19 @@ export const dadosEtpOs = mysqlTable(
 export const dadosEtpPgtoEntrada = mysqlTable(
   "dados_etp_pgto_entrada",
   {
-    idPgto: int("id_pgto").autoincrement().notNull(),
     codColetaPgto: int("cod_coleta_pgto").notNull(),
-    codUsuarioPgto: int("cod_usuario_pgto").notNull(),
     codUsuarioEditouPgto: int("cod_usuario_editou_pgto"),
     codUsuarioInativouPgto: int("cod_usuario_inativou_pgto"),
+    codUsuarioPgto: int("cod_usuario_pgto").notNull(),
+    dataPgto: date("data_pgto", { mode: "string" }).notNull(),
     datahoraInativouPgto: datetime("datahora_inativou_pgto", {
       mode: "string",
     }),
-    motivoInativouPgto: varchar("motivo_inativou_pgto", { length: 300 }),
     descricaoPgto: varchar("descricao_pgto", { length: 1000 }).notNull(),
-    valorPgto: decimal("valor_pgto", { precision: 10, scale: 2 }).notNull(),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    dataPgto: date("data_pgto", { mode: "string" }).notNull(),
+    idPgto: int("id_pgto").autoincrement().notNull(),
+    motivoInativouPgto: varchar("motivo_inativou_pgto", { length: 300 }),
     statusPgto: int("status_pgto").notNull(),
+    valorPgto: decimal("valor_pgto", { precision: 10, scale: 2 }).notNull(),
   },
   (table) => [
     index("cod_coleta_pgto").on(table.codColetaPgto),
@@ -2014,17 +1991,16 @@ export const engenheiroResponsavelColeta = mysqlTable(
 export const engenheirosResponsaveis = mysqlTable(
   "engenheiros_responsaveis",
   {
+    assEngenheiro: text("ass_engenheiro").notNull(),
+    cpfEngenheiro: varchar("cpf_engenheiro", { length: 200 }).notNull(),
+    dataNascEngenheiro: date("data_nasc_engenheiro", { mode: "string" }),
+    emailEngenheiro: varchar("email_engenheiro", { length: 100 }).notNull(),
     idEngenheiro: int("id_engenheiro").autoincrement().notNull(),
     nomeEngenheiro: varchar("nome_engenheiro", { length: 100 }).notNull(),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    dataNascEngenheiro: date("data_nasc_engenheiro", { mode: "string" }),
-    cpfEngenheiro: varchar("cpf_engenheiro", { length: 200 }).notNull(),
-    assEngenheiro: text("ass_engenheiro").notNull(),
-    emailEngenheiro: varchar("email_engenheiro", { length: 100 }).notNull(),
+    statusEngenheiro: int("status_engenheiro").notNull(),
     telefoneEngenheiro: varchar("telefone_engenheiro", {
       length: 20,
     }).notNull(),
-    statusEngenheiro: int("status_engenheiro").notNull(),
   },
   (table) => [
     primaryKey({
@@ -2156,48 +2132,46 @@ export const estruturasFixacao = mysqlTable(
 export const etapas = mysqlTable(
   "etapas",
   {
-    idEtapa: int("id_etapa").autoincrement().notNull(),
-    codCfgEtapa: int("cod_cfg_etapa").notNull(),
-    codCfgCategoria: int("cod_cfg_categoria").notNull(),
-    codColetaEtapa: int("cod_coleta_etapa").notNull(),
-    obsEtapa: varchar("obs_etapa", { length: 10_000 }),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    data1Etapa: date("data1_etapa", { mode: "string" }),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    data2Etapa: date("data2_etapa", { mode: "string" }),
-    campopadraoEtapa: varchar("campopadrao_etapa", { length: 100 }),
+    bloqueadaEtapa: int("bloqueada_etapa").default(0).notNull(),
     campopadrao2Etapa: varchar("campopadrao2_etapa", { length: 100 }),
-    statusAprovacaoEtapa: tinyint("status_aprovacao_etapa")
-      .default(2)
-      .notNull(),
-    obsAprovacaoEtapa: varchar("obs_aprovacao_etapa", { length: 10_000 }),
+    campopadraoEtapa: varchar("campopadrao_etapa", { length: 100 }),
+    codCfgCategoria: int("cod_cfg_categoria").notNull(),
+    codCfgEtapa: int("cod_cfg_etapa").notNull(),
+    codColetaEtapa: int("cod_coleta_etapa").notNull(),
     codUsuConclusaoEtapa: int("cod_usu_conclusao_etapa"),
+    countAssinaturaEtapa: int("count_assinatura_etapa"),
+    data1Etapa: date("data1_etapa", { mode: "string" }),
+    data2Etapa: date("data2_etapa", { mode: "string" }),
     datahoraAberturaEtapa: datetime("datahora_abertura_etapa", {
       mode: "string",
     }),
     datahoraConclusaoEtapa: datetime("datahora_conclusao_etapa", {
       mode: "string",
     }),
-    motivoReaberturaEtapa: varchar("motivo_reabertura_etapa", { length: 1000 }),
-    usuarioReaberturaEtapa: int("usuario_reabertura_etapa"),
     datahoraReaberturaEtapa: datetime("datahora_reabertura_etapa", {
       mode: "string",
+    }),
+    documentKeyEtapa: varchar("document_key_etapa", { length: 500 }),
+    documentosAssinadosEtapa: varchar("documentos_assinados_etapa", {
+      length: 60,
     }),
     flagExibirEtapasOcultasEtapa: tinyint(
       "flag_exibir_etapas_ocultas_etapa"
     ).default(0),
     flagJaFoiConcluidaEtapa: tinyint("flag_ja_foi_concluida_etapa").default(0),
-    bloqueadaEtapa: int("bloqueada_etapa").default(0).notNull(),
-    documentKeyEtapa: varchar("document_key_etapa", { length: 500 }),
-    countAssinaturaEtapa: int("count_assinatura_etapa"),
-    documentosAssinadosEtapa: varchar("documentos_assinados_etapa", {
-      length: 60,
-    }),
+    idEtapa: int("id_etapa").autoincrement().notNull(),
     isCustoAdicionalEtapa: int("isCustoAdicional_etapa"),
     listarAppEtapa: int("listarApp_etapa").default(1).notNull(),
-    statusEtapa: int("status_etapa").notNull(),
-    qtdDocsEnviadosAssinaturaEtapa: int("qtd_docs_enviados_assinatura_etapa"),
+    motivoReaberturaEtapa: varchar("motivo_reabertura_etapa", { length: 1000 }),
+    obsAprovacaoEtapa: varchar("obs_aprovacao_etapa", { length: 10_000 }),
+    obsEtapa: varchar("obs_etapa", { length: 10_000 }),
     origemConclusaoEtapa: int("origemConclusao_etapa").default(0),
+    qtdDocsEnviadosAssinaturaEtapa: int("qtd_docs_enviados_assinatura_etapa"),
+    statusAprovacaoEtapa: tinyint("status_aprovacao_etapa")
+      .default(2)
+      .notNull(),
+    statusEtapa: int("status_etapa").notNull(),
+    usuarioReaberturaEtapa: int("usuario_reabertura_etapa"),
   },
   (table) => [
     index("cod_cfg_etapa").on(table.codCfgEtapa),
@@ -2529,21 +2503,20 @@ export const fotosTipoTelhado = mysqlTable(
 export const hdeskChamados = mysqlTable(
   "hdesk_chamados",
   {
-    idChamado: int("id_chamado").autoincrement().notNull(),
-    codCliente: int("cod_cliente"),
-    codUsuarioCriador: int("cod_usuario_criador").notNull(),
-    codTipoChamado: int("cod_tipo_chamado").notNull(),
-    urgenciaChamado: int("urgencia_chamado").notNull(),
     assuntoChamado: varchar("assunto_chamado", { length: 100 }).notNull(),
-    descricaoChamado: varchar("descricao_chamado", { length: 2000 }).notNull(),
+    codCliente: int("cod_cliente"),
+    codTipoChamado: int("cod_tipo_chamado").notNull(),
+    codUsuarioCriador: int("cod_usuario_criador").notNull(),
     dataAberturaChamado: datetime("data_abertura_chamado", {
       mode: "string",
     }).notNull(),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    dataPrevisaoChamado: date("data_previsao_chamado", { mode: "string" }),
     dataBaixaChamado: datetime("data_baixa_chamado", { mode: "string" }),
+    dataPrevisaoChamado: date("data_previsao_chamado", { mode: "string" }),
+    descricaoChamado: varchar("descricao_chamado", { length: 2000 }).notNull(),
+    idChamado: int("id_chamado").autoincrement().notNull(),
     obsBaixaChamado: varchar("obs_baixa_chamado", { length: 500 }),
     statusChamado: int("status_chamado").notNull(),
+    urgenciaChamado: int("urgencia_chamado").notNull(),
   },
   (table) => [
     primaryKey({
@@ -2556,17 +2529,16 @@ export const hdeskChamados = mysqlTable(
 export const hdeskOs = mysqlTable(
   "hdesk_os",
   {
-    idOs: int("id_os").autoincrement().notNull(),
     codChamado: int("cod_chamado").notNull(),
     codUsuarioCriador: int("cod_usuario_criador").notNull(),
     codUsuarioDesignado: int("cod_usuario_designado").notNull(),
-    objetivoOs: varchar("objetivo_os", { length: 100 }).notNull(),
-    descricaoOs: varchar("descricao_os", { length: 2000 }).notNull(),
     dataAberturaOs: datetime("data_abertura_os", { mode: "string" }).notNull(),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    dataPrevisaoOs: date("data_previsao_os", { mode: "string" }).notNull(),
-    horasPrevisaoOs: varchar("horas_previsao_os", { length: 10 }).notNull(),
     dataBaixaOs: datetime("data_baixa_os", { mode: "string" }),
+    dataPrevisaoOs: date("data_previsao_os", { mode: "string" }).notNull(),
+    descricaoOs: varchar("descricao_os", { length: 2000 }).notNull(),
+    horasPrevisaoOs: varchar("horas_previsao_os", { length: 10 }).notNull(),
+    idOs: int("id_os").autoincrement().notNull(),
+    objetivoOs: varchar("objetivo_os", { length: 100 }).notNull(),
     statusOs: int("status_os").notNull(),
   },
   (table) => [primaryKey({ columns: [table.idOs], name: "hdesk_os_id_os" })]
@@ -2575,15 +2547,14 @@ export const hdeskOs = mysqlTable(
 export const hdeskOsLancamentos = mysqlTable(
   "hdesk_os_lancamentos",
   {
-    idLancamento: int("id_lancamento").autoincrement().notNull(),
     codOs: int("cod_os").notNull(),
     codUsuario: int("cod_usuario").notNull(),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
     dataLancamento: date("data_lancamento", { mode: "string" }).notNull(),
-    horasLancamento: varchar("horas_lancamento", { length: 10 }).notNull(),
     descricaoLancamento: varchar("descricao_lancamento", {
       length: 500,
     }).notNull(),
+    horasLancamento: varchar("horas_lancamento", { length: 10 }).notNull(),
+    idLancamento: int("id_lancamento").autoincrement().notNull(),
     statusLancamento: int("status_lancamento").notNull(),
   },
   (table) => [
@@ -2693,16 +2664,15 @@ export const inclinacoesTelhado = mysqlTable(
 export const informativos = mysqlTable(
   "informativos",
   {
-    idInformativo: int("id_informativo").autoincrement().notNull(),
-    tituloInformativo: varchar("titulo_informativo", { length: 255 }).notNull(),
+    capaInformativo: varchar("capa_informativo", { length: 255 }),
     categoriaInformativo: int("categoria_informativo").notNull(),
+    dataInformativo: date("data_informativo", { mode: "string" }).notNull(),
     descricaoInformativo: varchar("descricao_informativo", {
       length: 10_000,
     }).notNull(),
-    capaInformativo: varchar("capa_informativo", { length: 255 }),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    dataInformativo: date("data_informativo", { mode: "string" }).notNull(),
+    idInformativo: int("id_informativo").autoincrement().notNull(),
     statusInformativo: int("status_informativo").notNull(),
+    tituloInformativo: varchar("titulo_informativo", { length: 255 }).notNull(),
   },
   (table) => [
     primaryKey({
@@ -3743,20 +3713,19 @@ export const origens = mysqlTable(
 export const osReparo = mysqlTable(
   "os_reparo",
   {
-    idosReparo: int("idos_reparo").autoincrement().notNull(),
-    clienteReparo: int("cliente_reparo").notNull(),
-    ucReparo: int("uc_reparo").notNull(),
-    responsavelReparo: varchar("responsavel_reparo", { length: 50 }).notNull(),
-    telefoneReparo: varchar("telefone_reparo", { length: 20 }).notNull(),
     caminhoOsReparo: varchar("caminhoOS_reparo", { length: 10_000 }),
-    vinculoColetaReparo: int("vinculoColeta_reparo").notNull(),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
+    clienteReparo: int("cliente_reparo").notNull(),
+    custoReparo: varchar("custo_reparo", { length: 300 }).notNull(),
     dataReclamacaoReparo: date("dataReclamacao_reparo", {
       mode: "string",
     }).notNull(),
-    custoReparo: varchar("custo_reparo", { length: 300 }).notNull(),
+    idosReparo: int("idos_reparo").autoincrement().notNull(),
     ocorrenciaReparo: varchar("ocorrencia_reparo", { length: 3000 }).notNull(),
+    responsavelReparo: varchar("responsavel_reparo", { length: 50 }).notNull(),
     statusOsReparo: int("statusOS_reparo").notNull(),
+    telefoneReparo: varchar("telefone_reparo", { length: 20 }).notNull(),
+    ucReparo: int("uc_reparo").notNull(),
+    vinculoColetaReparo: int("vinculoColeta_reparo").notNull(),
   },
   (table) => [
     primaryKey({ columns: [table.idosReparo], name: "os_reparo_idos_reparo" }),
@@ -4082,38 +4051,33 @@ export const posvChamadoHistorico = mysqlTable(
 export const posvChamados = mysqlTable(
   "posv_chamados",
   {
-    idCham: int("id_cham").autoincrement().notNull(),
-    tipoCham: int("tipo_cham").notNull(),
-    chamadoRefCham: int("chamadoRef_cham"),
+    aberturaCham: date("abertura_cham", { mode: "string" }),
     autorCham: int("autor_cham"),
+    chamadoRefCham: int("chamadoRef_cham"),
+    codCategoriaCham: int("cod_categoria_cham"),
     codClienteCham: int("cod_cliente_cham"),
     codColetaCham: int("cod_coleta_cham"),
-    codCategoriaCham: int("cod_categoria_cham"),
     codTipoDuvidaCham: int("cod_tipo_duvida_cham"),
     codTipoReclamacaoCham: int("cod_tipo_reclamacao_cham"),
     codTipoServicoCham: int("cod_tipo_servico_cham"),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    aberturaCham: date("abertura_cham", { mode: "string" }),
-    prioridadeCham: int("prioridade_cham"),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    previsaoCham: date("previsao_cham", { mode: "string" }),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
+    condicaoPagamentoCham: int("condicao_pagamento_cham"),
+    dataCancelamento: date("data_cancelamento", { mode: "string" }),
     dataFaturamentoCham: date("data_faturamento_cham", { mode: "string" }),
+    idCham: int("id_cham").autoincrement().notNull(),
+    motivoCancelamento: varchar("motivo_cancelamento", { length: 500 }),
     nroNfCham: varchar("nro_nf_cham", { length: 100 }),
+    obsCham: varchar("obs_cham", { length: 2000 }),
+    obsInternasCham: varchar("obs_internas_cham", { length: 3000 }),
+    previsaoCham: date("previsao_cham", { mode: "string" }),
+    previsaoOriginalCham: date("previsao_original_cham", { mode: "string" }),
+    prioridadeCham: int("prioridade_cham"),
+    statusCham: int("status_cham").notNull(),
+    tipoCham: int("tipo_cham").notNull(),
     totalFaturamentoCham: decimal("total_faturamento_cham", {
       precision: 10,
       scale: 2,
     }),
-    condicaoPagamentoCham: int("condicao_pagamento_cham"),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    previsaoOriginalCham: date("previsao_original_cham", { mode: "string" }),
-    obsCham: varchar("obs_cham", { length: 2000 }),
-    obsInternasCham: varchar("obs_internas_cham", { length: 3000 }),
-    motivoCancelamento: varchar("motivo_cancelamento", { length: 500 }),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    dataCancelamento: date("data_cancelamento", { mode: "string" }),
     ultimoStatusCham: int("ultimoStatus_cham"),
-    statusCham: int("status_cham").notNull(),
   },
   (table) => [
     index("cod_cliente_cham").on(table.codClienteCham),
@@ -4224,62 +4188,59 @@ export const posvMotivosReagendamento = mysqlTable(
 export const posvOrdensServico = mysqlTable(
   "posv_ordens_servico",
   {
-    idPvos: int("id_pvos").autoincrement().notNull(),
+    caminhoLayoutPvos: varchar("caminho_layout_pvos", { length: 3000 }),
+    caminhoOsPvos: varchar("caminho_os_pvos", { length: 3000 }),
     codChamPvos: int("cod_cham_pvos").notNull(),
-    equipePvos: int("equipe_pvos"),
-    codRespfinPvos: int("cod_respfin_pvos").default(0).notNull(),
-    terceiroPvos: int("terceiro_pvos").default(0).notNull(),
     codExecucaoPvos: int("codExecucao_pvos").notNull(),
     codExecutorPvos: int("codExecutor_pvos").notNull(),
-    qtdModulosPvos: int("qtdModulos_pvos").notNull(),
+    codInstaladorPagantePvos: int("codInstaladorPagante_pvos"),
+    codRespfinPvos: int("cod_respfin_pvos").default(0).notNull(),
+    condicaoPagamentoPvos: int("condicaoPagamento_pvos"),
+    custoAssumidoPvos: int("custoAssumido_pvos"),
     dataAberturaPvos: datetime("data_abertura_pvos", {
       mode: "string",
     }).notNull(),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
+    dataBaixaPvos: datetime("data_baixa_pvos", { mode: "string" }),
     dataServicoPvos: date("data_servico_pvos", { mode: "string" }),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    datafinalServicoPvos: date("datafinal_servico_pvos", { mode: "string" }),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
     dataconclusaoServicoPvos: date("dataconclusao_servico_pvos", {
       mode: "string",
     }),
-    dataBaixaPvos: datetime("data_baixa_pvos", { mode: "string" }),
-    caminhoOsPvos: varchar("caminho_os_pvos", { length: 3000 }),
-    caminhoLayoutPvos: varchar("caminho_layout_pvos", { length: 3000 }),
-    userGerouPvos: int("user_gerou_pvos").notNull(),
-    obsPvos: varchar("obs_pvos", { length: 3000 }),
-    obsParaOsPvos: varchar("obs_para_os_pvos", { length: 3000 }),
-    telefoneAdicionalPvos: varchar("telefone_adicional_pvos", { length: 20 }),
+    datafinalServicoPvos: date("datafinal_servico_pvos", { mode: "string" }),
+    datasConsiderarPvos: int("datas_considerar_pvos").default(0).notNull(),
+    equipePvos: int("equipe_pvos"),
+    fotosEnviadasAppPvos: int("fotosEnviadasApp_pvos"),
+    idPvos: int("id_pvos").autoincrement().notNull(),
+    indicarInstaladorPvos: int("indicarInstalador_pvos").default(0).notNull(),
+    justificativaInstaladorPagantePvos: varchar(
+      "justificativaInstaladorPagante_pvos",
+      { length: 1500 }
+    ),
     motivoReagendamentoPvos: varchar("motivo_reagendamento_pvos", {
       length: 1000,
+    }),
+    obsCustoAssumidoPvos: varchar("obsCustoAssumido_pvos", { length: 1000 }),
+    obsParaOsPvos: varchar("obs_para_os_pvos", { length: 3000 }),
+    obsPvos: varchar("obs_pvos", { length: 3000 }),
+    periodoPvos: varchar("periodo_pvos", { length: 30 }),
+    qtdModulosPvos: int("qtdModulos_pvos").notNull(),
+    statusPvos: int("status_pvos").notNull(),
+    telefoneAdicionalPvos: varchar("telefone_adicional_pvos", { length: 20 }),
+    terceiroPvos: int("terceiro_pvos").default(0).notNull(),
+    userGerouPvos: int("user_gerou_pvos").notNull(),
+    valorBaixaPvos: decimal("valorBaixa_pvos", { precision: 10, scale: 2 }),
+    valorClientePvos: decimal("valorCliente_pvos", { precision: 10, scale: 2 }),
+    valorInstaladorPagantePvos: decimal("valorInstaladorPagante_pvos", {
+      precision: 10,
+      scale: 2,
     }),
     valorPrebaixaPvos: decimal("valorPrebaixa_pvos", {
       precision: 10,
       scale: 2,
     }),
-    valorBaixaPvos: decimal("valorBaixa_pvos", { precision: 10, scale: 2 }),
-    valorClientePvos: decimal("valorCliente_pvos", { precision: 10, scale: 2 }),
-    condicaoPagamentoPvos: int("condicaoPagamento_pvos"),
     valorTerceiroAberturaPvos: decimal("valorTerceiroAbertura_pvos", {
       precision: 10,
       scale: 2,
     }),
-    fotosEnviadasAppPvos: int("fotosEnviadasApp_pvos"),
-    datasConsiderarPvos: int("datas_considerar_pvos").default(0).notNull(),
-    periodoPvos: varchar("periodo_pvos", { length: 30 }),
-    custoAssumidoPvos: int("custoAssumido_pvos"),
-    obsCustoAssumidoPvos: varchar("obsCustoAssumido_pvos", { length: 1000 }),
-    indicarInstaladorPvos: int("indicarInstalador_pvos").default(0).notNull(),
-    codInstaladorPagantePvos: int("codInstaladorPagante_pvos"),
-    valorInstaladorPagantePvos: decimal("valorInstaladorPagante_pvos", {
-      precision: 10,
-      scale: 2,
-    }),
-    justificativaInstaladorPagantePvos: varchar(
-      "justificativaInstaladorPagante_pvos",
-      { length: 1500 }
-    ),
-    statusPvos: int("status_pvos").notNull(),
   },
   (table) => [
     index("cod_cham_pvos").on(table.codChamPvos),
@@ -4297,9 +4258,36 @@ export const posvOrdensServico = mysqlTable(
 export const posvPrebaixaOs = mysqlTable(
   "posv_prebaixa_os",
   {
-    idPrebaixaOs: int("id_prebaixa_os").autoincrement().notNull(),
-    osPrebaixaOs: int("os_prebaixa_os").notNull(),
     chamadoPrebaixaOs: int("chamado_prebaixa_os").notNull(),
+    conclusaoServicoOs: date("conclusaoServico_os", {
+      mode: "string",
+    }).notNull(),
+    datetimePrebaixaOs: datetime("datetime_prebaixa_os", {
+      mode: "string",
+    }).notNull(),
+    descricaoAtrasoPrebaixaOs: varchar("descricaoAtraso_prebaixa_os", {
+      length: 3000,
+    }),
+    idPrebaixaOs: int("id_prebaixa_os").autoincrement().notNull(),
+    motivoAtrasoPrebaixaOs: int("motivoAtraso_prebaixa_os"),
+    obsPrebaixaOs: varchar("obs_prebaixa_os", { length: 3000 }),
+    origemPrebaixaOs: int("origem_prebaixa_os").default(0).notNull(),
+    osAtrasadaPrebaixaOs: int("OsAtrasada_prebaixa_os"),
+    osPrebaixaOs: int("os_prebaixa_os").notNull(),
+    pdfPrebaixaOs: varchar("pdf_prebaixa_os", { length: 500 }),
+    qtdHorasPrebaixaOs: int("qtdHoras_prebaixa_os"),
+    qtdKmPrebaixaOs: int("qtdKm_prebaixa_os"),
+    statusPrebaixaOs: int("status_prebaixa_os").notNull(),
+    tipoCalculoPrebaixaOs: int("tipoCalculo_prebaixa_os").default(0).notNull(),
+    userPrebaixaOs: int("user_prebaixa_os").notNull(),
+    valorHoraPrebaixaOs: decimal("valorHora_prebaixa_os", {
+      precision: 10,
+      scale: 2,
+    }),
+    valorKmPrebaixaOs: decimal("valorKm_prebaixa_os", {
+      precision: 10,
+      scale: 2,
+    }),
     valorPrebaixaOs: decimal("valor_prebaixa_os", {
       precision: 10,
       scale: 2,
@@ -4308,13 +4296,7 @@ export const posvPrebaixaOs = mysqlTable(
       precision: 10,
       scale: 2,
     }).default("0.00"),
-    qtdKmPrebaixaOs: int("qtdKm_prebaixa_os"),
-    qtdHorasPrebaixaOs: int("qtdHoras_prebaixa_os"),
-    valorKmPrebaixaOs: decimal("valorKm_prebaixa_os", {
-      precision: 10,
-      scale: 2,
-    }),
-    valorHoraPrebaixaOs: decimal("valorHora_prebaixa_os", {
+    valorTotalHoraPrebaixaOs: decimal("valorTotalHora_prebaixa_os", {
       precision: 10,
       scale: 2,
     }),
@@ -4322,28 +4304,6 @@ export const posvPrebaixaOs = mysqlTable(
       precision: 10,
       scale: 2,
     }),
-    valorTotalHoraPrebaixaOs: decimal("valorTotalHora_prebaixa_os", {
-      precision: 10,
-      scale: 2,
-    }),
-    tipoCalculoPrebaixaOs: int("tipoCalculo_prebaixa_os").default(0).notNull(),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    conclusaoServicoOs: date("conclusaoServico_os", {
-      mode: "string",
-    }).notNull(),
-    datetimePrebaixaOs: datetime("datetime_prebaixa_os", {
-      mode: "string",
-    }).notNull(),
-    userPrebaixaOs: int("user_prebaixa_os").notNull(),
-    motivoAtrasoPrebaixaOs: int("motivoAtraso_prebaixa_os"),
-    descricaoAtrasoPrebaixaOs: varchar("descricaoAtraso_prebaixa_os", {
-      length: 3000,
-    }),
-    osAtrasadaPrebaixaOs: int("OsAtrasada_prebaixa_os"),
-    obsPrebaixaOs: varchar("obs_prebaixa_os", { length: 3000 }),
-    pdfPrebaixaOs: varchar("pdf_prebaixa_os", { length: 500 }),
-    origemPrebaixaOs: int("origem_prebaixa_os").default(0).notNull(),
-    statusPrebaixaOs: int("status_prebaixa_os").notNull(),
   },
   (table) => [
     index("chamado_prebaixa_os").on(table.chamadoPrebaixaOs),
@@ -4373,32 +4333,23 @@ export const posvPrioridades = mysqlTable(
 export const posvProjetosExternos = mysqlTable(
   "posv_projetos_externos",
   {
-    idProjetoExterno: int("id_projeto_externo").autoincrement().notNull(),
+    cidadeProjetoExterno: varchar("cidade_projeto_externo", { length: 100 }),
     clienteProjetoExterno: int("cliente_projeto_externo"),
-    enderecoUcProjetoExterno: varchar("enderecoUC_projeto_externo", {
-      length: 1000,
+    codigoProjetoExterno: int("codigo_projeto_externo"),
+    coletaRefProjetoExterno: int("coletaRef_projeto_externo"),
+    conclusaoInstProjetoExterno: varchar("conclusaoInst_projeto_externo", {
+      length: 20,
     }),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
     dataFechamentoProjetoExterno: date("dataFechamento_projeto_externo", {
       mode: "string",
     }),
-    codigoProjetoExterno: int("codigo_projeto_externo"),
-    nroUcProjetoExterno: varchar("nroUC_projeto_externo", { length: 50 }),
-    coletaRefProjetoExterno: int("coletaRef_projeto_externo"),
-    vendedorProjetoExterno: int("vendedor_projeto_externo"),
-    cidadeProjetoExterno: varchar("cidade_projeto_externo", { length: 100 }),
-    qtdModulosProjetoExterno: int("qtdModulos_projeto_externo"),
-    marcaModuloProjetoExterno: varchar("marcaModulo_projeto_externo", {
-      length: 500,
+    dataUltimaMntProjetoExterno: varchar("dataUltimaMnt_projeto_externo", {
+      length: 20,
     }),
-    modeloModuloProjetoExterno: varchar("modeloModulo_projeto_externo", {
-      length: 500,
+    enderecoUcProjetoExterno: varchar("enderecoUC_projeto_externo", {
+      length: 1000,
     }),
-    potenciaModuloProjetoExterno: int("potenciaModulo_projeto_externo"),
-    potenciaSistemaProjetoExterno: decimal("potenciaSistema_projeto_externo", {
-      precision: 10,
-      scale: 2,
-    }),
+    idProjetoExterno: int("id_projeto_externo").autoincrement().notNull(),
     inversor1ProjetoExterno: varchar("inversor1_projeto_externo", {
       length: 500,
     }),
@@ -4408,20 +4359,28 @@ export const posvProjetosExternos = mysqlTable(
     inversor3ProjetoExterno: varchar("inversor3_projeto_externo", {
       length: 500,
     }),
+    marcaModuloProjetoExterno: varchar("marcaModulo_projeto_externo", {
+      length: 500,
+    }),
+    modeloModuloProjetoExterno: varchar("modeloModulo_projeto_externo", {
+      length: 500,
+    }),
+    nroUcProjetoExterno: varchar("nroUC_projeto_externo", { length: 50 }),
+    obsProjetoExterno: varchar("obs_projeto_externo", { length: 2000 }),
+    potenciaModuloProjetoExterno: int("potenciaModulo_projeto_externo"),
+    potenciaSistemaProjetoExterno: decimal("potenciaSistema_projeto_externo", {
+      precision: 10,
+      scale: 2,
+    }),
     qtdInversor1ProjetoExterno: int("qtdInversor1_projeto_externo"),
     qtdInversor2ProjetoExterno: int("qtdInversor2_projeto_externo"),
     qtdInversor3ProjetoExterno: int("qtdInversor3_projeto_externo"),
+    qtdModulosProjetoExterno: int("qtdModulos_projeto_externo"),
+    statusProjetoExterno: int("status_projeto_externo"),
     tipoTelhadoProjetoExterno: varchar("tipoTelhado_projeto_externo", {
       length: 500,
     }),
-    conclusaoInstProjetoExterno: varchar("conclusaoInst_projeto_externo", {
-      length: 20,
-    }),
-    dataUltimaMntProjetoExterno: varchar("dataUltimaMnt_projeto_externo", {
-      length: 20,
-    }),
-    obsProjetoExterno: varchar("obs_projeto_externo", { length: 2000 }),
-    statusProjetoExterno: int("status_projeto_externo"),
+    vendedorProjetoExterno: int("vendedor_projeto_externo"),
   },
   (table) => [
     index("cliente_projeto_externo").on(table.clienteProjetoExterno),
@@ -4520,36 +4479,32 @@ export const posvReaberturaValidacaoCusto = mysqlTable(
 export const posvReagendamentos = mysqlTable(
   "posv_reagendamentos",
   {
-    idPvosReagendamento: int("id_pvos_reagendamento").autoincrement().notNull(),
-    osPvosReagendamento: int("os_pvos_reagendamento").notNull(),
     chamadoPvosReagendamento: int("chamado_pvos_reagendamento").notNull(),
-    motivoReagendamentoPvos: int("motivo_reagendamento_pvos").notNull(),
+    datetimeReagendamento: datetime("datetime_reagendamento", {
+      mode: "string",
+    }).notNull(),
     descMotivoReagendamentoPvos: varchar("descMotivo_reagendamento_pvos", {
       length: 3000,
     }).notNull(),
     execucaoReagendamento: int("execucao_reagendamento").notNull(),
-    terceiroPvosReagendamento: int("terceiro_pvos_reagendamento").notNull(),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    inicioOriginalReagendamento: date("inicioOriginal_reagendamento", {
-      mode: "string",
-    }).notNull(),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
     fimOriginalReagendamento: date("fimOriginal_reagendamento", {
       mode: "string",
     }).notNull(),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    novoInicioReagendamento: date("novoInicio_reagendamento", {
+    idPvosReagendamento: int("id_pvos_reagendamento").autoincrement().notNull(),
+    inicioOriginalReagendamento: date("inicioOriginal_reagendamento", {
       mode: "string",
     }).notNull(),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
+    motivoReagendamentoPvos: int("motivo_reagendamento_pvos").notNull(),
     novoFimReagendamento: date("novoFim_reagendamento", {
       mode: "string",
     }).notNull(),
-    datetimeReagendamento: datetime("datetime_reagendamento", {
+    novoInicioReagendamento: date("novoInicio_reagendamento", {
       mode: "string",
     }).notNull(),
-    userReagendamento: int("user_reagendamento").notNull(),
+    osPvosReagendamento: int("os_pvos_reagendamento").notNull(),
     statusReagendamento: int("status_reagendamento").notNull(),
+    terceiroPvosReagendamento: int("terceiro_pvos_reagendamento").notNull(),
+    userReagendamento: int("user_reagendamento").notNull(),
   },
   (table) => [
     index("chamado_pvos_reagendamento").on(table.chamadoPvosReagendamento),
@@ -4601,18 +4556,16 @@ export const posvStatusChamado = mysqlTable(
 export const posvTarefas = mysqlTable(
   "posv_tarefas",
   {
-    idTarefa: int("id_tarefa").autoincrement().notNull(),
-    tituloTarefa: varchar("titulo_tarefa", { length: 255 }).notNull(),
-    responsavelTarefa: int("responsavel_tarefa").notNull(),
-    descricaoTarefa: varchar("descricao_tarefa", { length: 2000 }).notNull(),
     codChamadoTarefa: int("cod_chamado_tarefa").notNull(),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    dataLimiteTarefa: date("data_limite_tarefa", { mode: "string" }).notNull(),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
     dataBaixaTarefa: date("data_baixa_tarefa", { mode: "string" }),
-    problemaResolvido: int("problema_resolvido").default(0).notNull(),
+    dataLimiteTarefa: date("data_limite_tarefa", { mode: "string" }).notNull(),
     descricaoConclusao: varchar("descricao_conclusao", { length: 2000 }),
+    descricaoTarefa: varchar("descricao_tarefa", { length: 2000 }).notNull(),
+    idTarefa: int("id_tarefa").autoincrement().notNull(),
+    problemaResolvido: int("problema_resolvido").default(0).notNull(),
+    responsavelTarefa: int("responsavel_tarefa").notNull(),
     statusTarefa: int("status_tarefa").notNull(),
+    tituloTarefa: varchar("titulo_tarefa", { length: 255 }).notNull(),
   },
   (table) => [
     index("cod_chamado_tarefa").on(table.codChamadoTarefa),
@@ -4749,118 +4702,28 @@ export const posvTiposServico = mysqlTable(
 export const posvValidacaoCusto = mysqlTable(
   "posv_validacao_custo",
   {
-    idValidacaoCusto: int("id_validacao_custo").autoincrement().notNull(),
+    alteracaoValidacaoCusto: int("alteracao_validacao_custo")
+      .default(0)
+      .notNull(),
     chamadoValidacaoCusto: int("chamado_validacao_custo").notNull(),
-    responsFinOriginalValidacaoCusto: int(
-      "responsFinOriginal_validacao_custo"
-    ).notNull(),
-    terceiroRespFinOriginalValidacaoCusto: int(
-      "terceiroRespFinOriginal_validacao_custo"
+    codInstaladorPaganteOriginalValidacaoCusto: int(
+      "codInstaladorPaganteOriginal_validacao_custo"
     ),
-    valorKmOriginalValidacaoCusto: decimal("valorKmOriginal_validacao_custo", {
-      precision: 10,
-      scale: 2,
-    }),
-    valorHoraOriginalValidacaoCusto: decimal(
-      "valorHoraOriginal_validacao_custo",
-      { precision: 10, scale: 2 }
+    codInstaladorPaganteValidadoValidacaoCusto: int(
+      "codInstaladorPaganteValidado_validacao_custo"
     ),
-    tipoCalculoOriginalValidacaoCusto: int(
-      "tipoCalculoOriginal_validacao_custo"
-    ).notNull(),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
     dataConclusaoOriginalValidacaoCusto: date(
       "dataConclusaoOriginal_validacao_custo",
       { mode: "string" }
     ).notNull(),
-    valorCobradoClienteOriginalValidacaoCusto: decimal(
-      "valorCobradoClienteOriginal_validacao_custo",
-      { precision: 10, scale: 2 }
-    )
-      .default("0.00")
-      .notNull(),
-    valorTotalOriginalValidacaoCusto: decimal(
-      "valorTotalOriginal_validacao_custo",
-      { precision: 10, scale: 2 }
-    ).notNull(),
-    valorServicoOriginalValidacaoCusto: decimal(
-      "valorServicoOriginal_validacao_custo",
-      { precision: 10, scale: 2 }
-    ),
-    kilometragemOriginalValidacaoCusto: int(
-      "kilometragemOriginal_validacao_custo"
-    ),
-    qtdHorasOriginalValidacaoCusto: int("qtdHorasOriginal_validacao_custo"),
-    obsOriginalValidacaoCusto: varchar("obsOriginal_validacao_custo", {
-      length: 5000,
-    }),
-    codInstaladorPaganteValidadoValidacaoCusto: int(
-      "codInstaladorPaganteValidado_validacao_custo"
-    ),
-    codInstaladorPaganteOriginalValidacaoCusto: int(
-      "codInstaladorPaganteOriginal_validacao_custo"
-    ),
-    valorInstaladorPaganteValidadoValidacaoCusto: decimal(
-      "valorInstaladorPaganteValidado_validacao_custo",
-      { precision: 10, scale: 2 }
-    ),
-    valorInstaladorPaganteOriginalValidacaoCusto: decimal(
-      "valorInstaladorPaganteOriginal_validacao_custo",
-      { precision: 10, scale: 2 }
-    ),
-    responsFinValidadoValidacaoCusto: int(
-      "responsFinValidado_validacao_custo"
-    ).notNull(),
-    terceiroRespFinValidadoValidacaoCusto: int(
-      "terceiroRespFinValidado_validacao_custo"
-    ),
-    valorKmValidadoValidacaoCusto: decimal("valorKmValidado_validacao_custo", {
-      precision: 10,
-      scale: 2,
-    }),
-    valorHoraValidadoValidacaoCusto: decimal(
-      "valorHoraValidado_validacao_custo",
-      { precision: 10, scale: 2 }
-    ),
-    tipoCalculoValidadoValidacaoCusto: int(
-      "tipoCalculoValidado_validacao_custo"
-    ).notNull(),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
     dataConclusaoValidadoValidacaoCusto: date(
       "dataConclusaoValidado_validacao_custo",
       { mode: "string" }
     ).notNull(),
-    valorCobradoClienteValidadoValidacaoCusto: decimal(
-      "valorCobradoClienteValidado_validacao_custo",
-      { precision: 10, scale: 2 }
-    )
-      .default("0.00")
-      .notNull(),
-    valorTotalValidadoValidacaoCusto: decimal(
-      "valorTotalValidado_validacao_custo",
-      { precision: 10, scale: 2 }
-    ).notNull(),
-    valorServicoValidadoValidacaoCusto: decimal(
-      "valorServicoValidado_validacao_custo",
-      { precision: 10, scale: 2 }
-    ),
-    kilometragemValidadoValidacaoCusto: int(
-      "kilometragemValidado_validacao_custo"
-    ),
-    qtdHorasValidadoValidacaoCusto: int("qtdHorasValidado_validacao_custo"),
-    obsValidadoValidacaoCusto: varchar("obsValidado_validacao_custo", {
-      length: 5000,
-    }),
-    alteracaoValidacaoCusto: int("alteracao_validacao_custo")
-      .default(0)
-      .notNull(),
-    motivoAlteracaoValidacaoCusto: varchar("motivoAlteracao_validacao_custo", {
-      length: 5000,
-    }),
     datetimeValidacaoCusto: datetime("datetime_validacao_custo", {
       mode: "string",
     }).notNull(),
-    userValidacaoCusto: int("user_validacao_custo").notNull(),
+    idValidacaoCusto: int("id_validacao_custo").autoincrement().notNull(),
     indicarInstaladorOriginalValidacaoCusto: int(
       "indicarInstaladorOriginal_validacao_custo"
     ).default(0),
@@ -4873,7 +4736,95 @@ export const posvValidacaoCusto = mysqlTable(
     justificativaInstaladorPaganteValidadoValidacaoCusto: text(
       "justificativaInstaladorPaganteValidado_validacao_custo"
     ),
+    kilometragemOriginalValidacaoCusto: int(
+      "kilometragemOriginal_validacao_custo"
+    ),
+    kilometragemValidadoValidacaoCusto: int(
+      "kilometragemValidado_validacao_custo"
+    ),
+    motivoAlteracaoValidacaoCusto: varchar("motivoAlteracao_validacao_custo", {
+      length: 5000,
+    }),
+    obsOriginalValidacaoCusto: varchar("obsOriginal_validacao_custo", {
+      length: 5000,
+    }),
+    obsValidadoValidacaoCusto: varchar("obsValidado_validacao_custo", {
+      length: 5000,
+    }),
+    qtdHorasOriginalValidacaoCusto: int("qtdHorasOriginal_validacao_custo"),
+    qtdHorasValidadoValidacaoCusto: int("qtdHorasValidado_validacao_custo"),
+    responsFinOriginalValidacaoCusto: int(
+      "responsFinOriginal_validacao_custo"
+    ).notNull(),
+    responsFinValidadoValidacaoCusto: int(
+      "responsFinValidado_validacao_custo"
+    ).notNull(),
     statusValidacaoCusto: int("status_validacao_custo").notNull(),
+    terceiroRespFinOriginalValidacaoCusto: int(
+      "terceiroRespFinOriginal_validacao_custo"
+    ),
+    terceiroRespFinValidadoValidacaoCusto: int(
+      "terceiroRespFinValidado_validacao_custo"
+    ),
+    tipoCalculoOriginalValidacaoCusto: int(
+      "tipoCalculoOriginal_validacao_custo"
+    ).notNull(),
+    tipoCalculoValidadoValidacaoCusto: int(
+      "tipoCalculoValidado_validacao_custo"
+    ).notNull(),
+    userValidacaoCusto: int("user_validacao_custo").notNull(),
+    valorCobradoClienteOriginalValidacaoCusto: decimal(
+      "valorCobradoClienteOriginal_validacao_custo",
+      { precision: 10, scale: 2 }
+    )
+      .default("0.00")
+      .notNull(),
+    valorCobradoClienteValidadoValidacaoCusto: decimal(
+      "valorCobradoClienteValidado_validacao_custo",
+      { precision: 10, scale: 2 }
+    )
+      .default("0.00")
+      .notNull(),
+    valorHoraOriginalValidacaoCusto: decimal(
+      "valorHoraOriginal_validacao_custo",
+      { precision: 10, scale: 2 }
+    ),
+    valorHoraValidadoValidacaoCusto: decimal(
+      "valorHoraValidado_validacao_custo",
+      { precision: 10, scale: 2 }
+    ),
+    valorInstaladorPaganteOriginalValidacaoCusto: decimal(
+      "valorInstaladorPaganteOriginal_validacao_custo",
+      { precision: 10, scale: 2 }
+    ),
+    valorInstaladorPaganteValidadoValidacaoCusto: decimal(
+      "valorInstaladorPaganteValidado_validacao_custo",
+      { precision: 10, scale: 2 }
+    ),
+    valorKmOriginalValidacaoCusto: decimal("valorKmOriginal_validacao_custo", {
+      precision: 10,
+      scale: 2,
+    }),
+    valorKmValidadoValidacaoCusto: decimal("valorKmValidado_validacao_custo", {
+      precision: 10,
+      scale: 2,
+    }),
+    valorServicoOriginalValidacaoCusto: decimal(
+      "valorServicoOriginal_validacao_custo",
+      { precision: 10, scale: 2 }
+    ),
+    valorServicoValidadoValidacaoCusto: decimal(
+      "valorServicoValidado_validacao_custo",
+      { precision: 10, scale: 2 }
+    ),
+    valorTotalOriginalValidacaoCusto: decimal(
+      "valorTotalOriginal_validacao_custo",
+      { precision: 10, scale: 2 }
+    ).notNull(),
+    valorTotalValidadoValidacaoCusto: decimal(
+      "valorTotalValidado_validacao_custo",
+      { precision: 10, scale: 2 }
+    ).notNull(),
   },
   (table) => [
     primaryKey({
@@ -5009,47 +4960,112 @@ export const precosKits = mysqlTable(
 export const propostas = mysqlTable(
   "propostas",
   {
-    idProposta: int("id_proposta").autoincrement().notNull(),
-    composicaoTabelaPrecoProposta: int("composicao_tabela_preco_proposta")
-      .default(0)
-      .notNull(),
-    composicao2TabelaPrecoProposta: int("composicao2_tabela_preco_proposta")
-      .default(0)
-      .notNull(),
-    tipoEnvioProposta: int("tipoEnvio_proposta").default(0).notNull(),
-    clienteProposta: int("cliente_proposta").notNull(),
-    tipoProposta: varchar("tipo_proposta", { length: 100 }).notNull(),
-    grupoProposta: varchar("grupo_proposta", { length: 50 }).notNull(),
-    caminhoProposta: varchar("caminho_proposta", { length: 1000 }),
-    coletaProposta: int("coleta_proposta").notNull(),
-    revisaoProposta: int("revisao_proposta").notNull(),
-    tabelaPrecoProposta: int("tabela_preco_proposta"),
-    kitProposta: int("kit_proposta").notNull(),
-    valorOriginalProposta: decimal("valorOriginal_proposta", {
+    abatimentoProposta: decimal("abatimento_proposta", {
+      precision: 10,
+      scale: 2,
+    }).notNull(),
+    adicionalInversoresProposta: decimal("adicionalInversores_proposta", {
+      precision: 10,
+      scale: 2,
+    }).default("0.00"),
+    adicionalKitManualProposta: decimal("adicionalKitManual_proposta", {
       precision: 10,
       scale: 2,
     }),
-    codMdaProposta: varchar("codMda_proposta", { length: 50 }),
-    fnameProposta: varchar("fname_proposta", { length: 50 }),
     adicionalTelhadoProposta: decimal("adicionalTelhado_proposta", {
       precision: 10,
       scale: 2,
     })
       .default("0.00")
       .notNull(),
-    adicionalKitManualProposta: decimal("adicionalKitManual_proposta", {
+    amperesDisjuntorProposta: int("amperesDisjuntor_proposta")
+      .default(0)
+      .notNull(),
+    caminhoProposta: varchar("caminho_proposta", { length: 1000 }),
+    clienteProposta: int("cliente_proposta").notNull(),
+    codMdaProposta: varchar("codMda_proposta", { length: 50 }),
+    coletaProposta: int("coleta_proposta").notNull(),
+    composicao2TabelaPrecoProposta: int("composicao2_tabela_preco_proposta")
+      .default(0)
+      .notNull(),
+    composicaoTabelaPrecoProposta: int("composicao_tabela_preco_proposta")
+      .default(0)
+      .notNull(),
+    consumoTotalProposta: decimal("consumoTotal_proposta", {
       precision: 10,
       scale: 2,
-    }),
+    }).notNull(),
+    dataEmailProposta: date("dataEmail_proposta", { mode: "string" }),
+    dataProposta: date("data_proposta", { mode: "string" }),
+    desvio1Proposta: decimal("desvio1_proposta", {
+      precision: 10,
+      scale: 2,
+    }).notNull(),
+    desvio2Proposta: decimal("desvio2_proposta", { precision: 10, scale: 2 })
+      .default("0.00")
+      .notNull(),
+    desvio3Proposta: decimal("desvio3_proposta", { precision: 10, scale: 2 })
+      .default("0.00")
+      .notNull(),
+    desvio4Proposta: decimal("desvio4_proposta", { precision: 10, scale: 2 })
+      .default("0.00")
+      .notNull(),
+    emailsProposta: varchar("emails_proposta", { length: 10_000 }),
+    estimativaProposta: int("estimativa_proposta").notNull(),
+    fnameProposta: varchar("fname_proposta", { length: 50 }),
+    grupoProposta: varchar("grupo_proposta", { length: 50 }).notNull(),
+    horaEmailProposta: time("horaEmail_proposta"),
+    horaProposta: time("hora_proposta"),
+    idProposta: int("id_proposta").autoincrement().notNull(),
+    inclinacao1Proposta: int("inclinacao1_proposta").notNull(),
+    inclinacao2Proposta: int("inclinacao2_proposta").default(0).notNull(),
+    inclinacao3Proposta: int("inclinacao3_proposta").default(0).notNull(),
+    inclinacao4Proposta: int("inclinacao4_proposta").default(0).notNull(),
+    kitProposta: int("kit_proposta").notNull(),
+    minimoDisjuntorProposta: int("minimoDisjuntor_proposta")
+      .default(0)
+      .notNull(),
+    minimoSubestacaoProposta: int("minimoSubestacao_proposta")
+      .default(0)
+      .notNull(),
+    modulosDigitadoProposta: int("modulosDigitado_proposta").notNull(),
+    modulosNecessariosProposta: decimal("modulosNecessarios_proposta", {
+      precision: 10,
+      scale: 1,
+    }).notNull(),
+    motivoOutrosProposta: varchar("motivoOutros_proposta", { length: 1000 }),
+    orientacao1Proposta: int("orientacao1_proposta").notNull(),
+    orientacao2Proposta: int("orientacao2_proposta").default(0).notNull(),
+    orientacao3Proposta: int("orientacao3_proposta").default(0).notNull(),
+    orientacao4Proposta: int("orientacao4_proposta").default(0).notNull(),
+    outrosValoresProposta: decimal("outrosValores_proposta", {
+      precision: 10,
+      scale: 2,
+    })
+      .default("0.00")
+      .notNull(),
+    potenciaSistemaProposta: decimal("potenciaSistema_proposta", {
+      precision: 10,
+      scale: 2,
+    }).notNull(),
+    pronafProposta: int("pronaf_proposta").notNull(),
+    qtdModulos1Proposta: int("qtdModulos1_proposta").notNull(),
+    qtdModulos2Proposta: int("qtdModulos2_proposta").default(0).notNull(),
+    qtdModulos3Proposta: int("qtdModulos3_proposta").default(0).notNull(),
+    qtdModulos4Proposta: int("qtdModulos4_proposta").default(0).notNull(),
+    qtdOrientacoesProposta: int("qtdOrientacoes_proposta").notNull(),
+    revisaoProposta: int("revisao_proposta").notNull(),
+    statusProposta: int("status_proposta").notNull(),
+    tabelaPrecoProposta: int("tabela_preco_proposta"),
+    tipoEnvioProposta: int("tipoEnvio_proposta").default(0).notNull(),
+    tipoProposta: varchar("tipo_proposta", { length: 100 }).notNull(),
+    userEmailProposta: int("userEmail_proposta"),
+    userProposta: int("user_proposta"),
     valorEquipamentosProposta: decimal("valorEquipamentos_proposta", {
       precision: 10,
       scale: 2,
     }),
-    valorServicosProposta: decimal("valorServicos_proposta", {
-      precision: 10,
-      scale: 2,
-    }),
-    valorTotalProposta: decimal("valorTotal_proposta", {
+    valorOriginalProposta: decimal("valorOriginal_proposta", {
       precision: 10,
       scale: 2,
     }),
@@ -5057,85 +5073,18 @@ export const propostas = mysqlTable(
       precision: 10,
       scale: 2,
     }),
-    outrosValoresProposta: decimal("outrosValores_proposta", {
-      precision: 10,
-      scale: 2,
-    })
-      .default("0.00")
-      .notNull(),
-    motivoOutrosProposta: varchar("motivoOutros_proposta", { length: 1000 }),
     valorProposta: decimal("valor_proposta", { precision: 10, scale: 2 }),
-    adicionalInversoresProposta: decimal("adicionalInversores_proposta", {
+    valorServicosProposta: decimal("valorServicos_proposta", {
       precision: 10,
       scale: 2,
-    }).default("0.00"),
-    qtdModulos1Proposta: int("qtdModulos1_proposta").notNull(),
-    orientacao1Proposta: int("orientacao1_proposta").notNull(),
-    inclinacao1Proposta: int("inclinacao1_proposta").notNull(),
-    desvio1Proposta: decimal("desvio1_proposta", {
-      precision: 10,
-      scale: 2,
-    }).notNull(),
-    qtdModulos2Proposta: int("qtdModulos2_proposta").default(0).notNull(),
-    orientacao2Proposta: int("orientacao2_proposta").default(0).notNull(),
-    inclinacao2Proposta: int("inclinacao2_proposta").default(0).notNull(),
-    desvio2Proposta: decimal("desvio2_proposta", { precision: 10, scale: 2 })
-      .default("0.00")
-      .notNull(),
-    qtdModulos3Proposta: int("qtdModulos3_proposta").default(0).notNull(),
-    orientacao3Proposta: int("orientacao3_proposta").default(0).notNull(),
-    inclinacao3Proposta: int("inclinacao3_proposta").default(0).notNull(),
-    desvio3Proposta: decimal("desvio3_proposta", { precision: 10, scale: 2 })
-      .default("0.00")
-      .notNull(),
-    qtdModulos4Proposta: int("qtdModulos4_proposta").default(0).notNull(),
-    orientacao4Proposta: int("orientacao4_proposta").default(0).notNull(),
-    inclinacao4Proposta: int("inclinacao4_proposta").default(0).notNull(),
-    desvio4Proposta: decimal("desvio4_proposta", { precision: 10, scale: 2 })
-      .default("0.00")
-      .notNull(),
-    qtdOrientacoesProposta: int("qtdOrientacoes_proposta").notNull(),
-    estimativaProposta: int("estimativa_proposta").notNull(),
-    abatimentoProposta: decimal("abatimento_proposta", {
-      precision: 10,
-      scale: 2,
-    }).notNull(),
-    modulosNecessariosProposta: decimal("modulosNecessarios_proposta", {
-      precision: 10,
-      scale: 1,
-    }).notNull(),
-    modulosDigitadoProposta: int("modulosDigitado_proposta").notNull(),
-    potenciaSistemaProposta: decimal("potenciaSistema_proposta", {
-      precision: 10,
-      scale: 2,
-    }).notNull(),
-    consumoTotalProposta: decimal("consumoTotal_proposta", {
-      precision: 10,
-      scale: 2,
-    }).notNull(),
-    pronafProposta: int("pronaf_proposta").notNull(),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    dataProposta: date("data_proposta", { mode: "string" }),
-    horaProposta: time("hora_proposta"),
-    userProposta: int("user_proposta"),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    dataEmailProposta: date("dataEmail_proposta", { mode: "string" }),
-    horaEmailProposta: time("horaEmail_proposta"),
-    userEmailProposta: int("userEmail_proposta"),
-    emailsProposta: varchar("emails_proposta", { length: 10_000 }),
-    minimoDisjuntorProposta: int("minimoDisjuntor_proposta")
-      .default(0)
-      .notNull(),
-    amperesDisjuntorProposta: int("amperesDisjuntor_proposta")
-      .default(0)
-      .notNull(),
-    minimoSubestacaoProposta: int("minimoSubestacao_proposta")
-      .default(0)
-      .notNull(),
+    }),
     valorSubestacaoProposta: int("valorSubestacao_proposta")
       .default(0)
       .notNull(),
-    statusProposta: int("status_proposta").notNull(),
+    valorTotalProposta: decimal("valorTotal_proposta", {
+      precision: 10,
+      scale: 2,
+    }),
   },
   (table) => [
     index("coleta_proposta").on(table.coletaProposta),
@@ -5199,29 +5148,28 @@ export const regionaisConcessionaria = mysqlTable(
 export const representanteLegalColigado = mysqlTable(
   "representante_legal_coligado",
   {
+    codColigadoRepresentante: int("cod_coligado_representante").notNull(),
+    cpfRepresentanteColigado: varchar("cpf_representante_coligado", {
+      length: 50,
+    }).notNull(),
+    dataNascRepresentanteColigado: date("data_nasc_representante_coligado", {
+      mode: "string",
+    }).notNull(),
+    emailRepresentanteColigado: varchar("email_representante_coligado", {
+      length: 400,
+    }).notNull(),
     idRepresentanteColigado: int("id_representante_coligado")
       .autoincrement()
       .notNull(),
     nomeRepresentanteColigado: varchar("nome_representante_coligado", {
       length: 100,
     }).notNull(),
-    codColigadoRepresentante: int("cod_coligado_representante").notNull(),
-    cpfRepresentanteColigado: varchar("cpf_representante_coligado", {
-      length: 50,
-    }).notNull(),
-    emailRepresentanteColigado: varchar("email_representante_coligado", {
-      length: 400,
-    }).notNull(),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    dataNascRepresentanteColigado: date("data_nasc_representante_coligado", {
-      mode: "string",
-    }).notNull(),
-    telefoneRepresentanteColigado: varchar("telefone_representante_coligado", {
-      length: 15,
-    }).notNull(),
     statusRepresentanteColigado: int("status_representante_coligado")
       .default(1)
       .notNull(),
+    telefoneRepresentanteColigado: varchar("telefone_representante_coligado", {
+      length: 15,
+    }).notNull(),
   },
   (table) => [
     primaryKey({
@@ -5234,16 +5182,15 @@ export const representanteLegalColigado = mysqlTable(
 export const representantesLegais = mysqlTable(
   "representantes_legais",
   {
-    idRepresentante: int("id_representante").autoincrement().notNull(),
     coletaRepresentante: int("coleta_representante").notNull(),
-    nomeRepresentante: varchar("nome_representante", { length: 100 }).notNull(),
     cpfRepresentante: varchar("cpf_representante", { length: 50 }).notNull(),
-    emailRepresentante: varchar("email_representante", { length: 300 }),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
     dataNascRepresentante: date("data_nasc_representante", { mode: "string" }),
+    emailRepresentante: varchar("email_representante", { length: 300 }),
+    idRepresentante: int("id_representante").autoincrement().notNull(),
+    nomeRepresentante: varchar("nome_representante", { length: 100 }).notNull(),
+    statusRepresentante: int("status_representante").notNull(),
     telefoneRepresentante: varchar("telefone_representante", { length: 30 }),
     tipoRepresentante: int("tipo_representante").notNull(),
-    statusRepresentante: int("status_representante").notNull(),
   },
   (table) => [
     primaryKey({
@@ -5320,11 +5267,10 @@ export const requisicaoComplementares = mysqlTable(
 export const requisicaoMateriais = mysqlTable(
   "requisicao_materiais",
   {
+    coletaRequisicao: int("coleta_requisicao").notNull(),
+    dataRequisicao: date("data_requisicao", { mode: "string" }).notNull(),
     idRequisicao: int("id_requisicao").autoincrement().notNull(),
     revisaoRequisicao: int("revisao_requisicao").notNull(),
-    coletaRequisicao: int("coleta_requisicao").notNull(),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    dataRequisicao: date("data_requisicao", { mode: "string" }).notNull(),
     statusRequisicao: int("status_requisicao").notNull(),
   },
   (table) => [
@@ -5711,54 +5657,52 @@ export const usuarioUltimaRotina = mysqlTable(
 export const usuarios = mysqlTable(
   "usuarios",
   {
-    idUsuario: int("id_usuario").autoincrement().notNull(),
-    nomeUsuario: varchar("nome_usuario", { length: 100 }).notNull(),
-    loginUsuario: varchar("login_usuario", { length: 100 }).notNull(),
-    senhaUsuario: varchar("senha_usuario", { length: 100 }).notNull(),
-    perfilUsuario: int("perfil_usuario").notNull(),
-    terceiroPosvUsuario: int("terceiro_posv_usuario").default(0).notNull(),
-    empresaUsuario: int("empresa_usuario").notNull(),
-    tabelaUsuario: int("tabela_usuario").notNull(),
-    tabelasExcecaoUsuario: varchar("tabelas_excecao_usuario", { length: 500 }),
+    ativarComissaoSenhaUsuario: int("ativarComissaoSenha_usuario"),
+    bairroUsuario: varchar("bairro_usuario", { length: 100 }).notNull(),
+    cepUsuario: varchar("cep_usuario", { length: 10 }).notNull(),
+    cidadeUsuario: varchar("cidade_usuario", { length: 100 }).notNull(),
     comissaoUsuario: decimal("comissao_usuario", {
       precision: 10,
       scale: 2,
     }).notNull(),
-    ativarComissaoSenhaUsuario: int("ativarComissaoSenha_usuario"),
-    senhaComissaoUsuario: varchar("senhaComissao_usuario", { length: 500 }),
-    modulosPermUsuario: int("modulos_perm_usuario").default(100_000).notNull(),
-    potInversoresPermUsuario: int("potInversores_perm_usuario"),
-    regiaoUsuario: int("regiao_usuario").notNull(),
-    cpfcnpjUsuario: varchar("cpfcnpj_usuario", { length: 20 }).notNull(),
-    cepUsuario: varchar("cep_usuario", { length: 10 }).notNull(),
-    ruaUsuario: varchar("rua_usuario", { length: 100 }).notNull(),
-    nroUsuario: varchar("nro_usuario", { length: 50 }).notNull(),
-    bairroUsuario: varchar("bairro_usuario", { length: 100 }).notNull(),
     compUsuario: varchar("comp_usuario", { length: 100 }).notNull(),
-    cidadeUsuario: varchar("cidade_usuario", { length: 100 }).notNull(),
-    estadoUsuario: varchar("estado_usuario", { length: 100 }).notNull(),
-    telefone1Usuario: varchar("telefone1_usuario", { length: 20 }).notNull(),
-    telefone2Usuario: varchar("telefone2_usuario", { length: 20 }).notNull(),
-    emailUsuario: varchar("email_usuario", { length: 100 }).notNull(),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
-    nascimentoUsuario: date("nascimento_usuario", { mode: "string" }).notNull(),
-    statusUsuario: int("status_usuario").notNull(),
-    nomeRepresentanteUsuario: varchar("nome_representante_usuario", {
-      length: 300,
-    }),
     cpfRepresentanteUsuario: varchar("cpf_representante_usuario", {
       length: 30,
     }),
+    cpfcnpjUsuario: varchar("cpfcnpj_usuario", { length: 20 }).notNull(),
     emailRepresentanteUsuario: varchar("email_representante_usuario", {
       length: 300,
     }),
-    telefoneRepresentanteUsuario: varchar("telefone_representante_usuario", {
-      length: 120,
-    }),
-    // you can use { mode: 'date' }, if you want to have Date as type for this column
+    emailUsuario: varchar("email_usuario", { length: 100 }).notNull(),
+    empresaUsuario: int("empresa_usuario").notNull(),
+    estadoUsuario: varchar("estado_usuario", { length: 100 }).notNull(),
+    idUsuario: int("id_usuario").autoincrement().notNull(),
+    loginUsuario: varchar("login_usuario", { length: 100 }).notNull(),
+    modulosPermUsuario: int("modulos_perm_usuario").default(100_000).notNull(),
     nascimentoRepresentanteUsuario: date("nascimento_representante_usuario", {
       mode: "string",
     }),
+    nascimentoUsuario: date("nascimento_usuario", { mode: "string" }).notNull(),
+    nomeRepresentanteUsuario: varchar("nome_representante_usuario", {
+      length: 300,
+    }),
+    nomeUsuario: varchar("nome_usuario", { length: 100 }).notNull(),
+    nroUsuario: varchar("nro_usuario", { length: 50 }).notNull(),
+    perfilUsuario: int("perfil_usuario").notNull(),
+    potInversoresPermUsuario: int("potInversores_perm_usuario"),
+    regiaoUsuario: int("regiao_usuario").notNull(),
+    ruaUsuario: varchar("rua_usuario", { length: 100 }).notNull(),
+    senhaComissaoUsuario: varchar("senhaComissao_usuario", { length: 500 }),
+    senhaUsuario: varchar("senha_usuario", { length: 100 }).notNull(),
+    statusUsuario: int("status_usuario").notNull(),
+    tabelaUsuario: int("tabela_usuario").notNull(),
+    tabelasExcecaoUsuario: varchar("tabelas_excecao_usuario", { length: 500 }),
+    telefone1Usuario: varchar("telefone1_usuario", { length: 20 }).notNull(),
+    telefone2Usuario: varchar("telefone2_usuario", { length: 20 }).notNull(),
+    telefoneRepresentanteUsuario: varchar("telefone_representante_usuario", {
+      length: 120,
+    }),
+    terceiroPosvUsuario: int("terceiro_posv_usuario").default(0).notNull(),
     termoAceito: int("termo_aceito").default(0),
   },
   (table) => [

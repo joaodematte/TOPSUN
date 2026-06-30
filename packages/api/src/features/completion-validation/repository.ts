@@ -1,9 +1,4 @@
-import { postgresDb, topsunDb } from "@topsun/db";
-import {
-  COMPLETION_VALIDATION_STATUS_THRESHOLDS_ID,
-  completionValidationStatusThresholds,
-} from "@topsun/db/schema/postgres";
-import type { CompletionValidationStatusThresholds } from "@topsun/db/schema/postgres";
+import { topsunDb } from "@topsun/db";
 import {
   clientes,
   coletaDados,
@@ -15,8 +10,11 @@ import { and, eq, isNotNull, sql } from "drizzle-orm";
 import { alias } from "drizzle-orm/mysql-core";
 
 import { orderProjectsByDiasEtapaThenId } from "../shared/project-list-order";
-import { DEFAULT_STATUS_THRESHOLDS } from "../shared/status-thresholds.constants";
 import type { StatusThresholds } from "../shared/status-thresholds.constants";
+import {
+  getStatusThresholdsByKind,
+  upsertStatusThresholdsByKind,
+} from "../shared/summary-thresholds.repository";
 
 const etapaVistoria = alias(etapas, "etapa_vistoria");
 const etapaCredito = alias(etapas, "etapa_credito");
@@ -105,41 +103,12 @@ export function listCompletionValidationProjects() {
     .orderBy(...orderProjectsByDiasEtapaThenId(diasEtapa));
 }
 
-export async function getCompletionValidationStatusThresholds(): Promise<StatusThresholds> {
-  const [row] = await postgresDb
-    .select({
-      attention: completionValidationStatusThresholds.attention,
-      critical: completionValidationStatusThresholds.critical,
-      onTime: completionValidationStatusThresholds.onTime,
-    })
-    .from(completionValidationStatusThresholds)
-    .limit(1);
-
-  return row ?? DEFAULT_STATUS_THRESHOLDS;
+export function getCompletionValidationStatusThresholds(): Promise<StatusThresholds> {
+  return getStatusThresholdsByKind("completion_validation");
 }
 
-export async function upsertCompletionValidationStatusThresholds(
-  values: Pick<
-    CompletionValidationStatusThresholds,
-    "attention" | "critical" | "onTime"
-  >
+export function upsertCompletionValidationStatusThresholds(
+  values: StatusThresholds
 ) {
-  const [row] = await postgresDb
-    .insert(completionValidationStatusThresholds)
-    .values({ id: COMPLETION_VALIDATION_STATUS_THRESHOLDS_ID, ...values })
-    .onConflictDoUpdate({
-      set: {
-        attention: values.attention,
-        critical: values.critical,
-        onTime: values.onTime,
-      },
-      target: completionValidationStatusThresholds.id,
-    })
-    .returning({
-      attention: completionValidationStatusThresholds.attention,
-      critical: completionValidationStatusThresholds.critical,
-      onTime: completionValidationStatusThresholds.onTime,
-    });
-
-  return row;
+  return upsertStatusThresholdsByKind("completion_validation", values);
 }
