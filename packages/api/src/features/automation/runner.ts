@@ -32,7 +32,7 @@ async function ensureOutputDir(runId: string) {
   return outputDir;
 }
 
-const PERSISTED_LOG_LEVELS = new Set(["step", "success", "error"]);
+const PERSISTED_LOG_LEVELS = new Set(["info", "step", "success", "error"]);
 
 async function handleProgress(runId: string, event: AutomationProgressEvent) {
   if (PERSISTED_LOG_LEVELS.has(event.level)) {
@@ -51,15 +51,15 @@ async function handleProgress(runId: string, event: AutomationProgressEvent) {
 }
 
 async function executeAutomation(kind: AutomationKind, runId: string) {
-  const outputDir = await ensureOutputDir(runId);
   const headless = process.env.AUTOMATION_HEADLESS !== "false";
   const onProgress = (event: AutomationProgressEvent) =>
     handleProgress(runId, event);
 
   if (kind === "request_protocol") {
-    return runRequestProtocol({ headless, onProgress, outputDir });
+    return runRequestProtocol({ headless, onProgress });
   }
 
+  const outputDir = await ensureOutputDir(runId);
   return runValidateProtocolReturn({ headless, onProgress, outputDir });
 }
 
@@ -90,7 +90,7 @@ export async function startAutomationRun(kind: AutomationKind) {
         currentStep: null,
         errorMessage: result.errorMessage ?? null,
         finishedAt: new Date(),
-        reportPaths: result.reportPaths,
+        resultTables: result.resultTables,
         ...(result.shouldUpdateStats === false ? {} : { stats: result.stats }),
         status: result.status === "completed" ? "completed" : "failed",
       });

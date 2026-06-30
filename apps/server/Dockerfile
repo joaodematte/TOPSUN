@@ -23,7 +23,7 @@ WORKDIR /app/apps/server
 ENV NODE_ENV=production
 ENV CHROME_PATH=/usr/bin/chromium
 ENV AUTOMATION_HEADLESS=true
-ENV AUTOMATION_OUTPUT_DIR=/app/automation-runs
+ENV PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1
 ENV HOSTNAME=0.0.0.0
 
 RUN apt-get update \
@@ -45,8 +45,7 @@ RUN apt-get update \
     libxdamage1 \
     libxrandr2 \
     xdg-utils \
-  && rm -rf /var/lib/apt/lists/* \
-  && mkdir -p /app/automation-runs
+  && rm -rf /var/lib/apt/lists/*
 
 COPY --from=prepare /app/out/json/ /app/
 

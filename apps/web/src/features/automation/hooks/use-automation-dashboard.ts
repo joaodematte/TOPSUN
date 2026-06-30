@@ -39,6 +39,7 @@ export function useAutomationDashboard(kind: AutomationKind) {
     isRunning: statusQuery.data?.isRunning ?? false,
     isStarting: startMutation.isPending,
     lastExecutionAt: statusQuery.data?.lastExecutionAt ?? null,
+    lastExecutionResults: statusQuery.data?.lastExecutionResults ?? null,
     lastExecutionStats: statusQuery.data?.lastExecutionStats ?? null,
     logs: logsQuery.data ?? [],
     startAutomation: () => startMutation.mutate({ kind }),

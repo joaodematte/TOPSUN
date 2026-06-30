@@ -6,15 +6,10 @@ services:
     env_file:
       - .env
     environment:
-      AUTOMATION_OUTPUT_DIR: /app/automation-runs
       CHROME_PATH: /usr/bin/chromium
       HOSTNAME: 0.0.0.0
+      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
     ports:
       - "8024:${PORT}"
     restart: unless-stopped
     shm_size: "1gb"
-    volumes:
-      - automation-runs:/app/automation-runs
-
-volumes:
-  automation-runs:

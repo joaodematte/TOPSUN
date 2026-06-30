@@ -16,6 +16,7 @@ export async function getStatus(kind: AutomationKind) {
     currentStep: activeRun?.currentStep ?? null,
     isRunning: Boolean(activeRun),
     lastExecutionAt: lastFinishedRun?.finishedAt?.toISOString() ?? null,
+    lastExecutionResults: lastFinishedRun?.resultTables ?? null,
     lastExecutionStats: lastFinishedRun?.stats ?? null,
     runId: activeRun?.id ?? null,
   };

@@ -75,7 +75,12 @@ function RootDocument() {
         <HeadContent />
       </head>
       <body>
-        <ClerkProvider>
+        <ClerkProvider
+          signInUrl="/auth"
+          signUpUrl="/auth"
+          signInFallbackRedirectUrl="/"
+          signUpFallbackRedirectUrl="/"
+        >
           <ClerkApiAuthBridge />
           <Outlet />
           <Toaster position="top-right" theme="light" />

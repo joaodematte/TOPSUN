@@ -133,6 +133,7 @@ async function processProjectsWithConcurrency(
       }
 
       try {
+        // oxlint-disable-next-line no-await-in-loop
         results[currentIndex] = await requestProtocolOnNewTopsunProject(
           browser,
           project,

@@ -5,7 +5,7 @@ export type {
   AutomationRunResult,
   AutomationRunStats,
 } from "./types";
-export { countProtocolResults, emitProgress } from "./types";
+export { emitProgress } from "./types";
 export {
   getColetaDadosByUnidadeConsumidora,
   listAutomationRequestProtocolProjects,

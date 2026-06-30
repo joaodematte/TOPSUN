@@ -3,6 +3,7 @@ import { automation, automationLog } from "@topsun/db/schema/postgres";
 import type {
   AutomationKind,
   AutomationLogLevel,
+  AutomationRunResultTables,
   AutomationRunStatsRecord,
 } from "@topsun/db/schema/postgres";
 import { and, asc, desc, eq, isNotNull, ne } from "drizzle-orm";
@@ -59,7 +60,7 @@ export function updateAutomationRun(
     currentStep?: string | null;
     errorMessage?: string | null;
     finishedAt?: Date;
-    reportPaths?: string[];
+    resultTables?: AutomationRunResultTables;
     stats?: AutomationRunStatsRecord;
     status?: "completed" | "failed" | "in_progress";
   }

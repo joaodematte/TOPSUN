@@ -1,6 +1,3 @@
-import { mkdir, writeFile } from "node:fs/promises";
-import path from "node:path";
-
 import { google } from "googleapis";
 import type { Browser, BrowserContext, Page } from "playwright";
 
@@ -15,16 +12,9 @@ import {
   TOPSUN_SELECTORS,
   waitForColetaFiltroToLoad,
 } from "../browser/topsun-session";
-import {
-  getColetaDadosByUnidadeConsumidora,
-  listOpenProtocolProjectsByClientNames,
-} from "../db/queries";
-import { emitProgress } from "../types";
+import { listOpenProtocolProjectsByClientNames } from "../db/queries";
 import type { AutomationRunOptions, AutomationRunResult } from "../types";
-import {
-  createProtocolReturnDivergenceReport,
-  createProtocolReturnReport,
-} from "./report";
+import { emitProgress } from "../types";
 
 type ProtocoloEmail =
   | {
@@ -179,10 +169,7 @@ async function getEmails(
   );
 }
 
-async function fillRequestProtocolModal(
-  page: Page,
-  numeroProtocolo: string
-) {
+async function fillRequestProtocolModal(page: Page, numeroProtocolo: string) {
   const dataEtapa = page.locator(TOPSUN_SELECTORS.dataEtapa);
   const dataInputValue = await dataEtapa.inputValue();
   const dataValue = dataInputValue.trim();
@@ -324,7 +311,12 @@ export async function runValidateProtocolReturn(
   options: AutomationRunOptions
 ): Promise<AutomationRunResult> {
   const { headless = true, onProgress, outputDir } = options;
-  const reportPaths: string[] = [];
+
+  if (!outputDir) {
+    throw new Error(
+      "outputDir é obrigatório para validação de retorno de protocolo."
+    );
+  }
 
   try {
     await emitProgress(onProgress, {
@@ -338,6 +330,14 @@ export async function runValidateProtocolReturn(
       getEmails(gmail, "newer_than:14d from:nao-responda@celesc.com.br"),
       getEmails(gmail, "newer_than:14d from:naoresponda@celesc.com.br"),
     ]);
+
+    const okEmailCount = okEmails.filter(Boolean).length;
+    const notOkEmailCount = notOkEmails.filter(Boolean).length;
+
+    await emitProgress(onProgress, {
+      level: "info",
+      message: `Encontrados ${okEmailCount} e-mail(s) de retorno e ${notOkEmailCount} e-mail(s) de divergência.`,
+    });
 
     const scrapedEntries: ScrapedProtocolEntry[] = [];
     const failedEmailBodies: string[] = [];
@@ -384,52 +384,10 @@ export async function runValidateProtocolReturn(
       }
     }
 
-    const reportPath = path.join(outputDir, "retorno-protocolo.xlsx");
-    await createProtocolReturnReport({
-      entries: scrapedEntries,
-      outputPath: reportPath,
+    await emitProgress(onProgress, {
+      level: "info",
+      message: `${scrapedEntries.length} protocolo(s) extraído(s), ${notOkScrapedEntries.length} divergência(s) e ${failedEmailBodies.length} e-mail(s) não interpretado(s).`,
     });
-    reportPaths.push(reportPath);
-
-    const divergenceReportPath = path.join(
-      outputDir,
-      "retorno-protocolo-divergencia.xlsx"
-    );
-    const divergenceReportEntries = await Promise.all(
-      notOkScrapedEntries.map(async (entry) => {
-        const [coleta] = await getColetaDadosByUnidadeConsumidora(
-          entry.unidadeConsumidora
-        );
-
-        return {
-          cliente: coleta?.nomeCliente ?? "",
-          dataEmail: entry.dataEmail,
-          motivoDivergencia: entry.motivoDivergencia,
-          projeto: coleta?.idColeta ?? "",
-          uc: entry.unidadeConsumidora,
-        };
-      })
-    );
-
-    await createProtocolReturnDivergenceReport({
-      entries: divergenceReportEntries,
-      outputPath: divergenceReportPath,
-    });
-    reportPaths.push(divergenceReportPath);
-
-    if (failedEmailBodies.length > 0) {
-      const failureLogPath = path.join(
-        outputDir,
-        "retorno-protocolo-falha-robo.txt"
-      );
-      await mkdir(path.dirname(failureLogPath), { recursive: true });
-      await writeFile(
-        failureLogPath,
-        failedEmailBodies.join("\n----\n"),
-        "utf-8"
-      );
-      reportPaths.push(failureLogPath);
-    }
 
     const openProjects = await listOpenProtocolProjectsByClientNames(
       scrapedEntries.map((entry) => entry.nomeCliente)
@@ -453,19 +411,29 @@ export async function runValidateProtocolReturn(
 
     if (openProjectsWithProtocol.length === 0) {
       await emitProgress(onProgress, {
+        level: "info",
+        message:
+          "Nenhum projeto com etapa aberta no TOPSUN corresponde aos protocolos retornados.",
+      });
+
+      await emitProgress(onProgress, {
         level: "success",
         message:
           "Não há nenhum protocolo retornado em que o projeto se encontra com a etapa `Solicitação de Protocolo` aberta",
       });
 
       return {
-        reportPaths,
         shouldAppendCompletionLog: false,
         shouldUpdateStats: false,
-        stats: { failed: 0, skipped: 0, succeeded: 0 },
+        stats: { failed: 0, succeeded: 0 },
         status: "completed",
       };
     }
+
+    await emitProgress(onProgress, {
+      level: "info",
+      message: `${openProjectsWithProtocol.length} projeto(s) elegível(eis) para fechamento no TOPSUN.`,
+    });
 
     await emitProgress(onProgress, {
       level: "step",
@@ -485,11 +453,14 @@ export async function runValidateProtocolReturn(
       const succeeded = closeResults.filter(Boolean).length;
       const failed = closeResults.length - succeeded;
 
+      await emitProgress(onProgress, {
+        level: "info",
+        message: `${succeeded} etapa(s) fechada(s) com sucesso, ${failed} falha(s).`,
+      });
+
       return {
-        reportPaths,
         stats: {
           failed,
-          skipped: 0,
           succeeded,
         },
         status: "completed",
@@ -508,8 +479,7 @@ export async function runValidateProtocolReturn(
 
     return {
       errorMessage,
-      reportPaths,
-      stats: { failed: 0, skipped: 0, succeeded: 0 },
+      stats: { failed: 0, succeeded: 0 },
       status: "failed",
     };
   }

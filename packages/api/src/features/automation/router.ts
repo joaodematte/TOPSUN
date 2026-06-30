@@ -5,7 +5,7 @@ import { protectedProcedure } from "../../trpc/procedures";
 import { getAutomationByKindSchema, startAutomationSchema } from "./schema";
 import * as automationService from "./service";
 
-const VISIBLE_LOG_LEVELS = new Set(["step", "success", "error"]);
+const VISIBLE_LOG_LEVELS = new Set(["info", "step", "success", "error"]);
 
 export const automationRouter = router({
   getLogs: protectedProcedure
@@ -17,7 +17,7 @@ export const automationRouter = router({
         .filter((log) => VISIBLE_LOG_LEVELS.has(log.level))
         .map((log) => ({
           id: log.id,
-          level: log.level as "error" | "step" | "success",
+          level: log.level as "error" | "info" | "step" | "success",
           message: log.message,
           timestamp: log.createdAt.toISOString(),
         }));

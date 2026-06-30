@@ -2,7 +2,7 @@ import type { RouterInputs } from "@topsun/api";
 
 export type AutomationKind = RouterInputs["automation"]["getStatus"]["kind"];
 
-export type AutomationUiLogLevel = "error" | "step" | "success";
+export type AutomationUiLogLevel = "error" | "info" | "step" | "success";
 
 export interface AutomationKindConfig {
   description: string;

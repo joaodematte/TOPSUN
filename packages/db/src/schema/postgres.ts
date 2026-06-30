@@ -72,8 +72,27 @@ export const automationLogLevel = pgEnum("automation_log_level", [
 
 export interface AutomationRunStatsRecord {
   failed: number;
-  skipped: number;
   succeeded: number;
+}
+
+export type AutomationResultSystemStatus = "ERRO" | "IGNORADO" | "OK";
+
+export interface AutomationSuccessResultRow {
+  client: string | null;
+  projectId: number;
+}
+
+export interface AutomationErrorResultRow {
+  celescStatus: AutomationResultSystemStatus;
+  client: string | null;
+  errorMessage?: string;
+  projectId: number;
+  topsunStatus: AutomationResultSystemStatus;
+}
+
+export interface AutomationRunResultTables {
+  error: AutomationErrorResultRow[];
+  success: AutomationSuccessResultRow[];
 }
 
 export const automation = pgTable("automation", {
@@ -84,7 +103,7 @@ export const automation = pgTable("automation", {
     .primaryKey()
     .$defaultFn(() => uuidv7()),
   kind: automationKind("kind").notNull(),
-  reportPaths: jsonb("report_paths").$type<string[]>(),
+  resultTables: jsonb("result_tables").$type<AutomationRunResultTables>(),
   startedAt: timestamp("created_at", { mode: "date", withTimezone: true })
     .notNull()
     .defaultNow(),

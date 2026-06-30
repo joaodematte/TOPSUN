@@ -1,4 +1,9 @@
-export type AutomationLogLevel = "error" | "step" | "success";
+import type {
+  AutomationRunResultTables,
+  AutomationRunStatsRecord,
+} from "@topsun/db/schema/postgres";
+
+export type AutomationLogLevel = "error" | "info" | "step" | "success";
 
 export interface AutomationProgressEvent {
   level: AutomationLogLevel;
@@ -6,21 +11,17 @@ export interface AutomationProgressEvent {
   step?: string;
 }
 
-export interface AutomationRunStats {
-  failed: number;
-  skipped: number;
-  succeeded: number;
-}
+export type AutomationRunStats = AutomationRunStatsRecord;
 
 export interface AutomationRunOptions {
   headless?: boolean;
   onProgress?: (event: AutomationProgressEvent) => void | Promise<void>;
-  outputDir: string;
+  outputDir?: string;
 }
 
 export interface AutomationRunResult {
   errorMessage?: string;
-  reportPaths: string[];
+  resultTables?: AutomationRunResultTables;
   shouldAppendCompletionLog?: boolean;
   shouldUpdateStats?: boolean;
   stats: AutomationRunStats;
@@ -32,24 +33,4 @@ export async function emitProgress(
   event: AutomationProgressEvent
 ) {
   await onProgress?.(event);
-}
-
-export function countProtocolResults(
-  results: { status: "ERRORED" | "SKIPPED" | "SUCCEEDED" }[]
-): AutomationRunStats {
-  // oxlint-disable-next-line unicorn/no-array-reduce
-  return results.reduce<AutomationRunStats>(
-    (stats, result) => {
-      if (result.status === "SUCCEEDED") {
-        stats.succeeded += 1;
-      } else if (result.status === "SKIPPED") {
-        stats.skipped += 1;
-      } else {
-        stats.failed += 1;
-      }
-
-      return stats;
-    },
-    { failed: 0, skipped: 0, succeeded: 0 }
-  );
 }
