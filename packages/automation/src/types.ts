@@ -16,7 +16,6 @@ export type AutomationRunStats = AutomationRunStatsRecord;
 export interface AutomationRunOptions {
   headless?: boolean;
   onProgress?: (event: AutomationProgressEvent) => void | Promise<void>;
-  outputDir?: string;
 }
 
 export interface AutomationRunResult {

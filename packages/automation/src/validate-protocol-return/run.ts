@@ -315,13 +315,7 @@ async function closeProtocolReturnsOnTopsun(
 export async function runValidateProtocolReturn(
   options: AutomationRunOptions
 ): Promise<AutomationRunResult> {
-  const { headless = true, onProgress, outputDir } = options;
-
-  if (!outputDir) {
-    throw new Error(
-      "outputDir é obrigatório para validação de retorno de protocolo."
-    );
-  }
+  const { headless = true, onProgress } = options;
 
   try {
     await emitProgress(onProgress, {

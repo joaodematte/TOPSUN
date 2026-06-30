@@ -1,36 +1,13 @@
-import { mkdir } from "node:fs/promises";
-import path from "node:path";
-
+import type { AutomationProgressEvent } from "@topsun/automation";
 import {
   runRequestProtocol,
   runValidateProtocolReturn,
 } from "@topsun/automation";
-import type { AutomationProgressEvent } from "@topsun/automation";
 import type { AutomationKind } from "@topsun/db/schema/postgres";
 
 import * as automationRepository from "./repository";
 
 const runningKinds = new Set<AutomationKind>();
-
-function getAutomationBaseDir() {
-  const configured = process.env.AUTOMATION_OUTPUT_DIR?.trim();
-
-  if (configured) {
-    return path.resolve(configured);
-  }
-
-  return path.resolve(process.cwd(), "automation-runs");
-}
-
-function getOutputDir(runId: string) {
-  return path.join(getAutomationBaseDir(), runId);
-}
-
-async function ensureOutputDir(runId: string) {
-  const outputDir = getOutputDir(runId);
-  await mkdir(outputDir, { recursive: true });
-  return outputDir;
-}
 
 const PERSISTED_LOG_LEVELS = new Set(["info", "step", "success", "error"]);
 
@@ -50,7 +27,7 @@ async function handleProgress(runId: string, event: AutomationProgressEvent) {
   }
 }
 
-async function executeAutomation(kind: AutomationKind, runId: string) {
+function executeAutomation(kind: AutomationKind, runId: string) {
   const headless = process.env.AUTOMATION_HEADLESS !== "false";
   const onProgress = (event: AutomationProgressEvent) =>
     handleProgress(runId, event);
@@ -59,8 +36,7 @@ async function executeAutomation(kind: AutomationKind, runId: string) {
     return runRequestProtocol({ headless, onProgress });
   }
 
-  const outputDir = await ensureOutputDir(runId);
-  return runValidateProtocolReturn({ headless, onProgress, outputDir });
+  return runValidateProtocolReturn({ headless, onProgress });
 }
 
 export async function startAutomationRun(kind: AutomationKind) {
