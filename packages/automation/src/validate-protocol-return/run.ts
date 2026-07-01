@@ -55,6 +55,18 @@ interface OpenProjectWithProtocol {
 
 const DEFAULT_TIMEOUT_MS = 15_000;
 
+const DUPLICATE_PROTOCOL_MESSAGE =
+  "Dois protocolos retornados para o mesmo cliente; realizar processo manual.";
+
+interface OpenProtocolProject {
+  idColeta: number | null;
+  nomeCliente: string | null;
+}
+
+interface ManualDivergenceProject extends OpenProtocolProject {
+  errorMessage: string;
+}
+
 function createGmailClient() {
   const auth = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
@@ -100,17 +112,17 @@ function normalizeClientName(name: string) {
     .trim();
 }
 
-function findProtocolEntryForClientName(
+function findProtocolEntriesForClientName(
   clientName: string | null,
   scrapedEntries: ScrapedProtocolEntry[]
 ) {
   if (!clientName) {
-    return;
+    return [];
   }
 
   const normalizedClientName = normalizeClientName(clientName);
 
-  return scrapedEntries.find((entry) => {
+  return scrapedEntries.filter((entry) => {
     const normalizedEntryName = normalizeClientName(entry.nomeCliente);
 
     return (
@@ -118,6 +130,78 @@ function findProtocolEntryForClientName(
       normalizedEntryName.includes(normalizedClientName)
     );
   });
+}
+
+function findProtocolEntryForClientName(
+  clientName: string | null,
+  scrapedEntries: ScrapedProtocolEntry[]
+) {
+  return findProtocolEntriesForClientName(clientName, scrapedEntries)[0];
+}
+
+function groupOpenProjectsByClientName(projects: OpenProtocolProject[]) {
+  const groups = new Map<string, OpenProtocolProject[]>();
+
+  for (const project of projects) {
+    if (!project.nomeCliente) {
+      continue;
+    }
+
+    const key = normalizeClientName(project.nomeCliente);
+    const group = groups.get(key) ?? [];
+    group.push(project);
+    groups.set(key, group);
+  }
+
+  return groups;
+}
+
+function hasDuplicateProtocolConflict(
+  openProjectsForClient: OpenProtocolProject[],
+  scrapedEntriesForClient: ScrapedProtocolEntry[]
+) {
+  return (
+    openProjectsForClient.length >= 2 && scrapedEntriesForClient.length >= 2
+  );
+}
+
+function splitProjectsByDuplicateProtocolConflict(
+  openProjects: OpenProtocolProject[],
+  scrapedEntries: ScrapedProtocolEntry[]
+) {
+  const eligibleProjects: OpenProtocolProject[] = [];
+  const manualDivergenceProjects: ManualDivergenceProject[] = [];
+
+  for (const projectsForClient of groupOpenProjectsByClientName(
+    openProjects
+  ).values()) {
+    const clientName = projectsForClient[0]?.nomeCliente;
+
+    if (!clientName) {
+      continue;
+    }
+
+    const matchingEntries = findProtocolEntriesForClientName(
+      clientName,
+      scrapedEntries
+    );
+
+    if (hasDuplicateProtocolConflict(projectsForClient, matchingEntries)) {
+      for (const project of projectsForClient) {
+        manualDivergenceProjects.push({
+          errorMessage: DUPLICATE_PROTOCOL_MESSAGE,
+          idColeta: project.idColeta,
+          nomeCliente: project.nomeCliente,
+        });
+      }
+
+      continue;
+    }
+
+    eligibleProjects.push(...projectsForClient);
+  }
+
+  return { eligibleProjects, manualDivergenceProjects };
 }
 
 function extractNotOkProtocolInfo(body: string): NotOkProtocoloEmail {
@@ -397,7 +481,17 @@ export async function runValidateProtocolReturn(
       scrapedEntries.map((entry) => entry.nomeCliente)
     );
 
-    const openProjectsWithProtocol = openProjects.flatMap((openProject) => {
+    const { eligibleProjects, manualDivergenceProjects } =
+      splitProjectsByDuplicateProtocolConflict(openProjects, scrapedEntries);
+
+    if (manualDivergenceProjects.length > 0) {
+      await emitProgress(onProgress, {
+        level: "info",
+        message: `${manualDivergenceProjects.length} projeto(s) com dois protocolos retornados para o mesmo cliente.`,
+      });
+    }
+
+    const openProjectsWithProtocol = eligibleProjects.flatMap((openProject) => {
       const protocolEntry = findProtocolEntryForClientName(
         openProject.nomeCliente,
         scrapedEntries
@@ -414,7 +508,10 @@ export async function runValidateProtocolReturn(
       };
     });
 
-    if (openProjectsWithProtocol.length === 0) {
+    if (
+      openProjectsWithProtocol.length === 0 &&
+      manualDivergenceProjects.length === 0
+    ) {
       await emitProgress(onProgress, {
         level: "info",
         message:
@@ -429,6 +526,7 @@ export async function runValidateProtocolReturn(
 
       const resultTables = await buildValidateProtocolReturnResultTables({
         closeResults: [],
+        manualDivergenceProjects,
         notOkScrapedEntries,
         openProjectsWithProtocol: [],
       });
@@ -436,6 +534,21 @@ export async function runValidateProtocolReturn(
       return {
         resultTables,
         shouldAppendCompletionLog: false,
+        stats: countValidateProtocolReturnStats(resultTables),
+        status: "completed",
+      };
+    }
+
+    if (openProjectsWithProtocol.length === 0) {
+      const resultTables = await buildValidateProtocolReturnResultTables({
+        closeResults: [],
+        manualDivergenceProjects,
+        notOkScrapedEntries,
+        openProjectsWithProtocol: [],
+      });
+
+      return {
+        resultTables,
         stats: countValidateProtocolReturnStats(resultTables),
         status: "completed",
       };
@@ -471,6 +584,7 @@ export async function runValidateProtocolReturn(
 
       const resultTables = await buildValidateProtocolReturnResultTables({
         closeResults,
+        manualDivergenceProjects,
         notOkScrapedEntries,
         openProjectsWithProtocol,
       });

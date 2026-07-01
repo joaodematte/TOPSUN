@@ -11,6 +11,10 @@ interface OpenProjectWithProtocol {
   nomeCliente: string | null;
 }
 
+interface ManualDivergenceProject extends OpenProjectWithProtocol {
+  errorMessage: string;
+}
+
 interface NotOkScrapedEntry {
   motivoDivergencia: string;
   unidadeConsumidora: string;
@@ -18,8 +22,30 @@ interface NotOkScrapedEntry {
 
 interface BuildValidateProtocolReturnResultTablesInput {
   closeResults: boolean[];
+  manualDivergenceProjects?: ManualDivergenceProject[];
   notOkScrapedEntries: NotOkScrapedEntry[];
   openProjectsWithProtocol: OpenProjectWithProtocol[];
+}
+
+function buildManualDivergenceRows(
+  manualDivergenceProjects: ManualDivergenceProject[]
+): ValidateProtocolReturnResultRow[] {
+  const rows: ValidateProtocolReturnResultRow[] = [];
+
+  for (const project of manualDivergenceProjects) {
+    if (!project.idColeta) {
+      continue;
+    }
+
+    rows.push({
+      client: project.nomeCliente,
+      errorMessage: project.errorMessage,
+      projectId: project.idColeta,
+      status: "Divergência",
+    });
+  }
+
+  return rows;
 }
 
 function buildDivergenceRows(
@@ -85,8 +111,12 @@ export async function buildValidateProtocolReturnResultTables(
     ),
   ]);
 
+  const manualDivergenceRows = buildManualDivergenceRows(
+    input.manualDivergenceProjects ?? []
+  );
+
   return {
-    rows: [...closureRows, ...divergenceRows],
+    rows: [...closureRows, ...manualDivergenceRows, ...divergenceRows],
   };
 }
 
