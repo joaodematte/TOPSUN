@@ -7,8 +7,6 @@ import type { AutomationKind } from "@topsun/db/schema/postgres";
 
 import * as automationRepository from "./repository";
 
-const runningKinds = new Set<AutomationKind>();
-
 const PERSISTED_LOG_LEVELS = new Set(["info", "step", "success", "error"]);
 
 async function handleProgress(runId: string, event: AutomationProgressEvent) {
@@ -40,10 +38,6 @@ function executeAutomation(kind: AutomationKind, runId: string) {
 }
 
 export async function startAutomationRun(kind: AutomationKind) {
-  if (runningKinds.has(kind)) {
-    throw new Error("Já existe uma automação em execução para este fluxo.");
-  }
-
   const activeRun = await automationRepository.getActiveAutomationRun(kind);
 
   if (activeRun) {
@@ -55,8 +49,6 @@ export async function startAutomationRun(kind: AutomationKind) {
   if (!run) {
     throw new Error("Não foi possível iniciar a automação.");
   }
-
-  runningKinds.add(kind);
 
   void (async () => {
     try {
@@ -96,8 +88,6 @@ export async function startAutomationRun(kind: AutomationKind) {
         "error",
         errorMessage
       );
-    } finally {
-      runningKinds.delete(kind);
     }
   })();
 

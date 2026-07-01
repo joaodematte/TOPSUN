@@ -329,6 +329,7 @@ export async function runValidateProtocolReturn(
     });
 
     const gmail = createGmailClient();
+
     const [okEmails, notOkEmails] = await Promise.all([
       getEmails(gmail, "newer_than:14d from:nao-responda@celesc.com.br"),
       getEmails(gmail, "newer_than:14d from:naoresponda@celesc.com.br"),
