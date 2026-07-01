@@ -10,7 +10,7 @@ export const Route = createFileRoute("/_protected")({
     const { userId } = await authStateFn();
 
     if (!userId) {
-      throw redirect({ href: import.meta.env.VITE_AUTH_URL });
+      throw redirect({ to: "/auth/$" });
     }
 
     return { userId };

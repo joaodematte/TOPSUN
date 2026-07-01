@@ -1,6 +1,6 @@
 import type {
-  AutomationRunResultTables,
   AutomationRunStatsRecord,
+  AutomationStoredResultTables,
 } from "@topsun/db/schema/postgres";
 
 export type AutomationLogLevel = "error" | "info" | "step" | "success";
@@ -20,7 +20,7 @@ export interface AutomationRunOptions {
 
 export interface AutomationRunResult {
   errorMessage?: string;
-  resultTables?: AutomationRunResultTables;
+  resultTables?: AutomationStoredResultTables;
   shouldAppendCompletionLog?: boolean;
   shouldUpdateStats?: boolean;
   stats: AutomationRunStats;

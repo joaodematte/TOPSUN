@@ -5,7 +5,6 @@ CREATE TYPE "public"."status" AS ENUM('in_progress', 'completed', 'failed');
 CREATE TYPE "public"."automation_log_level" AS ENUM(
   'info',
   'success',
-  'warning',
   'error',
   'step'
 );
@@ -18,7 +17,6 @@ CREATE TABLE "automation" (
   "finished_at" timestamp with time zone,
   "error_message" text,
   "stats" jsonb,
-  "report_paths" jsonb,
   "current_step" text
 );
 --> statement-breakpoint

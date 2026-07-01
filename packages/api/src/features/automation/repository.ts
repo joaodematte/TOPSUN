@@ -3,8 +3,8 @@ import { automation, automationLog } from "@topsun/db/schema/postgres";
 import type {
   AutomationKind,
   AutomationLogLevel,
-  AutomationRunResultTables,
   AutomationRunStatsRecord,
+  AutomationStoredResultTables,
 } from "@topsun/db/schema/postgres";
 import { and, asc, desc, eq, isNotNull, ne } from "drizzle-orm";
 
@@ -54,13 +54,44 @@ export async function getLatestAutomationRun(kind: AutomationKind) {
   return run;
 }
 
+const DEFAULT_HISTORY_LIMIT = 50;
+
+export async function getAutomationRunById(kind: AutomationKind, id: string) {
+  const [run] = await postgresDb
+    .select()
+    .from(automation)
+    .where(and(eq(automation.kind, kind), eq(automation.id, id)))
+    .limit(1);
+
+  return run;
+}
+
+export function listAutomationRuns(
+  kind: AutomationKind,
+  limit = DEFAULT_HISTORY_LIMIT
+) {
+  return postgresDb
+    .select({
+      errorMessage: automation.errorMessage,
+      finishedAt: automation.finishedAt,
+      id: automation.id,
+      startedAt: automation.startedAt,
+      stats: automation.stats,
+      status: automation.status,
+    })
+    .from(automation)
+    .where(eq(automation.kind, kind))
+    .orderBy(desc(automation.startedAt))
+    .limit(limit);
+}
+
 export function updateAutomationRun(
   id: string,
   values: {
     currentStep?: string | null;
     errorMessage?: string | null;
     finishedAt?: Date;
-    resultTables?: AutomationRunResultTables;
+    resultTables?: AutomationStoredResultTables;
     stats?: AutomationRunStatsRecord;
     status?: "completed" | "failed" | "in_progress";
   }

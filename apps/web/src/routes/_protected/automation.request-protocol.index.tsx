@@ -25,9 +25,16 @@ export const Route = createFileRoute(
         kind: "request_protocol",
       })
     );
+    context.queryClient.prefetchQuery(
+      context.trpc.automation.getHistory.queryOptions({
+        kind: "request_protocol",
+      })
+    );
   },
 });
 
 function RouteComponent() {
-  return <AutomationDashboardPage kind="request_protocol" />;
+  return (
+    <AutomationDashboardPage kind="request_protocol" showExecutionHistory />
+  );
 }

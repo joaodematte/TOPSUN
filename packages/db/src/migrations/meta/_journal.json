@@ -71,13 +71,6 @@
       "when": 1781576465181,
       "tag": "0009_automation_result_tables",
       "breakpoints": true
-    },
-    {
-      "idx": 10,
-      "version": "7",
-      "when": 1781580065181,
-      "tag": "0010_drop_automation_report_paths",
-      "breakpoints": true
     }
   ]
 }

@@ -25,9 +25,19 @@ export const Route = createFileRoute(
         kind: "validate_protocol_return",
       })
     );
+    context.queryClient.prefetchQuery(
+      context.trpc.automation.getHistory.queryOptions({
+        kind: "validate_protocol_return",
+      })
+    );
   },
 });
 
 function RouteComponent() {
-  return <AutomationDashboardPage kind="validate_protocol_return" />;
+  return (
+    <AutomationDashboardPage
+      kind="validate_protocol_return"
+      showExecutionHistory
+    />
+  );
 }

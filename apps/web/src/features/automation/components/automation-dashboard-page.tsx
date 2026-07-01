@@ -3,10 +3,13 @@ import {
   IconCircleCheck,
   IconCircleX,
   IconClock,
+  IconDotsVertical,
+  IconEye,
+  IconHistory,
   IconPlayerPlay,
-  IconRobot,
 } from "@tabler/icons-react";
-import type { RouterOutputs } from "@topsun/api";
+import { Link } from "@tanstack/react-router";
+import type { ColumnDef } from "@tanstack/react-table";
 import {
   Alert,
   AlertDescription,
@@ -22,12 +25,12 @@ import {
   CardTitle,
 } from "@topsun/ui/components/card";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-} from "@topsun/ui/components/dialog";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@topsun/ui/components/dropdown-menu";
 import {
   Empty,
   EmptyDescription,
@@ -42,52 +45,29 @@ import {
 } from "@topsun/ui/components/progress";
 import { ScrollArea } from "@topsun/ui/components/scroll-area";
 import { Skeleton } from "@topsun/ui/components/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@topsun/ui/components/table";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@topsun/ui/components/tabs";
 import { cn } from "@topsun/ui/lib/utils";
-import { useState } from "react";
 import type { ComponentType, ReactNode } from "react";
 
 import type {
   AutomationKind,
   AutomationUiLogLevel,
 } from "@/features/automation/config";
-import { AUTOMATION_KIND_CONFIG } from "@/features/automation/config";
+import {
+  AUTOMATION_KIND_CONFIG,
+  AUTOMATION_REPORT_ROUTE_BY_KIND,
+} from "@/features/automation/config";
 import { useAutomationDashboard } from "@/features/automation/hooks/use-automation-dashboard";
+import type {
+  AutomationRunDisplayStatus,
+  AutomationRunHistoryItem,
+} from "@/features/automation/types";
+import { DataTable } from "@/shared/components/data-table";
 
 const LOG_LEVEL_CLASSNAME: Record<AutomationUiLogLevel, string> = {
   error: "text-destructive",
   info: "text-muted-foreground",
   step: "text-blue-600 dark:text-blue-400",
   success: "text-emerald-600 dark:text-emerald-400",
-};
-
-type AutomationExecutionResults = NonNullable<
-  RouterOutputs["automation"]["getStatus"]["lastExecutionResults"]
->;
-
-type AutomationSuccessRow = AutomationExecutionResults["success"][number];
-type AutomationErrorRow = AutomationExecutionResults["error"][number];
-
-const SYSTEM_STATUS_CLASSNAME: Record<
-  AutomationErrorRow["celescStatus"],
-  string
-> = {
-  ERRO: "text-destructive",
-  IGNORADO: "text-amber-600 dark:text-amber-400",
-  OK: "text-emerald-600 dark:text-emerald-400",
 };
 
 function formatDateTime(value: string | null) {
@@ -101,19 +81,62 @@ function formatDateTime(value: string | null) {
   }).format(new Date(value));
 }
 
-function AutomationDashboardSkeleton({ title }: { title: string }) {
+function formatCompactRunId(id: string) {
+  return id.slice(0, 8);
+}
+
+const RUN_STATUS_CONFIG: Record<
+  AutomationRunDisplayStatus,
+  { className: string; label: string }
+> = {
+  error: {
+    className:
+      "border-destructive/20 bg-destructive/10 text-destructive dark:bg-destructive/20",
+    label: "Erro",
+  },
+  running: {
+    className:
+      "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
+    label: "Em execução",
+  },
+  success: {
+    className:
+      "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
+    label: "Sucesso",
+  },
+  with_divergences: {
+    className:
+      "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-400",
+    label: "Com divergências",
+  },
+};
+
+function RunStatusBadge({ status }: { status: AutomationRunDisplayStatus }) {
+  const config = RUN_STATUS_CONFIG[status];
+
+  return (
+    <Badge className={cn("gap-1.5", config.className)} variant="outline">
+      {status === "running" ? (
+        <span
+          aria-hidden="true"
+          className="size-1.5 animate-pulse rounded-full bg-emerald-500"
+        />
+      ) : null}
+      {config.label}
+    </Badge>
+  );
+}
+
+function AutomationDashboardSkeleton() {
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-      <div className="space-y-2">
-        <Skeleton className="h-8 w-80 max-w-full" />
-        <Skeleton className="h-4 w-full max-w-2xl" />
-        <span className="sr-only">{title}</span>
-      </div>
+      <Skeleton className="h-21 w-full" />
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 md:gap-8">
-        <Skeleton className="h-72 w-full rounded-[min(var(--radius-4xl),24px)]" />
-        <Skeleton className="h-72 w-full rounded-[min(var(--radius-4xl),24px)]" />
+        <Skeleton className="h-[206.5px] w-full" />
+        <Skeleton className="h-[206.5px] w-full" />
       </div>
-      <Skeleton className="h-112 w-full rounded-[min(var(--radius-4xl),24px)]" />
+      <Skeleton className="h-139 w-full" />
+      <Skeleton className="h-71.75 w-full" />
     </div>
   );
 }
@@ -180,6 +203,7 @@ function StatPill({ icon: Icon, iconClassName, label, value }: StatPillProps) {
 
 interface AutomationDashboardPageProps {
   kind: AutomationKind;
+  showExecutionHistory?: boolean;
 }
 
 interface AutomationControlCardProps {
@@ -248,7 +272,6 @@ function AutomationControlCard({
 
 interface LastExecutionCardProps {
   lastExecutionAt: string | null;
-  results: AutomationExecutionResults | null;
   stats: {
     failed: number;
     succeeded: number;
@@ -291,288 +314,72 @@ function getLastExecutionResultLabel(
   };
 }
 
-interface ResultTableSectionProps {
-  showHeader?: boolean;
-}
-
-function SuccessResultTableSection({
-  rows,
-  showHeader = true,
-}: { rows: AutomationSuccessRow[] } & ResultTableSectionProps) {
-  return (
-    <section className="space-y-3">
-      {showHeader ? (
-        <div className="flex items-center gap-2">
-          <IconCircleCheck className="size-4 text-emerald-600 dark:text-emerald-400" />
-          <h3 className="text-sm font-semibold">Sucessos</h3>
-          <Badge variant="secondary">{rows.length}</Badge>
-        </div>
-      ) : null}
-
-      {rows.length === 0 ? (
-        <Empty className="border-none py-8">
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <IconCircleCheck />
-            </EmptyMedia>
-            <EmptyTitle>Nenhum sucesso</EmptyTitle>
-            <EmptyDescription>
-              Nenhum projeto concluído com sucesso na última execução.
-            </EmptyDescription>
-          </EmptyHeader>
-        </Empty>
-      ) : (
-        <div className="ring-foreground/5 overflow-hidden rounded-[min(var(--radius-4xl),24px)] ring-1">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Projeto</TableHead>
-                <TableHead>Cliente</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((row) => (
-                <TableRow key={row.projectId}>
-                  <TableCell className="font-medium tabular-nums">
-                    {row.projectId}
-                  </TableCell>
-                  <TableCell>{row.client ?? "—"}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
-    </section>
-  );
-}
-
-function SystemStatusBadge({
-  status,
-}: {
-  status: AutomationErrorRow["celescStatus"];
-}) {
-  return (
-    <span
-      className={cn("text-xs font-semibold", SYSTEM_STATUS_CLASSNAME[status])}
-    >
-      {status}
-    </span>
-  );
-}
-
-function ErrorResultTableSection({
-  rows,
-  showHeader = true,
-}: { rows: AutomationErrorRow[] } & ResultTableSectionProps) {
-  return (
-    <section className="space-y-3">
-      {showHeader ? (
-        <div className="flex items-center gap-2">
-          <IconCircleX className="text-destructive size-4" />
-          <h3 className="text-sm font-semibold">Erros</h3>
-          <Badge variant="secondary">{rows.length}</Badge>
-        </div>
-      ) : null}
-
-      {rows.length === 0 ? (
-        <Empty className="border-none py-8">
-          <EmptyHeader>
-            <EmptyMedia variant="icon">
-              <IconCircleX />
-            </EmptyMedia>
-            <EmptyTitle>Nenhum erro</EmptyTitle>
-            <EmptyDescription>
-              Nenhum projeto com erro na última execução.
-            </EmptyDescription>
-          </EmptyHeader>
-        </Empty>
-      ) : (
-        <div className="ring-foreground/5 overflow-hidden rounded-[min(var(--radius-4xl),24px)] ring-1">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Projeto</TableHead>
-                <TableHead>Cliente</TableHead>
-                <TableHead>CELESC</TableHead>
-                <TableHead>TOPSUN</TableHead>
-                <TableHead>Mensagem</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {rows.map((row) => (
-                <TableRow key={row.projectId}>
-                  <TableCell className="font-medium tabular-nums">
-                    {row.projectId}
-                  </TableCell>
-                  <TableCell>{row.client ?? "—"}</TableCell>
-                  <TableCell>
-                    <SystemStatusBadge status={row.celescStatus} />
-                  </TableCell>
-                  <TableCell>
-                    <SystemStatusBadge status={row.topsunStatus} />
-                  </TableCell>
-                  <TableCell className="text-muted-foreground max-w-md whitespace-normal">
-                    {row.errorMessage ?? "—"}
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
-      )}
-    </section>
-  );
-}
-
-interface LastExecutionReportDialogProps {
-  lastExecutionAt: string | null;
-  onOpenChange: (open: boolean) => void;
-  open: boolean;
-  results: AutomationExecutionResults;
-}
-
-function LastExecutionReportDialog({
-  lastExecutionAt,
-  onOpenChange,
-  open,
-  results,
-}: LastExecutionReportDialogProps) {
-  return (
-    <Dialog onOpenChange={onOpenChange} open={open}>
-      <DialogContent className="flex max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-6xl flex-col gap-4 overflow-hidden sm:max-w-6xl">
-        <DialogHeader className="shrink-0">
-          <DialogTitle>Resultados da última execução</DialogTitle>
-          <DialogDescription>
-            {lastExecutionAt
-              ? `Finalizada em ${formatDateTime(lastExecutionAt)}`
-              : "Relatório da última execução concluída"}
-          </DialogDescription>
-        </DialogHeader>
-
-        <Tabs
-          className="flex min-h-0 flex-1 flex-col gap-4"
-          defaultValue="success"
-        >
-          <TabsList className="shrink-0">
-            <TabsTrigger value="success">
-              Sucesso ({results.success.length})
-            </TabsTrigger>
-            <TabsTrigger value="error">
-              Erro ({results.error.length})
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent className="min-h-0 flex-1 overflow-auto" value="success">
-            <SuccessResultTableSection
-              rows={results.success}
-              showHeader={false}
-            />
-          </TabsContent>
-
-          <TabsContent className="min-h-0 flex-1 overflow-auto" value="error">
-            <ErrorResultTableSection rows={results.error} showHeader={false} />
-          </TabsContent>
-        </Tabs>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function LastExecutionCard({
-  lastExecutionAt,
-  results,
-  stats,
-}: LastExecutionCardProps) {
-  const [isReportOpen, setIsReportOpen] = useState(false);
+function LastExecutionCard({ lastExecutionAt, stats }: LastExecutionCardProps) {
   const hasExecution = Boolean(lastExecutionAt && stats);
-  const canViewReport = Boolean(hasExecution && results);
   const totalProjects = stats ? getTotalLastExecutionProjects(stats) : 0;
   const successRate = stats ? getLastExecutionSuccessRate(stats) : 0;
   const result = stats ? getLastExecutionResultLabel(stats) : null;
 
   return (
-    <>
-      <Card>
-        <CardHeader className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
-          <div className="space-y-1">
-            <CardTitle>Última execução</CardTitle>
-            <CardDescription>
-              {lastExecutionAt
-                ? `Finalizada em ${formatDateTime(lastExecutionAt)}`
-                : "Nenhuma execução concluída"}
-            </CardDescription>
-          </div>
-          {result ? (
-            <Badge className={cn("w-fit", result.className)} variant="outline">
-              {result.label}
-            </Badge>
-          ) : null}
-        </CardHeader>
-        <CardContent className="flex flex-col gap-5">
-          {hasExecution ? (
-            <>
-              <div className="bg-muted/30 ring-foreground/5 rounded-[min(var(--radius-4xl),24px)] p-4 ring-1">
-                <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
-                  <div>
-                    <p className="text-muted-foreground text-xs font-medium">
-                      Projetos processados
-                    </p>
-                    <p className="text-4xl font-semibold tracking-tight tabular-nums">
-                      {totalProjects}
-                    </p>
-                  </div>
+    <Card>
+      <CardHeader className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
+        <div className="space-y-1">
+          <CardTitle>Última execução</CardTitle>
+          <CardDescription>
+            {lastExecutionAt
+              ? `Finalizada em ${formatDateTime(lastExecutionAt)}`
+              : "Nenhuma execução concluída"}
+          </CardDescription>
+        </div>
+        {result ? (
+          <Badge className={cn("w-fit", result.className)} variant="outline">
+            {result.label}
+          </Badge>
+        ) : null}
+      </CardHeader>
+      <CardContent className="flex flex-col gap-5">
+        {hasExecution ? (
+          <>
+            <div className="bg-muted/30 ring-foreground/5 rounded-[min(var(--radius-4xl),24px)] p-4 ring-1">
+              <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <p className="text-muted-foreground text-xs font-medium">
+                    Projetos processados
+                  </p>
+                  <p className="text-4xl font-semibold tracking-tight tabular-nums">
+                    {totalProjects}
+                  </p>
                 </div>
               </div>
+            </div>
 
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <StatPill
-                  icon={IconCircleCheck}
-                  iconClassName="text-emerald-600 dark:text-emerald-400"
-                  label="Sucesso"
-                  value={stats?.succeeded ?? 0}
-                />
-                <StatPill
-                  icon={IconCircleX}
-                  iconClassName="text-destructive"
-                  label="Erros"
-                  value={stats?.failed ?? 0}
-                />
-              </div>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <StatPill
+                icon={IconCircleCheck}
+                iconClassName="text-emerald-600 dark:text-emerald-400"
+                label="Sucesso"
+                value={stats?.succeeded ?? 0}
+              />
+              <StatPill
+                icon={IconCircleX}
+                iconClassName="text-destructive"
+                label="Erros"
+                value={stats?.failed ?? 0}
+              />
+            </div>
 
-              <Progress value={successRate}>
-                <ProgressLabel>Taxa de sucesso</ProgressLabel>
-                <ProgressValue>{() => `${successRate}%`}</ProgressValue>
-              </Progress>
-
-              {canViewReport ? (
-                <Button
-                  className="w-full sm:w-auto"
-                  onClick={() => setIsReportOpen(true)}
-                  type="button"
-                  variant="outline"
-                >
-                  Visualizar relatório
-                </Button>
-              ) : null}
-            </>
-          ) : (
-            <p className="text-muted-foreground text-sm">
-              Os resultados aparecerão aqui após a primeira execução concluída.
-            </p>
-          )}
-        </CardContent>
-      </Card>
-
-      {canViewReport && results ? (
-        <LastExecutionReportDialog
-          lastExecutionAt={lastExecutionAt}
-          onOpenChange={setIsReportOpen}
-          open={isReportOpen}
-          results={results}
-        />
-      ) : null}
-    </>
+            <Progress value={successRate}>
+              <ProgressLabel>Taxa de sucesso</ProgressLabel>
+              <ProgressValue>{() => `${successRate}%`}</ProgressValue>
+            </Progress>
+          </>
+        ) : (
+          <p className="text-muted-foreground text-sm">
+            Os resultados aparecerão aqui após a primeira execução concluída.
+          </p>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -629,7 +436,7 @@ function LiveLogCard({ isRunning, logs }: LiveLogCardProps) {
       <CardContent>
         <ScrollArea className="bg-muted/30 ring-foreground/5 h-112 rounded-[min(var(--radius-4xl),24px)] ring-1">
           {logs.length === 0 ? (
-            <Empty className="border-none">
+            <Empty className="h-full border-none">
               <EmptyHeader>
                 <EmptyMedia variant="icon">
                   <IconActivity />
@@ -653,46 +460,179 @@ function LiveLogCard({ isRunning, logs }: LiveLogCardProps) {
   );
 }
 
+interface ExecutionHistoryCardProps {
+  kind: AutomationKind;
+  runs: AutomationRunHistoryItem[];
+}
+
+function ExecutionHistoryActionsMenu({
+  kind,
+  run,
+}: {
+  kind: AutomationKind;
+  run: AutomationRunHistoryItem;
+}) {
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={
+          <Button
+            aria-label={`Ações da execução ${formatCompactRunId(run.id)}`}
+            size="icon-sm"
+            type="button"
+            variant="ghost"
+          />
+        }
+      >
+        <IconDotsVertical />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-48">
+        <DropdownMenuGroup>
+          <DropdownMenuItem
+            className="font-medium"
+            render={
+              <Link
+                params={{ automationId: run.id }}
+                to={AUTOMATION_REPORT_ROUTE_BY_KIND[kind]}
+              />
+            }
+          >
+            <IconEye />
+            Visualizar relatório
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+function createExecutionHistoryColumns(
+  kind: AutomationKind
+): ColumnDef<AutomationRunHistoryItem>[] {
+  return [
+    {
+      accessorKey: "id",
+      cell: ({ row }) => {
+        const run = row.original;
+
+        return (
+          <code
+            className="bg-muted text-muted-foreground rounded-md px-1.5 py-0.5 font-mono text-xs"
+            title={run.id}
+          >
+            {formatCompactRunId(run.id)}
+          </code>
+        );
+      },
+      header: "ID",
+      size: 100,
+    },
+    {
+      accessorKey: "status",
+      cell: ({ row }) => <RunStatusBadge status={row.original.status} />,
+      header: "Status",
+      size: 160,
+    },
+    {
+      accessorKey: "startedAt",
+      cell: ({ row }) => (
+        <span className="text-muted-foreground tabular-nums">
+          {formatDateTime(row.original.startedAt)}
+        </span>
+      ),
+      header: "Iniciado em",
+      size: 180,
+    },
+    {
+      accessorKey: "finishedAt",
+      cell: ({ row }) => (
+        <span className="text-muted-foreground tabular-nums">
+          {formatDateTime(row.original.finishedAt)}
+        </span>
+      ),
+      header: "Finalizado em",
+      size: 180,
+    },
+    {
+      cell: ({ row }) => (
+        <ExecutionHistoryActionsMenu kind={kind} run={row.original} />
+      ),
+      header: "Ações",
+      id: "actions",
+      size: 72,
+    },
+  ];
+}
+
+function ExecutionHistoryCard({ kind, runs }: ExecutionHistoryCardProps) {
+  return (
+    <Card>
+      <CardHeader className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        <div className="space-y-1">
+          <CardTitle>Histórico de execuções</CardTitle>
+          <CardDescription>
+            Execuções anteriores do robô com status detalhado
+          </CardDescription>
+        </div>
+      </CardHeader>
+      <CardContent>
+        {runs.length === 0 ? (
+          <Empty className="border-none py-8">
+            <EmptyHeader>
+              <EmptyMedia variant="icon">
+                <IconHistory />
+              </EmptyMedia>
+              <EmptyTitle>Nenhuma execução registrada</EmptyTitle>
+              <EmptyDescription>
+                O histórico aparecerá aqui após a primeira execução.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        ) : (
+          <DataTable
+            columns={createExecutionHistoryColumns(kind)}
+            data={runs}
+            pageSize={10}
+          />
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
 export function AutomationDashboardPage({
   kind,
+  showExecutionHistory = false,
 }: AutomationDashboardPageProps) {
   const config = AUTOMATION_KIND_CONFIG[kind];
   const {
     currentStep,
+    history,
     isLoading,
     isRunning,
     isStarting,
     lastExecutionAt,
-    lastExecutionResults,
     lastExecutionStats,
     logs,
     startAutomation,
     startError,
-  } = useAutomationDashboard(kind);
+  } = useAutomationDashboard(kind, { includeHistory: showExecutionHistory });
 
   if (isLoading) {
-    return <AutomationDashboardSkeleton title={config.title} />;
+    return <AutomationDashboardSkeleton />;
   }
 
   return (
     <div className="flex flex-1 flex-col gap-4 p-4 md:gap-8 md:p-8">
-      <header className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
-            <span className="bg-primary/10 text-primary flex size-9 shrink-0 items-center justify-center rounded-xl">
-              <IconRobot className="size-5" />
-            </span>
-            <h1 className="text-2xl font-semibold tracking-tight">
-              {config.title}
-            </h1>
+      <Card>
+        <CardHeader className="flex justify-between">
+          <div>
+            <CardTitle>{config.title}</CardTitle>
+            <CardDescription>{config.description}</CardDescription>
           </div>
-          <p className="text-muted-foreground max-w-2xl text-sm">
-            {config.description}
-          </p>
-        </div>
-
-        <AutomationStatusBadge isRunning={isRunning} />
-      </header>
+          <AutomationStatusBadge isRunning={isRunning} />
+        </CardHeader>
+      </Card>
 
       {startError ? (
         <Alert variant="destructive">
@@ -712,12 +652,15 @@ export function AutomationDashboardPage({
 
         <LastExecutionCard
           lastExecutionAt={lastExecutionAt}
-          results={lastExecutionResults}
           stats={lastExecutionStats}
         />
       </div>
 
       <LiveLogCard isRunning={isRunning} logs={logs} />
+
+      {showExecutionHistory ? (
+        <ExecutionHistoryCard kind={kind} runs={history} />
+      ) : null}
     </div>
   );
 }

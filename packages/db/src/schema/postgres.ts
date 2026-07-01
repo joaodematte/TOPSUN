@@ -65,7 +65,6 @@ export const automationStatus = pgEnum("status", [
 export const automationLogLevel = pgEnum("automation_log_level", [
   "info",
   "success",
-  "warning",
   "error",
   "step",
 ]);
@@ -95,6 +94,32 @@ export interface AutomationRunResultTables {
   success: AutomationSuccessResultRow[];
 }
 
+export type ValidateProtocolReturnResultStatus =
+  | "Divergência"
+  | "Erro"
+  | "Sucesso";
+
+export interface ValidateProtocolReturnResultRow {
+  client: string | null;
+  errorMessage?: string;
+  projectId: number;
+  status: ValidateProtocolReturnResultStatus;
+}
+
+export interface ValidateProtocolReturnResultTables {
+  rows: ValidateProtocolReturnResultRow[];
+}
+
+export type AutomationStoredResultTables =
+  | AutomationRunResultTables
+  | ValidateProtocolReturnResultTables;
+
+export function isValidateProtocolReturnResultTables(
+  resultTables: AutomationStoredResultTables
+): resultTables is ValidateProtocolReturnResultTables {
+  return "rows" in resultTables;
+}
+
 export const automation = pgTable("automation", {
   currentStep: text("current_step"),
   errorMessage: text("error_message"),
@@ -103,7 +128,7 @@ export const automation = pgTable("automation", {
     .primaryKey()
     .$defaultFn(() => uuidv7()),
   kind: automationKind("kind").notNull(),
-  resultTables: jsonb("result_tables").$type<AutomationRunResultTables>(),
+  resultTables: jsonb("result_tables").$type<AutomationStoredResultTables>(),
   startedAt: timestamp("created_at", { mode: "date", withTimezone: true })
     .notNull()
     .defaultNow(),

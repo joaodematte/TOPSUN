@@ -14,3 +14,8 @@ export const startAutomationSchema = z.object({
 export const getAutomationByKindSchema = z.object({
   kind: automationKindSchema,
 });
+
+export const getAutomationRunReportSchema = z.object({
+  automationId: z.string().uuid(),
+  kind: automationKindSchema,
+});

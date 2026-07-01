@@ -49,7 +49,9 @@ function getRowErrorMessage(
   }
 
   if (topsunResult?.status === "ERRORED") {
-    return topsunResult.errorMessage ?? "Erro ao registrar protocolo na TOPSUN.";
+    return (
+      topsunResult.errorMessage ?? "Erro ao registrar protocolo na TOPSUN."
+    );
   }
 
   if (topsunResult?.status === "SKIPPED") {
@@ -59,7 +61,7 @@ function getRowErrorMessage(
     );
   }
 
-  return undefined;
+  return;
 }
 
 function buildSuccessRow(project: Project): AutomationSuccessResultRow {

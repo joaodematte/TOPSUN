@@ -15,6 +15,10 @@ import {
 import { listOpenProtocolProjectsByClientNames } from "../db/queries";
 import type { AutomationRunOptions, AutomationRunResult } from "../types";
 import { emitProgress } from "../types";
+import {
+  buildValidateProtocolReturnResultTables,
+  countValidateProtocolReturnStats,
+} from "./result-tables";
 
 type ProtocoloEmail =
   | {
@@ -422,10 +426,16 @@ export async function runValidateProtocolReturn(
           "Não há nenhum protocolo retornado em que o projeto se encontra com a etapa `Solicitação de Protocolo` aberta",
       });
 
+      const resultTables = await buildValidateProtocolReturnResultTables({
+        closeResults: [],
+        notOkScrapedEntries,
+        openProjectsWithProtocol: [],
+      });
+
       return {
+        resultTables,
         shouldAppendCompletionLog: false,
-        shouldUpdateStats: false,
-        stats: { failed: 0, succeeded: 0 },
+        stats: countValidateProtocolReturnStats(resultTables),
         status: "completed",
       };
     }
@@ -458,11 +468,15 @@ export async function runValidateProtocolReturn(
         message: `${succeeded} etapa(s) fechada(s) com sucesso, ${failed} falha(s).`,
       });
 
+      const resultTables = await buildValidateProtocolReturnResultTables({
+        closeResults,
+        notOkScrapedEntries,
+        openProjectsWithProtocol,
+      });
+
       return {
-        stats: {
-          failed,
-          succeeded,
-        },
+        resultTables,
+        stats: countValidateProtocolReturnStats(resultTables),
         status: "completed",
       };
     } finally {
