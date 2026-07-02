@@ -28,6 +28,7 @@ export interface RequestProtocolReportRow {
 
 export interface ValidateProtocolReturnReportRow {
   cliente: string | null;
+  email_date: string | null;
   error_message: string | null;
   projeto: number;
   protocol_number: string | null;

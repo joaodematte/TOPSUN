@@ -7,6 +7,7 @@ import type {
 import { getColetaDadosByUnidadeConsumidora } from "../db/queries";
 
 interface OpenProjectWithProtocol {
+  dataRetorno: string;
   idColeta: number | null;
   nomeCliente: string | null;
   numeroProtocolo: string;
@@ -17,11 +18,13 @@ interface ManualDivergenceProject extends OpenProjectWithProtocol {
 }
 
 interface NotOkScrapedEntry {
+  dataEmail: string;
   motivoDivergencia: string;
   unidadeConsumidora: string;
 }
 
 interface NotFoundProtocolEntry {
+  dataEmail: string;
   nomeCliente: string;
   numeroProtocolo: string;
 }
@@ -47,6 +50,7 @@ function buildAlreadyInsertedRows(
 
     rows.push({
       client: project.nomeCliente,
+      emailDate: project.dataRetorno,
       projectId: project.idColeta,
       protocolNumber: project.numeroProtocolo,
       status: "Já inserido",
@@ -68,6 +72,7 @@ function buildManualDivergenceRows(
 
     rows.push({
       client: project.nomeCliente,
+      emailDate: project.dataRetorno,
       errorMessage: project.errorMessage,
       projectId: project.idColeta,
       protocolNumber: project.numeroProtocolo,
@@ -83,6 +88,7 @@ function buildNotFoundRows(
 ): ValidateProtocolReturnResultRow[] {
   return notFoundProtocolEntries.map((entry) => ({
     client: entry.nomeCliente,
+    emailDate: entry.dataEmail,
     errorMessage: "Cliente não encontrado no sistema TOPSUN",
     projectId: 0,
     protocolNumber: entry.numeroProtocolo,
@@ -102,6 +108,7 @@ function buildDivergenceRows(
 
       return {
         client: match?.nomeCliente ?? null,
+        emailDate: entry.dataEmail,
         errorMessage: entry.motivoDivergencia,
         projectId: match?.idColeta ?? 0,
         status: "Divergência",
@@ -126,6 +133,7 @@ function buildClosureRows(
     if (succeeded) {
       rows.push({
         client: project.nomeCliente,
+        emailDate: project.dataRetorno,
         projectId: project.idColeta,
         protocolNumber: project.numeroProtocolo,
         status: "Sucesso",
@@ -135,6 +143,7 @@ function buildClosureRows(
 
     rows.push({
       client: project.nomeCliente,
+      emailDate: project.dataRetorno,
       errorMessage: "Erro ao fechar etapa no TOPSUN.",
       projectId: project.idColeta,
       protocolNumber: project.numeroProtocolo,

@@ -175,6 +175,16 @@ function createValidateProtocolReturnColumns(): ColumnDef<ValidateProtocolReturn
         ),
     },
     {
+      accessorKey: "email_date",
+      cell: ({ getValue }) => (
+        <span className="tabular-nums">
+          {formatValue(getValue<string | null>())}
+        </span>
+      ),
+      header: "Data e-mail",
+      size: 140,
+    },
+    {
       accessorKey: "status",
       cell: ({ getValue }) => (
         <ValidateStatusBadge

@@ -71,6 +71,7 @@ function normalizeValidateProtocolReturnRows(
 
   return resultTables.rows.map((row) => ({
     cliente: row.client,
+    email_date: row.emailDate ?? null,
     error_message: row.errorMessage ?? null,
     projeto: row.projectId,
     protocol_number: row.protocolNumber ?? null,

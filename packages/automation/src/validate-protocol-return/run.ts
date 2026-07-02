@@ -64,11 +64,13 @@ interface OpenProtocolProject {
 }
 
 interface ManualDivergenceProject extends OpenProtocolProject {
+  dataRetorno: string;
   errorMessage: string;
   numeroProtocolo: string;
 }
 
 interface NotFoundProtocolEntry {
+  dataEmail: string;
   nomeCliente: string;
   numeroProtocolo: string;
 }
@@ -233,6 +235,12 @@ function buildManualProtocolNumbers(matchingEntries: ScrapedProtocolEntry[]) {
   ].join(" | ");
 }
 
+function buildManualEmailDates(matchingEntries: ScrapedProtocolEntry[]) {
+  return [...new Set(matchingEntries.map((entry) => entry.dataEmail))].join(
+    " | "
+  );
+}
+
 function isOpenProtocolStage(project: ProtocolReturnDbProject) {
   return (
     project.datahoraConclusaoEtapa === null &&
@@ -279,6 +287,7 @@ function getNotFoundProtocolEntries(
     }
 
     return {
+      dataEmail: entry.dataEmail,
       nomeCliente: entry.nomeCliente,
       numeroProtocolo: entry.numeroProtocolo,
     };
@@ -322,6 +331,7 @@ function classifyProtocolReturnProjects(
       if (!manualProjectIds.has(project.idColeta)) {
         manualProjectIds.add(project.idColeta);
         manualDivergenceProjects.push({
+          dataRetorno: buildManualEmailDates(matchingEntries),
           errorMessage: DUPLICATE_PROTOCOL_MESSAGE,
           idColeta: project.idColeta,
           nomeCliente: project.nomeCliente,

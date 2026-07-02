@@ -104,6 +104,7 @@ export type ValidateProtocolReturnResultStatus =
 
 export interface ValidateProtocolReturnResultRow {
   client: string | null;
+  emailDate?: string;
   errorMessage?: string;
   projectId: number;
   protocolNumber?: string;
