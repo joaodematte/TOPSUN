@@ -106,6 +106,40 @@ export function getColetaDadosByUnidadeConsumidora(unidadeConsumidora: string) {
     .where(eq(coletaDados.ucPrincipalColeta, unidadeConsumidora));
 }
 
+export function listProtocolReturnProjectsByClientNames(clientNames: string[]) {
+  const names = clientNames
+    .map((clientName) => clientName.trim())
+    .filter(Boolean);
+
+  if (names.length === 0) {
+    return Promise.resolve([]);
+  }
+
+  return topsunDb
+    .select({
+      bloqueadaEtapa: etapas.bloqueadaEtapa,
+      campopadraoEtapa: etapas.campopadraoEtapa,
+      datahoraConclusaoEtapa: etapas.datahoraConclusaoEtapa,
+      idColeta: coletaDados.idColeta,
+      nomeCliente: clientes.nomeCliente,
+      statusEtapa: etapas.statusEtapa,
+    })
+    .from(etapas)
+    .leftJoin(coletaDados, eq(coletaDados.idColeta, etapas.codColetaEtapa))
+    .leftJoin(clientes, eq(clientes.idCliente, coletaDados.clienteColeta))
+    .where(
+      and(
+        eq(etapas.codCfgEtapa, 42),
+        eq(coletaDados.statusColeta, 2),
+        or(
+          ...names.map((clientName) =>
+            like(clientes.nomeCliente, `%${clientName}%`)
+          )
+        )
+      )
+    );
+}
+
 export function listOpenProtocolProjectsByClientNames(clientNames: string[]) {
   const names = clientNames
     .map((clientName) => clientName.trim())

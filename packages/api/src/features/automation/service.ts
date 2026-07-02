@@ -73,6 +73,7 @@ function normalizeValidateProtocolReturnRows(
     cliente: row.client,
     error_message: row.errorMessage ?? null,
     projeto: row.projectId,
+    protocol_number: row.protocolNumber ?? null,
     status: row.status,
   }));
 }

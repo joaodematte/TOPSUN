@@ -23,7 +23,10 @@ const SYSTEM_STATUS_CLASSNAME = {
 const VALIDATE_STATUS_CLASSNAME = {
   Divergência:
     "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-400",
-  Erro: "border-destructive/20 bg-destructive/10 text-destructive dark:bg-destructive/20",
+  "Falha TOPSUN":
+    "border-destructive/20 bg-destructive/10 text-destructive dark:bg-destructive/20",
+  "Já inserido": "border-muted-foreground/20 bg-muted/50 text-muted-foreground",
+  Manual: "border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-400",
   Sucesso:
     "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
 } as const;
@@ -127,6 +130,16 @@ function createValidateProtocolReturnColumns(): ColumnDef<ValidateProtocolReturn
     createProjectColumn<ValidateProtocolReturnReportRow>(),
     createClientColumn<ValidateProtocolReturnReportRow>(),
     {
+      accessorKey: "protocol_number",
+      cell: ({ getValue }) => (
+        <span className="font-medium tabular-nums">
+          {formatValue(getValue<string | null>())}
+        </span>
+      ),
+      header: "Protocolo",
+      size: 160,
+    },
+    {
       accessorKey: "status",
       cell: ({ getValue }) => (
         <ValidateStatusBadge
@@ -134,12 +147,12 @@ function createValidateProtocolReturnColumns(): ColumnDef<ValidateProtocolReturn
         />
       ),
       header: "Status",
-      size: 140,
+      size: 180,
     },
     {
       accessorKey: "error_message",
       cell: ({ getValue }) => formatValue(getValue<string | null>()),
-      header: "Mensagem de erro",
+      header: "Mensagem",
       size: 320,
     },
   ];
@@ -167,10 +180,14 @@ export function AutomationRunReportDataTable({
   }
 
   if (report.kind === "validate_protocol_return") {
+    const rowsByProject = report.rows.toSorted(
+      (currentRow, nextRow) => currentRow.projeto - nextRow.projeto
+    );
+
     return (
       <DataTable
         columns={createValidateProtocolReturnColumns()}
-        data={report.rows}
+        data={rowsByProject}
         pageSize={pageSize}
       />
     );

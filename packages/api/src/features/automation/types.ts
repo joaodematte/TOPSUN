@@ -1,6 +1,7 @@
 import type {
   AutomationResultSystemStatus,
   AutomationRunStatsRecord,
+  ValidateProtocolReturnResultStatus,
 } from "@topsun/db/schema/postgres";
 
 export type AutomationRunDisplayStatus =
@@ -29,7 +30,8 @@ export interface ValidateProtocolReturnReportRow {
   cliente: string | null;
   error_message: string | null;
   projeto: number;
-  status: "Divergência" | "Erro" | "Sucesso";
+  protocol_number: string | null;
+  status: ValidateProtocolReturnResultStatus;
 }
 
 export interface AutomationRunReportLogEntry {

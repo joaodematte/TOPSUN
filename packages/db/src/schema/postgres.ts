@@ -96,13 +96,16 @@ export interface AutomationRunResultTables {
 
 export type ValidateProtocolReturnResultStatus =
   | "Divergência"
-  | "Erro"
+  | "Falha TOPSUN"
+  | "Já inserido"
+  | "Manual"
   | "Sucesso";
 
 export interface ValidateProtocolReturnResultRow {
   client: string | null;
   errorMessage?: string;
   projectId: number;
+  protocolNumber?: string;
   status: ValidateProtocolReturnResultStatus;
 }
 

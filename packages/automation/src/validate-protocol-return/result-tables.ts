@@ -9,6 +9,7 @@ import { getColetaDadosByUnidadeConsumidora } from "../db/queries";
 interface OpenProjectWithProtocol {
   idColeta: number | null;
   nomeCliente: string | null;
+  numeroProtocolo: string;
 }
 
 interface ManualDivergenceProject extends OpenProjectWithProtocol {
@@ -21,10 +22,32 @@ interface NotOkScrapedEntry {
 }
 
 interface BuildValidateProtocolReturnResultTablesInput {
+  alreadyInsertedProjects?: OpenProjectWithProtocol[];
   closeResults: boolean[];
   manualDivergenceProjects?: ManualDivergenceProject[];
   notOkScrapedEntries: NotOkScrapedEntry[];
   openProjectsWithProtocol: OpenProjectWithProtocol[];
+}
+
+function buildAlreadyInsertedRows(
+  alreadyInsertedProjects: OpenProjectWithProtocol[]
+): ValidateProtocolReturnResultRow[] {
+  const rows: ValidateProtocolReturnResultRow[] = [];
+
+  for (const project of alreadyInsertedProjects) {
+    if (!project.idColeta) {
+      continue;
+    }
+
+    rows.push({
+      client: project.nomeCliente,
+      projectId: project.idColeta,
+      protocolNumber: project.numeroProtocolo,
+      status: "Já inserido",
+    });
+  }
+
+  return rows;
 }
 
 function buildManualDivergenceRows(
@@ -41,7 +64,8 @@ function buildManualDivergenceRows(
       client: project.nomeCliente,
       errorMessage: project.errorMessage,
       projectId: project.idColeta,
-      status: "Divergência",
+      protocolNumber: project.numeroProtocolo,
+      status: "Manual",
     });
   }
 
@@ -85,6 +109,7 @@ function buildClosureRows(
       rows.push({
         client: project.nomeCliente,
         projectId: project.idColeta,
+        protocolNumber: project.numeroProtocolo,
         status: "Sucesso",
       });
       continue;
@@ -94,7 +119,8 @@ function buildClosureRows(
       client: project.nomeCliente,
       errorMessage: "Erro ao fechar etapa no TOPSUN.",
       projectId: project.idColeta,
-      status: "Erro",
+      protocolNumber: project.numeroProtocolo,
+      status: "Falha TOPSUN",
     });
   }
 
@@ -114,9 +140,17 @@ export async function buildValidateProtocolReturnResultTables(
   const manualDivergenceRows = buildManualDivergenceRows(
     input.manualDivergenceProjects ?? []
   );
+  const alreadyInsertedRows = buildAlreadyInsertedRows(
+    input.alreadyInsertedProjects ?? []
+  );
 
   return {
-    rows: [...closureRows, ...manualDivergenceRows, ...divergenceRows],
+    rows: [
+      ...closureRows,
+      ...alreadyInsertedRows,
+      ...manualDivergenceRows,
+      ...divergenceRows,
+    ],
   };
 }
 
@@ -127,7 +161,7 @@ export function countValidateProtocolReturnStats(
   let failed = 0;
 
   for (const row of resultTables.rows) {
-    if (row.status === "Sucesso") {
+    if (row.status === "Sucesso" || row.status === "Já inserido") {
       succeeded += 1;
       continue;
     }

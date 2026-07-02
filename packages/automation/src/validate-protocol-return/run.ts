@@ -12,7 +12,7 @@ import {
   TOPSUN_SELECTORS,
   waitForColetaFiltroToLoad,
 } from "../browser/topsun-session";
-import { listOpenProtocolProjectsByClientNames } from "../db/queries";
+import { listProtocolReturnProjectsByClientNames } from "../db/queries";
 import type { AutomationRunOptions, AutomationRunResult } from "../types";
 import { emitProgress } from "../types";
 import {
@@ -56,7 +56,7 @@ interface OpenProjectWithProtocol {
 const DEFAULT_TIMEOUT_MS = 15_000;
 
 const DUPLICATE_PROTOCOL_MESSAGE =
-  "Dois protocolos retornados para o mesmo cliente; realizar processo manual.";
+  "Mais de um e-mail de retorno para o mesmo cliente";
 
 interface OpenProtocolProject {
   idColeta: number | null;
@@ -65,6 +65,16 @@ interface OpenProtocolProject {
 
 interface ManualDivergenceProject extends OpenProtocolProject {
   errorMessage: string;
+  numeroProtocolo: string;
+}
+
+interface ProtocolReturnDbProject {
+  bloqueadaEtapa: number | null;
+  campopadraoEtapa: string | null;
+  datahoraConclusaoEtapa: Date | string | null;
+  idColeta: number | null;
+  nomeCliente: string | null;
+  statusEtapa: number | null;
 }
 
 function createGmailClient() {
@@ -139,69 +149,196 @@ function findProtocolEntryForClientName(
   return findProtocolEntriesForClientName(clientName, scrapedEntries)[0];
 }
 
-function groupOpenProjectsByClientName(projects: OpenProtocolProject[]) {
-  const groups = new Map<string, OpenProtocolProject[]>();
+function getClientsWithMultipleProtocolEmails(
+  scrapedEntries: ScrapedProtocolEntry[]
+) {
+  const emailCountByClient = new Map<string, number>();
 
-  for (const project of projects) {
-    if (!project.nomeCliente) {
+  for (const entry of scrapedEntries) {
+    const key = normalizeClientName(entry.nomeCliente);
+    emailCountByClient.set(key, (emailCountByClient.get(key) ?? 0) + 1);
+  }
+
+  const clientsWithMultipleEmails = new Set<string>();
+
+  for (const [clientKey, emailCount] of emailCountByClient) {
+    if (emailCount > 1) {
+      clientsWithMultipleEmails.add(clientKey);
+    }
+  }
+
+  return clientsWithMultipleEmails;
+}
+
+function getClientsWithMultipleProjectMatches(
+  allProjects: ProtocolReturnDbProject[],
+  scrapedEntries: ScrapedProtocolEntry[]
+) {
+  const projectCountByClient = new Map<string, number>();
+
+  for (const project of allProjects) {
+    if (
+      !project.nomeCliente ||
+      findProtocolEntriesForClientName(project.nomeCliente, scrapedEntries)
+        .length === 0
+    ) {
       continue;
     }
 
     const key = normalizeClientName(project.nomeCliente);
-    const group = groups.get(key) ?? [];
-    group.push(project);
-    groups.set(key, group);
+    projectCountByClient.set(key, (projectCountByClient.get(key) ?? 0) + 1);
   }
 
-  return groups;
+  const clientsWithMultipleProjects = new Set<string>();
+
+  for (const [clientKey, projectCount] of projectCountByClient) {
+    if (projectCount > 1) {
+      clientsWithMultipleProjects.add(clientKey);
+    }
+  }
+
+  return clientsWithMultipleProjects;
 }
 
-function hasDuplicateProtocolConflict(
-  openProjectsForClient: OpenProtocolProject[],
-  scrapedEntriesForClient: ScrapedProtocolEntry[]
+function projectRequiresManualProcessing(
+  clientName: string | null,
+  manualClientKeys: Set<string>
 ) {
+  if (!clientName || manualClientKeys.size === 0) {
+    return false;
+  }
+
+  const normalizedClientName = normalizeClientName(clientName);
+
+  for (const manualClientKey of manualClientKeys) {
+    if (
+      normalizedClientName.includes(manualClientKey) ||
+      manualClientKey.includes(normalizedClientName)
+    ) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+function buildManualProtocolNumbers(matchingEntries: ScrapedProtocolEntry[]) {
+  return [
+    ...new Set(matchingEntries.map((entry) => entry.numeroProtocolo)),
+  ].join(" | ");
+}
+
+function isOpenProtocolStage(project: ProtocolReturnDbProject) {
   return (
-    openProjectsForClient.length >= 2 && scrapedEntriesForClient.length >= 2
+    project.datahoraConclusaoEtapa === null &&
+    project.statusEtapa === 0 &&
+    project.bloqueadaEtapa === 0
   );
 }
 
-function splitProjectsByDuplicateProtocolConflict(
-  openProjects: OpenProtocolProject[],
+function isProtocolAlreadyInserted(
+  campopadraoEtapa: string | null,
+  numeroProtocolo: string
+) {
+  return (campopadraoEtapa ?? "").includes(numeroProtocolo);
+}
+
+function classifyProtocolReturnProjects(
+  allProjects: ProtocolReturnDbProject[],
   scrapedEntries: ScrapedProtocolEntry[]
 ) {
-  const eligibleProjects: OpenProtocolProject[] = [];
+  const alreadyInsertedProjects: OpenProjectWithProtocol[] = [];
+  const openProjects: OpenProtocolProject[] = [];
   const manualDivergenceProjects: ManualDivergenceProject[] = [];
+  const manualProjectIds = new Set<number>();
+  const manualClientKeys = new Set([
+    ...getClientsWithMultipleProtocolEmails(scrapedEntries),
+    ...getClientsWithMultipleProjectMatches(allProjects, scrapedEntries),
+  ]);
 
-  for (const projectsForClient of groupOpenProjectsByClientName(
-    openProjects
-  ).values()) {
-    const clientName = projectsForClient[0]?.nomeCliente;
-
-    if (!clientName) {
+  for (const project of allProjects) {
+    if (!project.idColeta || !project.nomeCliente) {
       continue;
     }
 
     const matchingEntries = findProtocolEntriesForClientName(
-      clientName,
+      project.nomeCliente,
       scrapedEntries
     );
 
-    if (hasDuplicateProtocolConflict(projectsForClient, matchingEntries)) {
-      for (const project of projectsForClient) {
+    if (matchingEntries.length === 0) {
+      continue;
+    }
+
+    if (
+      projectRequiresManualProcessing(project.nomeCliente, manualClientKeys)
+    ) {
+      if (!manualProjectIds.has(project.idColeta)) {
+        manualProjectIds.add(project.idColeta);
         manualDivergenceProjects.push({
           errorMessage: DUPLICATE_PROTOCOL_MESSAGE,
           idColeta: project.idColeta,
           nomeCliente: project.nomeCliente,
+          numeroProtocolo: buildManualProtocolNumbers(matchingEntries),
         });
       }
 
       continue;
     }
 
-    eligibleProjects.push(...projectsForClient);
+    const [protocolEntry] = matchingEntries;
+
+    if (!protocolEntry) {
+      continue;
+    }
+
+    const projectWithProtocol: OpenProjectWithProtocol = {
+      dataRetorno: protocolEntry.dataEmail,
+      idColeta: project.idColeta,
+      nomeCliente: project.nomeCliente,
+      numeroProtocolo: protocolEntry.numeroProtocolo,
+    };
+
+    if (
+      isProtocolAlreadyInserted(
+        project.campopadraoEtapa,
+        protocolEntry.numeroProtocolo
+      )
+    ) {
+      alreadyInsertedProjects.push(projectWithProtocol);
+      continue;
+    }
+
+    if (isOpenProtocolStage(project)) {
+      openProjects.push({
+        idColeta: project.idColeta,
+        nomeCliente: project.nomeCliente,
+      });
+    }
   }
 
-  return { eligibleProjects, manualDivergenceProjects };
+  const openProjectsWithProtocol = openProjects.flatMap((openProject) => {
+    const protocolEntry = findProtocolEntryForClientName(
+      openProject.nomeCliente,
+      scrapedEntries
+    );
+
+    if (!protocolEntry) {
+      return [];
+    }
+
+    return {
+      ...openProject,
+      dataRetorno: protocolEntry.dataEmail,
+      numeroProtocolo: protocolEntry.numeroProtocolo,
+    };
+  });
+
+  return {
+    alreadyInsertedProjects,
+    manualDivergenceProjects,
+    openProjectsWithProtocol,
+  };
 }
 
 function extractNotOkProtocolInfo(body: string): NotOkProtocoloEmail {
@@ -477,54 +614,50 @@ export async function runValidateProtocolReturn(
       message: `${scrapedEntries.length} protocolo(s) extraído(s), ${notOkScrapedEntries.length} divergência(s) e ${failedEmailBodies.length} e-mail(s) não interpretado(s).`,
     });
 
-    const openProjects = await listOpenProtocolProjectsByClientNames(
+    const allProjects = await listProtocolReturnProjectsByClientNames(
       scrapedEntries.map((entry) => entry.nomeCliente)
     );
 
-    const { eligibleProjects, manualDivergenceProjects } =
-      splitProjectsByDuplicateProtocolConflict(openProjects, scrapedEntries);
+    const {
+      alreadyInsertedProjects,
+      manualDivergenceProjects,
+      openProjectsWithProtocol,
+    } = classifyProtocolReturnProjects(allProjects, scrapedEntries);
+
+    if (alreadyInsertedProjects.length > 0) {
+      await emitProgress(onProgress, {
+        level: "info",
+        message: `${alreadyInsertedProjects.length} projeto(s) com protocolo já inserido no TOPSUN.`,
+      });
+    }
 
     if (manualDivergenceProjects.length > 0) {
       await emitProgress(onProgress, {
         level: "info",
-        message: `${manualDivergenceProjects.length} projeto(s) com dois protocolos retornados para o mesmo cliente.`,
+        message: `${manualDivergenceProjects.length} projeto(s) com mais de um e-mail de retorno para o mesmo cliente.`,
       });
     }
 
-    const openProjectsWithProtocol = eligibleProjects.flatMap((openProject) => {
-      const protocolEntry = findProtocolEntryForClientName(
-        openProject.nomeCliente,
-        scrapedEntries
-      );
+    if (openProjectsWithProtocol.length === 0) {
+      if (
+        alreadyInsertedProjects.length === 0 &&
+        manualDivergenceProjects.length === 0
+      ) {
+        await emitProgress(onProgress, {
+          level: "info",
+          message:
+            "Nenhum projeto com etapa aberta no TOPSUN corresponde aos protocolos retornados.",
+        });
 
-      if (!protocolEntry) {
-        return [];
+        await emitProgress(onProgress, {
+          level: "success",
+          message:
+            "Não há nenhum protocolo retornado em que o projeto se encontra com a etapa `Solicitação de Protocolo` aberta",
+        });
       }
 
-      return {
-        ...openProject,
-        dataRetorno: protocolEntry.dataEmail,
-        numeroProtocolo: protocolEntry.numeroProtocolo,
-      };
-    });
-
-    if (
-      openProjectsWithProtocol.length === 0 &&
-      manualDivergenceProjects.length === 0
-    ) {
-      await emitProgress(onProgress, {
-        level: "info",
-        message:
-          "Nenhum projeto com etapa aberta no TOPSUN corresponde aos protocolos retornados.",
-      });
-
-      await emitProgress(onProgress, {
-        level: "success",
-        message:
-          "Não há nenhum protocolo retornado em que o projeto se encontra com a etapa `Solicitação de Protocolo` aberta",
-      });
-
       const resultTables = await buildValidateProtocolReturnResultTables({
+        alreadyInsertedProjects,
         closeResults: [],
         manualDivergenceProjects,
         notOkScrapedEntries,
@@ -534,21 +667,6 @@ export async function runValidateProtocolReturn(
       return {
         resultTables,
         shouldAppendCompletionLog: false,
-        stats: countValidateProtocolReturnStats(resultTables),
-        status: "completed",
-      };
-    }
-
-    if (openProjectsWithProtocol.length === 0) {
-      const resultTables = await buildValidateProtocolReturnResultTables({
-        closeResults: [],
-        manualDivergenceProjects,
-        notOkScrapedEntries,
-        openProjectsWithProtocol: [],
-      });
-
-      return {
-        resultTables,
         stats: countValidateProtocolReturnStats(resultTables),
         status: "completed",
       };
@@ -583,6 +701,7 @@ export async function runValidateProtocolReturn(
       });
 
       const resultTables = await buildValidateProtocolReturnResultTables({
+        alreadyInsertedProjects,
         closeResults,
         manualDivergenceProjects,
         notOkScrapedEntries,
