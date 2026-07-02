@@ -1,10 +1,17 @@
 "use client";
 
-import type { Cell, ColumnDef } from "@tanstack/react-table";
+import { IconArrowsSort } from "@tabler/icons-react";
+import type {
+  Cell,
+  ColumnDef,
+  Header,
+  SortingState,
+} from "@tanstack/react-table";
 import {
   flexRender,
   getCoreRowModel,
   getPaginationRowModel,
+  getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
 import { Button } from "@topsun/ui/components/button";
@@ -33,6 +40,10 @@ interface DataTableProps<TData, TValue> {
 
 interface CustomTableCellProps<TData, TValue> {
   cell: Cell<TData, TValue>;
+}
+
+interface CustomTableHeaderProps<TData, TValue> {
+  header: Header<TData, TValue>;
 }
 
 function getColumnSizeStyle(size: number): CSSProperties {
@@ -93,20 +104,70 @@ function CustomTableCell<TData, TValue>({
   );
 }
 
+function CustomTableHeader<TData, TValue>({
+  header,
+}: CustomTableHeaderProps<TData, TValue>) {
+  if (header.isPlaceholder) {
+    return null;
+  }
+
+  const content = flexRender(
+    header.column.columnDef.header,
+    header.getContext()
+  );
+
+  if (!header.column.getCanSort()) {
+    return content;
+  }
+
+  const sortDirection = header.column.getIsSorted();
+  let sortLabel = "ordenar";
+
+  if (sortDirection === "asc") {
+    sortLabel = "ordenado crescente";
+  }
+
+  if (sortDirection === "desc") {
+    sortLabel = "ordenado decrescente";
+  }
+
+  return (
+    <Button
+      aria-label={sortLabel}
+      onClick={() => header.column.toggleSorting(sortDirection === "asc")}
+      type="button"
+      variant="ghost"
+    >
+      <span className="truncate">{content}</span>
+      <IconArrowsSort className="ml-2 size-4" />
+    </Button>
+  );
+}
+
 export function DataTable<TData, TValue>({
   columns,
   data,
   pageSize = 15,
 }: DataTableProps<TData, TValue>) {
+  const [sorting, setSorting] = useState<SortingState>([]);
+
   const table = useReactTable({
     columns,
     data,
+    defaultColumn: {
+      enableSorting: false,
+    },
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
     initialState: {
       pagination: {
         pageSize,
       },
+    },
+    onSortingChange: setSorting,
+    state: {
+      sorting,
     },
   });
 
@@ -132,12 +193,7 @@ export function DataTable<TData, TValue>({
                       className="max-w-0 truncate"
                       style={getColumnSizeStyle(header.getSize())}
                     >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
+                      <CustomTableHeader header={header} />
                     </TableHead>
                   ))}
                 </TableRow>

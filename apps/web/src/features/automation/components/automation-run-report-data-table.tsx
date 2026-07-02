@@ -2,7 +2,15 @@
 
 import type { ColumnDef } from "@tanstack/react-table";
 import { Badge } from "@topsun/ui/components/badge";
+import { Button } from "@topsun/ui/components/button";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@topsun/ui/components/dropdown-menu";
 import { cn } from "@topsun/ui/lib/utils";
+import { useState } from "react";
 
 import type { AutomationKind } from "@/features/automation/config";
 import type {
@@ -32,6 +40,10 @@ const VALIDATE_STATUS_CLASSNAME = {
   Sucesso:
     "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
 } as const;
+
+const VALIDATE_STATUS_OPTIONS = Object.keys(
+  VALIDATE_STATUS_CLASSNAME
+) as ValidateProtocolReturnReportRow["status"][];
 
 function getSystemStatusLabel(
   status: keyof typeof SYSTEM_STATUS_CLASSNAME
@@ -77,7 +89,11 @@ function ValidateStatusBadge({
   );
 }
 
-function createProjectColumn<T>(): ColumnDef<T> {
+function createProjectColumn<T>({
+  enableSorting = false,
+}: {
+  enableSorting?: boolean;
+} = {}): ColumnDef<T> {
   return {
     accessorKey: "projeto",
     cell: ({ getValue }) => (
@@ -85,15 +101,21 @@ function createProjectColumn<T>(): ColumnDef<T> {
         {formatValue(getValue<number>())}
       </span>
     ),
+    enableSorting,
     header: "Projeto",
     size: 100,
   };
 }
 
-function createClientColumn<T>(): ColumnDef<T> {
+function createClientColumn<T>({
+  enableSorting = false,
+}: {
+  enableSorting?: boolean;
+} = {}): ColumnDef<T> {
   return {
     accessorKey: "cliente",
     cell: ({ getValue }) => formatValue(getValue<string | null>()),
+    enableSorting,
     header: "Cliente",
   };
 }
@@ -129,8 +151,12 @@ function createRequestProtocolColumns(): ColumnDef<RequestProtocolReportRow>[] {
 
 function createValidateProtocolReturnColumns(): ColumnDef<ValidateProtocolReturnReportRow>[] {
   return [
-    createProjectColumn<ValidateProtocolReturnReportRow>(),
-    createClientColumn<ValidateProtocolReturnReportRow>(),
+    createProjectColumn<ValidateProtocolReturnReportRow>({
+      enableSorting: true,
+    }),
+    createClientColumn<ValidateProtocolReturnReportRow>({
+      enableSorting: true,
+    }),
     {
       accessorKey: "protocol_number",
       cell: ({ getValue }) => (
@@ -138,8 +164,15 @@ function createValidateProtocolReturnColumns(): ColumnDef<ValidateProtocolReturn
           {formatValue(getValue<string | null>())}
         </span>
       ),
+      enableSorting: true,
       header: "Protocolo",
       size: 160,
+      sortingFn: (currentRow, nextRow) =>
+        String(currentRow.original.protocol_number ?? "").localeCompare(
+          String(nextRow.original.protocol_number ?? ""),
+          "pt-BR",
+          { numeric: true }
+        ),
     },
     {
       accessorKey: "status",
@@ -148,6 +181,7 @@ function createValidateProtocolReturnColumns(): ColumnDef<ValidateProtocolReturn
           status={getValue<ValidateProtocolReturnReportRow["status"]>()}
         />
       ),
+      enableSorting: true,
       header: "Status",
       size: 180,
     },
@@ -158,6 +192,77 @@ function createValidateProtocolReturnColumns(): ColumnDef<ValidateProtocolReturn
       size: 320,
     },
   ];
+}
+
+function ValidateProtocolReturnDataTable({
+  pageSize,
+  rows,
+}: {
+  pageSize: number;
+  rows: ValidateProtocolReturnReportRow[];
+}) {
+  const [visibleStatuses, setVisibleStatuses] = useState<
+    Set<ValidateProtocolReturnReportRow["status"]>
+  >(() => new Set());
+
+  const filteredRows =
+    visibleStatuses.size === 0
+      ? rows
+      : rows.filter((row) => visibleStatuses.has(row.status));
+  const rowsByProject = filteredRows.toSorted(
+    (currentRow, nextRow) => currentRow.projeto - nextRow.projeto
+  );
+
+  function toggleStatus(
+    status: ValidateProtocolReturnReportRow["status"],
+    isChecked: boolean
+  ) {
+    setVisibleStatuses((currentStatuses) => {
+      const nextStatuses = new Set(currentStatuses);
+
+      if (isChecked) {
+        nextStatuses.add(status);
+        return nextStatuses;
+      }
+
+      nextStatuses.delete(status);
+      return nextStatuses;
+    });
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex justify-end">
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button className="ml-auto" type="button" variant="outline">
+                Status
+              </Button>
+            }
+          />
+          <DropdownMenuContent align="end" className="w-56">
+            {VALIDATE_STATUS_OPTIONS.map((status) => (
+              <DropdownMenuCheckboxItem
+                checked={visibleStatuses.has(status)}
+                key={status}
+                onCheckedChange={(value) =>
+                  toggleStatus(status, Boolean(value))
+                }
+              >
+                {status}
+              </DropdownMenuCheckboxItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+      <DataTable
+        columns={createValidateProtocolReturnColumns()}
+        data={rowsByProject}
+        pageSize={pageSize}
+      />
+    </div>
+  );
 }
 
 interface AutomationRunReportDataTableProps {
@@ -182,16 +287,8 @@ export function AutomationRunReportDataTable({
   }
 
   if (report.kind === "validate_protocol_return") {
-    const rowsByProject = report.rows.toSorted(
-      (currentRow, nextRow) => currentRow.projeto - nextRow.projeto
-    );
-
     return (
-      <DataTable
-        columns={createValidateProtocolReturnColumns()}
-        data={rowsByProject}
-        pageSize={pageSize}
-      />
+      <ValidateProtocolReturnDataTable pageSize={pageSize} rows={report.rows} />
     );
   }
 
