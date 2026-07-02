@@ -68,6 +68,11 @@ interface ManualDivergenceProject extends OpenProtocolProject {
   numeroProtocolo: string;
 }
 
+interface NotFoundProtocolEntry {
+  nomeCliente: string;
+  numeroProtocolo: string;
+}
+
 interface ProtocolReturnDbProject {
   bloqueadaEtapa: number | null;
   campopadraoEtapa: string | null;
@@ -243,6 +248,43 @@ function isProtocolAlreadyInserted(
   return (campopadraoEtapa ?? "").includes(numeroProtocolo);
 }
 
+function projectNameMatchesProtocolEntry(
+  projectName: string | null,
+  protocolEntry: ScrapedProtocolEntry
+) {
+  if (!projectName) {
+    return false;
+  }
+
+  const normalizedProjectName = normalizeClientName(projectName);
+  const normalizedEntryName = normalizeClientName(protocolEntry.nomeCliente);
+
+  return (
+    normalizedProjectName.includes(normalizedEntryName) ||
+    normalizedEntryName.includes(normalizedProjectName)
+  );
+}
+
+function getNotFoundProtocolEntries(
+  allProjects: ProtocolReturnDbProject[],
+  scrapedEntries: ScrapedProtocolEntry[]
+): NotFoundProtocolEntry[] {
+  return scrapedEntries.flatMap((entry) => {
+    const hasMatchingProject = allProjects.some((project) =>
+      projectNameMatchesProtocolEntry(project.nomeCliente, entry)
+    );
+
+    if (hasMatchingProject) {
+      return [];
+    }
+
+    return {
+      nomeCliente: entry.nomeCliente,
+      numeroProtocolo: entry.numeroProtocolo,
+    };
+  });
+}
+
 function classifyProtocolReturnProjects(
   allProjects: ProtocolReturnDbProject[],
   scrapedEntries: ScrapedProtocolEntry[]
@@ -250,6 +292,10 @@ function classifyProtocolReturnProjects(
   const alreadyInsertedProjects: OpenProjectWithProtocol[] = [];
   const openProjects: OpenProtocolProject[] = [];
   const manualDivergenceProjects: ManualDivergenceProject[] = [];
+  const notFoundProtocolEntries = getNotFoundProtocolEntries(
+    allProjects,
+    scrapedEntries
+  );
   const manualProjectIds = new Set<number>();
   const manualClientKeys = new Set([
     ...getClientsWithMultipleProtocolEmails(scrapedEntries),
@@ -337,6 +383,7 @@ function classifyProtocolReturnProjects(
   return {
     alreadyInsertedProjects,
     manualDivergenceProjects,
+    notFoundProtocolEntries,
     openProjectsWithProtocol,
   };
 }
@@ -621,6 +668,7 @@ export async function runValidateProtocolReturn(
     const {
       alreadyInsertedProjects,
       manualDivergenceProjects,
+      notFoundProtocolEntries,
       openProjectsWithProtocol,
     } = classifyProtocolReturnProjects(allProjects, scrapedEntries);
 
@@ -638,10 +686,18 @@ export async function runValidateProtocolReturn(
       });
     }
 
+    if (notFoundProtocolEntries.length > 0) {
+      await emitProgress(onProgress, {
+        level: "info",
+        message: `${notFoundProtocolEntries.length} protocolo(s) sem cliente correspondente no TOPSUN.`,
+      });
+    }
+
     if (openProjectsWithProtocol.length === 0) {
       if (
         alreadyInsertedProjects.length === 0 &&
-        manualDivergenceProjects.length === 0
+        manualDivergenceProjects.length === 0 &&
+        notFoundProtocolEntries.length === 0
       ) {
         await emitProgress(onProgress, {
           level: "info",
@@ -660,6 +716,7 @@ export async function runValidateProtocolReturn(
         alreadyInsertedProjects,
         closeResults: [],
         manualDivergenceProjects,
+        notFoundProtocolEntries,
         notOkScrapedEntries,
         openProjectsWithProtocol: [],
       });
@@ -704,6 +761,7 @@ export async function runValidateProtocolReturn(
         alreadyInsertedProjects,
         closeResults,
         manualDivergenceProjects,
+        notFoundProtocolEntries,
         notOkScrapedEntries,
         openProjectsWithProtocol,
       });

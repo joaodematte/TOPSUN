@@ -21,10 +21,16 @@ interface NotOkScrapedEntry {
   unidadeConsumidora: string;
 }
 
+interface NotFoundProtocolEntry {
+  nomeCliente: string;
+  numeroProtocolo: string;
+}
+
 interface BuildValidateProtocolReturnResultTablesInput {
   alreadyInsertedProjects?: OpenProjectWithProtocol[];
   closeResults: boolean[];
   manualDivergenceProjects?: ManualDivergenceProject[];
+  notFoundProtocolEntries?: NotFoundProtocolEntry[];
   notOkScrapedEntries: NotOkScrapedEntry[];
   openProjectsWithProtocol: OpenProjectWithProtocol[];
 }
@@ -70,6 +76,18 @@ function buildManualDivergenceRows(
   }
 
   return rows;
+}
+
+function buildNotFoundRows(
+  notFoundProtocolEntries: NotFoundProtocolEntry[]
+): ValidateProtocolReturnResultRow[] {
+  return notFoundProtocolEntries.map((entry) => ({
+    client: entry.nomeCliente,
+    errorMessage: "Cliente não encontrado no sistema TOPSUN",
+    projectId: 0,
+    protocolNumber: entry.numeroProtocolo,
+    status: "Não encontrado",
+  }));
 }
 
 function buildDivergenceRows(
@@ -143,12 +161,14 @@ export async function buildValidateProtocolReturnResultTables(
   const alreadyInsertedRows = buildAlreadyInsertedRows(
     input.alreadyInsertedProjects ?? []
   );
+  const notFoundRows = buildNotFoundRows(input.notFoundProtocolEntries ?? []);
 
   return {
     rows: [
       ...closureRows,
       ...alreadyInsertedRows,
       ...manualDivergenceRows,
+      ...notFoundRows,
       ...divergenceRows,
     ],
   };

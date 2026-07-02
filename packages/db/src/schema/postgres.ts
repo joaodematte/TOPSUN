@@ -99,6 +99,7 @@ export type ValidateProtocolReturnResultStatus =
   | "Falha TOPSUN"
   | "Já inserido"
   | "Manual"
+  | "Não encontrado"
   | "Sucesso";
 
 export interface ValidateProtocolReturnResultRow {

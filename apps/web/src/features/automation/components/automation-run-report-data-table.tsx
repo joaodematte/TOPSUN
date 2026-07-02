@@ -27,6 +27,8 @@ const VALIDATE_STATUS_CLASSNAME = {
     "border-destructive/20 bg-destructive/10 text-destructive dark:bg-destructive/20",
   "Já inserido": "border-muted-foreground/20 bg-muted/50 text-muted-foreground",
   Manual: "border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-400",
+  "Não encontrado":
+    "border-destructive/20 bg-destructive/10 text-destructive dark:bg-destructive/20",
   Sucesso:
     "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
 } as const;
