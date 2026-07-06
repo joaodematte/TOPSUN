@@ -63,12 +63,57 @@ const VERIFY_STEP_STATUS_LABEL = {
 
 type VerifyStepStatus = keyof typeof VERIFY_STEP_STATUS_CLASSNAME;
 
-const VERIFY_STEP_STATUS_OPTIONS = Object.keys(
-  VERIFY_STEP_STATUS_CLASSNAME
-) as VerifyStepStatus[];
-
 function isVerifyStepStatus(status: string): status is VerifyStepStatus {
   return status in VERIFY_STEP_STATUS_CLASSNAME;
+}
+
+const NETWORK_ANALYSIS_STEP_MESSAGE =
+  "Projeto liberado com necessidade de análise de rede.";
+
+const NETWORK_ANALYSIS_STATUS_LABEL = "Análise de rede";
+
+const NETWORK_ANALYSIS_STATUS_CLASSNAME =
+  "border-blue-500/20 bg-blue-500/10 text-blue-700 dark:text-blue-400";
+
+function isNetworkAnalysisStepMessage(stepMessage: string | null): boolean {
+  return stepMessage === NETWORK_ANALYSIS_STEP_MESSAGE;
+}
+
+function getVerifyApproveTableStatusLabel(
+  row: VerifyApproveRequestAccessReportRow
+): string | null {
+  if (isNetworkAnalysisStepMessage(row.latest_step_message)) {
+    return NETWORK_ANALYSIS_STATUS_LABEL;
+  }
+
+  const status = row.latest_step_status;
+
+  if (!status) {
+    return null;
+  }
+
+  if (isVerifyStepStatus(status)) {
+    return VERIFY_STEP_STATUS_LABEL[status];
+  }
+
+  return status;
+}
+
+const VERIFY_APPROVE_FILTER_LABELS = [
+  VERIFY_STEP_STATUS_LABEL.SUCESS,
+  VERIFY_STEP_STATUS_LABEL.NOT_APPLICABLE,
+  VERIFY_STEP_STATUS_LABEL.ERROR,
+  NETWORK_ANALYSIS_STATUS_LABEL,
+] as const;
+
+type VerifyApproveFilterLabel = (typeof VERIFY_APPROVE_FILTER_LABELS)[number];
+
+function isVerifyApproveFilterLabel(
+  label: string
+): label is VerifyApproveFilterLabel {
+  return VERIFY_APPROVE_FILTER_LABELS.includes(
+    label as VerifyApproveFilterLabel
+  );
 }
 
 function VerifyStepStatusBadge({ status }: { status: string }) {
@@ -299,8 +344,22 @@ function createVerifyApproveRequestAccessColumns(): ColumnDef<VerifyApproveReque
     },
     {
       accessorKey: "latest_step_status",
-      cell: ({ getValue }) => {
-        const status = getValue<string | null>();
+      cell: ({ row }) => {
+        if (isNetworkAnalysisStepMessage(row.original.latest_step_message)) {
+          return (
+            <Badge
+              className={cn(
+                "gap-1.5 font-normal",
+                NETWORK_ANALYSIS_STATUS_CLASSNAME
+              )}
+              variant="outline"
+            >
+              {NETWORK_ANALYSIS_STATUS_LABEL}
+            </Badge>
+          );
+        }
+
+        const status = row.original.latest_step_status;
 
         if (!status) {
           return <span className="text-muted-foreground">—</span>;
@@ -311,24 +370,13 @@ function createVerifyApproveRequestAccessColumns(): ColumnDef<VerifyApproveReque
       enableSorting: true,
       header: "Último status",
       size: 160,
-      sortingFn: (currentRow, nextRow) => {
-        const getSortKey = (status: string | null) => {
-          if (!status) {
-            return "";
-          }
-
-          if (isVerifyStepStatus(status)) {
-            return VERIFY_STEP_STATUS_LABEL[status];
-          }
-
-          return status;
-        };
-
-        return getSortKey(currentRow.original.latest_step_status).localeCompare(
-          getSortKey(nextRow.original.latest_step_status),
+      sortingFn: (currentRow, nextRow) =>
+        (
+          getVerifyApproveTableStatusLabel(currentRow.original) ?? ""
+        ).localeCompare(
+          getVerifyApproveTableStatusLabel(nextRow.original) ?? "",
           "pt-BR"
-        );
-      },
+        ),
     },
     {
       accessorKey: "latest_step_date",
@@ -380,24 +428,27 @@ function VerifyApproveRequestAccessDataTable({
   pageSize: number;
   rows: VerifyApproveRequestAccessReportRow[];
 }) {
-  const [visibleStatuses, setVisibleStatuses] = useState<Set<VerifyStepStatus>>(
-    () => new Set()
-  );
+  const [visibleStatuses, setVisibleStatuses] = useState<
+    Set<VerifyApproveFilterLabel>
+  >(() => new Set());
 
   const filteredRows =
     visibleStatuses.size === 0
       ? rows
-      : rows.filter(
-          (row) =>
-            row.latest_step_status !== null &&
-            isVerifyStepStatus(row.latest_step_status) &&
-            visibleStatuses.has(row.latest_step_status)
-        );
+      : rows.filter((row) => {
+          const label = getVerifyApproveTableStatusLabel(row);
+
+          return (
+            label !== null &&
+            isVerifyApproveFilterLabel(label) &&
+            visibleStatuses.has(label)
+          );
+        });
   const rowsByProject = filteredRows.toSorted(
     (currentRow, nextRow) => currentRow.projeto - nextRow.projeto
   );
 
-  function toggleStatus(status: VerifyStepStatus, isChecked: boolean) {
+  function toggleStatus(status: VerifyApproveFilterLabel, isChecked: boolean) {
     setVisibleStatuses((currentStatuses) => {
       const nextStatuses = new Set(currentStatuses);
 
@@ -423,7 +474,7 @@ function VerifyApproveRequestAccessDataTable({
             }
           />
           <DropdownMenuContent align="end" className="w-56">
-            {VERIFY_STEP_STATUS_OPTIONS.map((status) => (
+            {VERIFY_APPROVE_FILTER_LABELS.map((status) => (
               <DropdownMenuCheckboxItem
                 checked={visibleStatuses.has(status)}
                 key={status}
@@ -431,7 +482,7 @@ function VerifyApproveRequestAccessDataTable({
                   toggleStatus(status, Boolean(value))
                 }
               >
-                {VERIFY_STEP_STATUS_LABEL[status]}
+                {status}
               </DropdownMenuCheckboxItem>
             ))}
           </DropdownMenuContent>
