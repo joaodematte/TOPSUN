@@ -32,6 +32,10 @@ export const SIDEBAR_ITEMS: SidebarItem[] = [
         href: "/automation/validate-protocol-return",
         title: "Retorno de protocolo",
       },
+      {
+        href: "/automation/verify-approve-request-access",
+        title: "Verificação de solicitação de acesso",
+      },
     ],
     title: "Automações",
   },

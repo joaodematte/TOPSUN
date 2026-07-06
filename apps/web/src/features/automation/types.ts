@@ -17,8 +17,14 @@ export type ValidateProtocolReturnReportRow = Extract<
   { kind: "validate_protocol_return" }
 >["rows"][number];
 
+export type VerifyApproveRequestAccessReportRow = Extract<
+  AutomationRunReport,
+  { kind: "verify_approve_request_access" }
+>["rows"][number];
+
 export type AutomationRunReportRow =
   | RequestProtocolReportRow
-  | ValidateProtocolReturnReportRow;
+  | ValidateProtocolReturnReportRow
+  | VerifyApproveRequestAccessReportRow;
 
 export type AutomationRunReportLogEntry = AutomationRunReport["logs"][number];

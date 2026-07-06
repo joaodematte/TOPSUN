@@ -2,6 +2,7 @@ import type {
   AutomationResultSystemStatus,
   AutomationRunStatsRecord,
   ValidateProtocolReturnResultStatus,
+  VerifyApproveRequestAccessResultStatus,
 } from "@topsun/db/schema/postgres";
 
 export type AutomationRunDisplayStatus =
@@ -61,10 +62,30 @@ export interface ValidateProtocolReturnRunReport extends AutomationRunReportBase
   rows: ValidateProtocolReturnReportRow[];
 }
 
+export interface VerifyApproveRequestAccessReportRow {
+  cliente: string | null;
+  error_message: string | null;
+  latest_rejection_reasons: string | null;
+  latest_step_date: string | null;
+  latest_step_message: string | null;
+  latest_step_status: string | null;
+  projeto: number;
+  protocol_number: string | null;
+  solicitante: string | null;
+  status: VerifyApproveRequestAccessResultStatus;
+}
+
+export interface VerifyApproveRequestAccessRunReport extends AutomationRunReportBase {
+  kind: "verify_approve_request_access";
+  rows: VerifyApproveRequestAccessReportRow[];
+}
+
 export type AutomationRunReport =
   | RequestProtocolRunReport
-  | ValidateProtocolReturnRunReport;
+  | ValidateProtocolReturnRunReport
+  | VerifyApproveRequestAccessRunReport;
 
 export type AutomationRunReportRow =
   | RequestProtocolReportRow
-  | ValidateProtocolReturnReportRow;
+  | ValidateProtocolReturnReportRow
+  | VerifyApproveRequestAccessReportRow;

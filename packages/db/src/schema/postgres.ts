@@ -54,6 +54,7 @@ export type NewSummaryThresholds = typeof summaryThresholds.$inferInsert;
 export const automationKind = pgEnum("kind", [
   "request_protocol",
   "validate_protocol_return",
+  "verify_approve_request_access",
 ]);
 
 export const automationStatus = pgEnum("status", [
@@ -115,14 +116,67 @@ export interface ValidateProtocolReturnResultTables {
   rows: ValidateProtocolReturnResultRow[];
 }
 
+export interface VerifyApproveRequestAccessTimelineStep {
+  rejectionReasons: string;
+  serviceClosed: boolean;
+  stepDescription: string;
+  stepMessage: string;
+  stepNumber: number;
+  stepStatus: string;
+  stepStatusDate: string;
+}
+
+export type VerifyApproveRequestAccessResultStatus = "Erro" | "Sucesso";
+
+export interface VerifyApproveRequestAccessResultRow {
+  client: string | null;
+  errorMessage?: string;
+  projectId: number;
+  protocolNumber: string | null;
+  solicitante: string | null;
+  status: VerifyApproveRequestAccessResultStatus;
+  timelineSteps: VerifyApproveRequestAccessTimelineStep[];
+}
+
+export interface VerifyApproveRequestAccessResultTables {
+  rows: VerifyApproveRequestAccessResultRow[];
+}
+
 export type AutomationStoredResultTables =
   | AutomationRunResultTables
-  | ValidateProtocolReturnResultTables;
+  | ValidateProtocolReturnResultTables
+  | VerifyApproveRequestAccessResultTables;
+
+export function isVerifyApproveRequestAccessResultTables(
+  resultTables: AutomationStoredResultTables
+): resultTables is VerifyApproveRequestAccessResultTables {
+  if (!("rows" in resultTables)) {
+    return false;
+  }
+
+  const [firstRow] = resultTables.rows;
+
+  if (!firstRow) {
+    return false;
+  }
+
+  return "timelineSteps" in firstRow;
+}
 
 export function isValidateProtocolReturnResultTables(
   resultTables: AutomationStoredResultTables
 ): resultTables is ValidateProtocolReturnResultTables {
-  return "rows" in resultTables;
+  if (!("rows" in resultTables)) {
+    return false;
+  }
+
+  const [firstRow] = resultTables.rows;
+
+  if (!firstRow) {
+    return false;
+  }
+
+  return !("timelineSteps" in firstRow);
 }
 
 export const automation = pgTable("automation", {

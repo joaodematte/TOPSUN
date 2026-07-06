@@ -23,6 +23,8 @@ const e42 = alias(etapas, "e42");
 const e4 = alias(etapas, "e4");
 const e13 = alias(etapas, "e13");
 const e19 = alias(etapas, "e19");
+const et16 = alias(etapas, "et16");
+const et14 = alias(etapas, "et14");
 
 export function listAutomationRequestProtocolProjects() {
   const diasEtapa = sql<number>`DATEDIFF(CURDATE(), DATE(${e42.datahoraAberturaEtapa}))`;
@@ -172,3 +174,38 @@ export function listOpenProtocolProjectsByClientNames(clientNames: string[]) {
       )
     );
 }
+
+export function listVerifyApproveRequestAccessProjects() {
+  return topsunDb
+    .select({
+      nomeCliente: clientes.nomeCliente,
+      projeto: coletaDados.idColeta,
+      protocolo: et14.campopadraoEtapa,
+    })
+    .from(et16)
+    .innerJoin(coletaDados, eq(coletaDados.idColeta, et16.codColetaEtapa))
+    .leftJoin(clientes, eq(clientes.idCliente, coletaDados.clienteColeta))
+    .innerJoin(
+      et14,
+      and(
+        eq(et14.codColetaEtapa, et16.codColetaEtapa),
+        eq(et14.codCfgEtapa, 14),
+        isNotNull(et14.campopadraoEtapa),
+        or(
+          like(et14.campopadraoEtapa, "%luiz%"),
+          like(et14.campopadraoEtapa, "%gabriel%")
+        )
+      )
+    )
+    .where(
+      and(
+        eq(et16.codCfgEtapa, 16),
+        eq(coletaDados.statusColeta, 2),
+        isNull(et16.datahoraConclusaoEtapa)
+      )
+    );
+}
+
+export type VerifyApproveRequestAccessProject = Awaited<
+  ReturnType<typeof listVerifyApproveRequestAccessProjects>
+>[number];

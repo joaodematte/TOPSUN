@@ -37,6 +37,8 @@ const RESULTS_DESCRIPTION_BY_KIND: Record<AutomationKind, string> = {
     "Projetos elegíveis processados nesta execução com status na CELESC e no TOPSUN",
   validate_protocol_return:
     "Projetos fechados com sucesso e divergências identificadas nos e-mails da CELESC",
+  verify_approve_request_access:
+    "Projetos elegíveis com protocolo, solicitante, último status e mensagem do portal CELESC",
 };
 
 const LOG_LEVEL_CLASSNAME: Record<

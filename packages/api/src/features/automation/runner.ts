@@ -2,6 +2,7 @@ import type { AutomationProgressEvent } from "@topsun/automation";
 import {
   runRequestProtocol,
   runValidateProtocolReturn,
+  runVerifyApproveRequestAccess,
 } from "@topsun/automation";
 import type { AutomationKind } from "@topsun/db/schema/postgres";
 
@@ -30,11 +31,21 @@ function executeAutomation(kind: AutomationKind, runId: string) {
   const onProgress = (event: AutomationProgressEvent) =>
     handleProgress(runId, event);
 
-  if (kind === "request_protocol") {
-    return runRequestProtocol({ headless, onProgress });
+  switch (kind) {
+    case "request_protocol": {
+      return runRequestProtocol({ headless, onProgress });
+    }
+    case "validate_protocol_return": {
+      return runValidateProtocolReturn({ headless, onProgress });
+    }
+    case "verify_approve_request_access": {
+      return runVerifyApproveRequestAccess({ headless, onProgress });
+    }
+    default: {
+      const unhandledKind: never = kind;
+      throw new Error(`Tipo de automação não suportado: ${unhandledKind}`);
+    }
   }
-
-  return runValidateProtocolReturn({ headless, onProgress });
 }
 
 export async function startAutomationRun(kind: AutomationKind) {

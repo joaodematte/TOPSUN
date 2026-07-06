@@ -17,6 +17,7 @@ import type {
   AutomationRunReport,
   RequestProtocolReportRow,
   ValidateProtocolReturnReportRow,
+  VerifyApproveRequestAccessReportRow,
 } from "@/features/automation/types";
 import { DataTable } from "@/shared/components/data-table";
 import { formatValue } from "@/shared/utils/format-value";
@@ -44,6 +45,53 @@ const VALIDATE_STATUS_CLASSNAME = {
 const VALIDATE_STATUS_OPTIONS = Object.keys(
   VALIDATE_STATUS_CLASSNAME
 ) as ValidateProtocolReturnReportRow["status"][];
+
+const VERIFY_STEP_STATUS_CLASSNAME = {
+  ERROR:
+    "border-destructive/20 bg-destructive/10 text-destructive dark:bg-destructive/20",
+  NOT_APPLICABLE:
+    "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-400",
+  SUCESS:
+    "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
+} as const;
+
+const VERIFY_STEP_STATUS_LABEL = {
+  ERROR: "Erro",
+  NOT_APPLICABLE: "Em andamento",
+  SUCESS: "Sucesso",
+} as const;
+
+type VerifyStepStatus = keyof typeof VERIFY_STEP_STATUS_CLASSNAME;
+
+const VERIFY_STEP_STATUS_OPTIONS = Object.keys(
+  VERIFY_STEP_STATUS_CLASSNAME
+) as VerifyStepStatus[];
+
+function isVerifyStepStatus(status: string): status is VerifyStepStatus {
+  return status in VERIFY_STEP_STATUS_CLASSNAME;
+}
+
+function VerifyStepStatusBadge({ status }: { status: string }) {
+  if (!isVerifyStepStatus(status)) {
+    return (
+      <Badge className="font-normal" variant="outline">
+        {status}
+      </Badge>
+    );
+  }
+
+  return (
+    <Badge
+      className={cn(
+        "gap-1.5 font-normal",
+        VERIFY_STEP_STATUS_CLASSNAME[status]
+      )}
+      variant="outline"
+    >
+      {VERIFY_STEP_STATUS_LABEL[status]}
+    </Badge>
+  );
+}
 
 function getSystemStatusLabel(
   status: keyof typeof SYSTEM_STATUS_CLASSNAME
@@ -204,6 +252,200 @@ function createValidateProtocolReturnColumns(): ColumnDef<ValidateProtocolReturn
   ];
 }
 
+function capitalizeFirstLetter(value: string): string {
+  if (!value) {
+    return value;
+  }
+
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+function createVerifyApproveRequestAccessColumns(): ColumnDef<VerifyApproveRequestAccessReportRow>[] {
+  return [
+    createProjectColumn<VerifyApproveRequestAccessReportRow>({
+      enableSorting: true,
+    }),
+    createClientColumn<VerifyApproveRequestAccessReportRow>({
+      enableSorting: true,
+    }),
+    {
+      accessorKey: "protocol_number",
+      cell: ({ getValue }) => (
+        <span className="font-medium tabular-nums">
+          {formatValue(getValue<string | null>())}
+        </span>
+      ),
+      enableSorting: true,
+      header: "Protocolo",
+      size: 160,
+      sortingFn: (currentRow, nextRow) =>
+        String(currentRow.original.protocol_number ?? "").localeCompare(
+          String(nextRow.original.protocol_number ?? ""),
+          "pt-BR",
+          { numeric: true }
+        ),
+    },
+    {
+      accessorKey: "solicitante",
+      cell: ({ getValue }) => {
+        const solicitante = getValue<string | null>();
+
+        return formatValue(
+          solicitante ? capitalizeFirstLetter(solicitante) : null
+        );
+      },
+      header: "Solicitante",
+      size: 120,
+    },
+    {
+      accessorKey: "latest_step_status",
+      cell: ({ getValue }) => {
+        const status = getValue<string | null>();
+
+        if (!status) {
+          return <span className="text-muted-foreground">—</span>;
+        }
+
+        return <VerifyStepStatusBadge status={status} />;
+      },
+      enableSorting: true,
+      header: "Último status",
+      size: 160,
+      sortingFn: (currentRow, nextRow) => {
+        const getSortKey = (status: string | null) => {
+          if (!status) {
+            return "";
+          }
+
+          if (isVerifyStepStatus(status)) {
+            return VERIFY_STEP_STATUS_LABEL[status];
+          }
+
+          return status;
+        };
+
+        return getSortKey(currentRow.original.latest_step_status).localeCompare(
+          getSortKey(nextRow.original.latest_step_status),
+          "pt-BR"
+        );
+      },
+    },
+    {
+      accessorKey: "latest_step_date",
+      cell: ({ getValue }) => (
+        <span className="tabular-nums">
+          {formatValue(getValue<string | null>())}
+        </span>
+      ),
+      header: "Data",
+      size: 140,
+    },
+    {
+      accessorFn: (row) => {
+        if (row.status === "Erro" && row.error_message) {
+          return row.error_message;
+        }
+
+        return row.latest_rejection_reasons ?? row.latest_step_message ?? "";
+      },
+      cell: ({ row }) => {
+        const {
+          error_message: errorMessage,
+          latest_rejection_reasons: rejectionReasons,
+          latest_step_message: stepMessage,
+          status,
+        } = row.original;
+
+        if (status === "Erro" && errorMessage) {
+          return (
+            <span className="text-destructive">
+              {formatValue(errorMessage)}
+            </span>
+          );
+        }
+
+        return rejectionReasons ?? formatValue(stepMessage);
+      },
+      header: "Última mensagem",
+      id: "latest_step_message",
+      size: 360,
+    },
+  ];
+}
+
+function VerifyApproveRequestAccessDataTable({
+  pageSize,
+  rows,
+}: {
+  pageSize: number;
+  rows: VerifyApproveRequestAccessReportRow[];
+}) {
+  const [visibleStatuses, setVisibleStatuses] = useState<Set<VerifyStepStatus>>(
+    () => new Set()
+  );
+
+  const filteredRows =
+    visibleStatuses.size === 0
+      ? rows
+      : rows.filter(
+          (row) =>
+            row.latest_step_status !== null &&
+            isVerifyStepStatus(row.latest_step_status) &&
+            visibleStatuses.has(row.latest_step_status)
+        );
+  const rowsByProject = filteredRows.toSorted(
+    (currentRow, nextRow) => currentRow.projeto - nextRow.projeto
+  );
+
+  function toggleStatus(status: VerifyStepStatus, isChecked: boolean) {
+    setVisibleStatuses((currentStatuses) => {
+      const nextStatuses = new Set(currentStatuses);
+
+      if (isChecked) {
+        nextStatuses.add(status);
+        return nextStatuses;
+      }
+
+      nextStatuses.delete(status);
+      return nextStatuses;
+    });
+  }
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex justify-end">
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button className="ml-auto" type="button" variant="outline">
+                Status
+              </Button>
+            }
+          />
+          <DropdownMenuContent align="end" className="w-56">
+            {VERIFY_STEP_STATUS_OPTIONS.map((status) => (
+              <DropdownMenuCheckboxItem
+                checked={visibleStatuses.has(status)}
+                key={status}
+                onCheckedChange={(value) =>
+                  toggleStatus(status, Boolean(value))
+                }
+              >
+                {VERIFY_STEP_STATUS_LABEL[status]}
+              </DropdownMenuCheckboxItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+      <DataTable
+        columns={createVerifyApproveRequestAccessColumns()}
+        data={rowsByProject}
+        pageSize={pageSize}
+      />
+    </div>
+  );
+}
+
 function ValidateProtocolReturnDataTable({
   pageSize,
   rows,
@@ -299,6 +541,15 @@ export function AutomationRunReportDataTable({
   if (report.kind === "validate_protocol_return") {
     return (
       <ValidateProtocolReturnDataTable pageSize={pageSize} rows={report.rows} />
+    );
+  }
+
+  if (report.kind === "verify_approve_request_access") {
+    return (
+      <VerifyApproveRequestAccessDataTable
+        pageSize={pageSize}
+        rows={report.rows}
+      />
     );
   }
 

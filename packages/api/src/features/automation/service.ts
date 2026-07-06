@@ -5,7 +5,10 @@ import type {
   AutomationStatus,
   AutomationStoredResultTables,
 } from "@topsun/db/schema/postgres";
-import { isValidateProtocolReturnResultTables } from "@topsun/db/schema/postgres";
+import {
+  isValidateProtocolReturnResultTables,
+  isVerifyApproveRequestAccessResultTables,
+} from "@topsun/db/schema/postgres";
 
 import * as automationRepository from "./repository";
 import * as automationRunner from "./runner";
@@ -15,6 +18,7 @@ import type {
   AutomationRunReport,
   RequestProtocolReportRow,
   ValidateProtocolReturnReportRow,
+  VerifyApproveRequestAccessReportRow,
 } from "./types";
 
 const VISIBLE_LOG_LEVELS = new Set(["info", "step", "success", "error"]);
@@ -77,6 +81,42 @@ function normalizeValidateProtocolReturnRows(
     protocol_number: row.protocolNumber ?? null,
     status: row.status,
   }));
+}
+
+function normalizeOptionalText(value: string | undefined): string | null {
+  const trimmed = value?.trim();
+
+  return trimmed || null;
+}
+
+function normalizeVerifyApproveRequestAccessRows(
+  resultTables: AutomationStoredResultTables | null | undefined
+): VerifyApproveRequestAccessReportRow[] {
+  if (
+    !resultTables ||
+    !isVerifyApproveRequestAccessResultTables(resultTables)
+  ) {
+    return [];
+  }
+
+  return resultTables.rows.map((row) => {
+    const latestStep = row.timelineSteps.at(-1);
+
+    return {
+      cliente: row.client,
+      error_message: row.errorMessage ?? null,
+      latest_rejection_reasons: normalizeOptionalText(
+        latestStep?.rejectionReasons
+      ),
+      latest_step_date: latestStep?.stepStatusDate ?? null,
+      latest_step_message: latestStep?.stepMessage ?? null,
+      latest_step_status: latestStep?.stepStatus ?? null,
+      projeto: row.projectId,
+      protocol_number: row.protocolNumber,
+      solicitante: row.solicitante,
+      status: row.status,
+    };
+  });
 }
 
 export function startAutomation(kind: AutomationKind) {
@@ -146,19 +186,33 @@ export async function getRunReport(
     status: getRunDisplayStatus(run.status, run.stats),
   };
 
-  if (kind === "request_protocol") {
-    return {
-      ...baseReport,
-      kind,
-      rows: normalizeRequestProtocolRows(
-        run.resultTables as AutomationRunResultTables | null | undefined
-      ),
-    };
+  switch (kind) {
+    case "request_protocol": {
+      return {
+        ...baseReport,
+        kind,
+        rows: normalizeRequestProtocolRows(
+          run.resultTables as AutomationRunResultTables | null | undefined
+        ),
+      };
+    }
+    case "validate_protocol_return": {
+      return {
+        ...baseReport,
+        kind,
+        rows: normalizeValidateProtocolReturnRows(run.resultTables),
+      };
+    }
+    case "verify_approve_request_access": {
+      return {
+        ...baseReport,
+        kind,
+        rows: normalizeVerifyApproveRequestAccessRows(run.resultTables),
+      };
+    }
+    default: {
+      const unhandledKind: never = kind;
+      throw new Error(`Tipo de automação não suportado: ${unhandledKind}`);
+    }
   }
-
-  return {
-    ...baseReport,
-    kind,
-    rows: normalizeValidateProtocolReturnRows(run.resultTables),
-  };
 }
