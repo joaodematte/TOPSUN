@@ -1,3 +1,4 @@
+import { launchBrowser } from "../browser/launch";
 import { getTopsunConcurrency } from "../browser/topsun-session";
 import { listVerifyApproveRequestAccessProjects } from "../db/queries";
 import type { VerifyApproveRequestAccessProject } from "../db/queries";
@@ -15,10 +16,15 @@ import {
   countVerifyApproveRequestAccessStats,
 } from "./result-tables";
 import type { VerifyApproveRequestAccessProjectResult } from "./result-tables";
+import { closeAnaliseRedeStepOnTopsun } from "./topsun";
+import type { CloseAnaliseRedeStepProject } from "./topsun";
 
 interface ProjectWithAccount extends VerifyApproveRequestAccessProject {
   account: CelescAccount;
 }
+
+const ANALISE_REDE_STEP_MESSAGE =
+  "Projeto liberado com necessidade de análise de rede.";
 
 function resolveCelescAccount(protocolo: string | null): CelescAccount | null {
   if (!protocolo) {
@@ -201,10 +207,35 @@ async function fetchPortalInfoForProjects(
   return results;
 }
 
+function getProjectsEligibleForAnaliseRedeClose(
+  results: VerifyApproveRequestAccessProjectResult[]
+): CloseAnaliseRedeStepProject[] {
+  return results.flatMap((result) => {
+    if (result.status !== "Sucesso") {
+      return [];
+    }
+
+    const latestStep = result.timelineSteps.at(-1);
+
+    if (latestStep?.stepMessage.trim() !== ANALISE_REDE_STEP_MESSAGE) {
+      return [];
+    }
+
+    return [
+      {
+        client: result.client,
+        projectId: result.projectId,
+        stepMessage: latestStep.stepMessage,
+        stepStatusDate: latestStep.stepStatusDate,
+      },
+    ];
+  });
+}
+
 export async function runVerifyApproveRequestAccess(
   options: AutomationRunOptions
 ): Promise<AutomationRunResult> {
-  const { onProgress } = options;
+  const { headless = true, onProgress } = options;
 
   try {
     await emitProgress(onProgress, {
@@ -270,6 +301,34 @@ export async function runVerifyApproveRequestAccess(
       sessions,
       onProgress
     );
+
+    const projectsToCloseOnTopsun =
+      getProjectsEligibleForAnaliseRedeClose(results);
+
+    if (projectsToCloseOnTopsun.length > 0) {
+      await emitProgress(onProgress, {
+        level: "info",
+        message: `${projectsToCloseOnTopsun.length} projeto(s) elegível(is) para fechar etapa de análise de rede na Topsun.`,
+      });
+
+      await emitProgress(onProgress, {
+        level: "step",
+        message: `Fechando ${projectsToCloseOnTopsun.length} etapa(s) na Topsun`,
+        step: "TOPSUN",
+      });
+
+      const browser = await launchBrowser({ headless });
+
+      try {
+        await closeAnaliseRedeStepOnTopsun(
+          browser,
+          projectsToCloseOnTopsun,
+          onProgress
+        );
+      } finally {
+        await browser.close();
+      }
+    }
 
     const resultTables = buildVerifyApproveRequestAccessResultTables(results);
     const stats = countVerifyApproveRequestAccessStats(resultTables);
