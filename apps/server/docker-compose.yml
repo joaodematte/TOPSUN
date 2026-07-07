@@ -6,9 +6,7 @@ services:
     env_file:
       - .env
     environment:
-      CHROME_PATH: /usr/bin/chromium
       HOSTNAME: 0.0.0.0
-      PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: "1"
     ports:
       - "8024:${PORT}"
     restart: unless-stopped
