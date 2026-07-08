@@ -5,6 +5,7 @@ import { launchBrowser } from "../browser/launch";
 import {
   authenticate,
   closeContextSafely,
+  fillDataEtapa,
   getTopsunConcurrency,
   MAX_PROJECT_ATTEMPTS,
   openRequestProtocolModal,
@@ -457,11 +458,10 @@ async function fillRequestProtocolModal(
   numeroProtocolo: string,
   dataRetorno: string
 ) {
-  const dataEtapa = page.locator(TOPSUN_SELECTORS.dataEtapa);
   const dataValue =
     dataRetorno.trim() || new Intl.DateTimeFormat("pt-BR").format(new Date());
 
-  await dataEtapa.fill(dataValue);
+  await fillDataEtapa(page, dataValue, "dataEtapa2");
 
   const numeroProtocoloInput = page.locator(TOPSUN_SELECTORS.numeroProtocolo);
   const currentNumeroProtocolo = await numeroProtocoloInput.inputValue();

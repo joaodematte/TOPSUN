@@ -55,9 +55,12 @@ export const automationRouter = router({
 
   start: protectedProcedure
     .input(startAutomationSchema)
-    .mutation(async ({ input }) => {
+    .mutation(async ({ ctx, input }) => {
       try {
-        return await automationService.startAutomation(input.kind);
+        return await automationService.startAutomation(
+          input.kind,
+          ctx.auth.userId
+        );
       } catch (error) {
         throw new TRPCError({
           code: "CONFLICT",

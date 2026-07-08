@@ -42,6 +42,10 @@ function formatIsoDateToUsDate(value: string | null | undefined) {
   return `${month}/${day}/${year}`;
 }
 
+function normalizeUnidadeConsumidora(value: string) {
+  return value.replaceAll(/\p{P}/gu, "");
+}
+
 // Primeira etapa: unidade consumidora e tipo de responsável
 const FIRST_STEP_QUESTIONS: FormQuestion[] = [
   {
@@ -182,6 +186,15 @@ async function fillFieldQuestion(
 
   switch (question.type) {
     case "text": {
+      if (question.key === "unidadeConsumidora") {
+        await fillTextQuestion(
+          page,
+          question.questionId,
+          normalizeUnidadeConsumidora(value)
+        );
+        break;
+      }
+
       await fillTextQuestion(page, question.questionId, value);
       break;
     }

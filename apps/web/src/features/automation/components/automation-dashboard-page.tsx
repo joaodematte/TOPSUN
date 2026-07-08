@@ -62,6 +62,7 @@ import type {
   AutomationRunHistoryItem,
 } from "@/features/automation/types";
 import { DataTable } from "@/shared/components/data-table";
+import { formatValue } from "@/shared/utils/format-value";
 
 const LOG_LEVEL_CLASSNAME: Record<AutomationUiLogLevel, string> = {
   error: "text-destructive",
@@ -532,6 +533,12 @@ function createExecutionHistoryColumns(
       cell: ({ row }) => <RunStatusBadge status={row.original.status} />,
       header: "Status",
       size: 160,
+    },
+    {
+      accessorKey: "startedByName",
+      cell: ({ row }) => formatValue(row.original.startedByName),
+      header: "Iniciado por",
+      size: 180,
     },
     {
       accessorKey: "startedAt",

@@ -10,6 +10,7 @@ import {
   isVerifyApproveRequestAccessResultTables,
 } from "@topsun/db/schema/postgres";
 
+import { resolveClerkUserNames } from "../../clerk/users";
 import * as automationRepository from "./repository";
 import * as automationRunner from "./runner";
 import type {
@@ -119,8 +120,8 @@ function normalizeVerifyApproveRequestAccessRows(
   });
 }
 
-export function startAutomation(kind: AutomationKind) {
-  return automationRunner.startAutomationRun(kind);
+export function startAutomation(kind: AutomationKind, createdBy: string) {
+  return automationRunner.startAutomationRun(kind, createdBy);
 }
 
 export async function getStatus(kind: AutomationKind) {
@@ -145,12 +146,16 @@ export async function getHistory(
   kind: AutomationKind
 ): Promise<AutomationRunHistoryItem[]> {
   const runs = await automationRepository.listAutomationRuns(kind);
+  const nameById = await resolveClerkUserNames(
+    runs.map((run) => run.createdBy ?? "")
+  );
 
   return runs.map((run) => ({
     errorMessage: run.errorMessage,
     finishedAt: run.finishedAt?.toISOString() ?? null,
     id: run.id,
     startedAt: run.startedAt.toISOString(),
+    startedByName: run.createdBy ? (nameById.get(run.createdBy) ?? null) : null,
     stats: run.stats,
     status: getRunDisplayStatus(run.status, run.stats),
   }));

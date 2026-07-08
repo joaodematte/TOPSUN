@@ -48,14 +48,17 @@ function executeAutomation(kind: AutomationKind, runId: string) {
   }
 }
 
-export async function startAutomationRun(kind: AutomationKind) {
+export async function startAutomationRun(
+  kind: AutomationKind,
+  createdBy: string
+) {
   const activeRun = await automationRepository.getActiveAutomationRun(kind);
 
   if (activeRun) {
     throw new Error("Já existe uma automação em execução para este fluxo.");
   }
 
-  const [run] = await automationRepository.createAutomationRun(kind);
+  const [run] = await automationRepository.createAutomationRun(kind, createdBy);
 
   if (!run) {
     throw new Error("Não foi possível iniciar a automação.");

@@ -9,7 +9,8 @@ export const TOPSUN_SELECTORS = {
   closeModalEtapa: "#fecharModalEtapa",
   coletaFiltro: "#coleta_filtro",
   coletaFiltroLoading: "#div_coleta_filtro_carregando",
-  dataEtapa: 'input[name="data"]',
+  dataEtapa1: "input#data",
+  dataEtapa2: "input#data2",
   etapaAnaliseRedeText: "#etapa-16 .etapa-text",
   etapaSolicitacaoProtocoloText: "#etapa-42 .etapa-text",
   etapaSolicitacaoProtocoloVerde: "#etapa-42 .etapa-verde",
@@ -32,6 +33,16 @@ export function getTopsunConcurrency() {
   }
 
   return Math.floor(parsed);
+}
+
+export async function fillDataEtapa(
+  page: Page,
+  value: string,
+  selector: keyof typeof TOPSUN_SELECTORS
+) {
+  const input = page.locator(TOPSUN_SELECTORS[selector]);
+
+  await input.fill(value);
 }
 
 export async function closeContextSafely(

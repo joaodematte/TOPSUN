@@ -16,7 +16,7 @@ export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
   return next({
     ctx: {
       ...ctx,
-      auth: ctx.auth,
+      auth: { userId: ctx.auth.userId },
     },
   });
 });

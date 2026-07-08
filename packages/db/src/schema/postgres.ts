@@ -180,6 +180,7 @@ export function isValidateProtocolReturnResultTables(
 }
 
 export const automation = pgTable("automation", {
+  createdBy: text("created_by"),
   currentStep: text("current_step"),
   errorMessage: text("error_message"),
   finishedAt: timestamp("finished_at", { mode: "date", withTimezone: true }),

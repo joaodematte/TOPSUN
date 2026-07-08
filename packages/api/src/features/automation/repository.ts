@@ -8,10 +8,10 @@ import type {
 } from "@topsun/db/schema/postgres";
 import { and, asc, desc, eq, isNotNull, ne } from "drizzle-orm";
 
-export function createAutomationRun(kind: AutomationKind) {
+export function createAutomationRun(kind: AutomationKind, createdBy: string) {
   return postgresDb
     .insert(automation)
-    .values({ kind, status: "in_progress" })
+    .values({ createdBy, kind, status: "in_progress" })
     .returning();
 }
 
@@ -72,6 +72,7 @@ export function listAutomationRuns(
 ) {
   return postgresDb
     .select({
+      createdBy: automation.createdBy,
       errorMessage: automation.errorMessage,
       finishedAt: automation.finishedAt,
       id: automation.id,

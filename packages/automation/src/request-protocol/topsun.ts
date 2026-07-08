@@ -1,8 +1,10 @@
+// oxlint-disable typescript/consistent-type-imports
 import type { Browser } from "playwright";
 
 import {
   authenticate,
   closeContextSafely,
+  fillDataEtapa,
   getTopsunConcurrency,
   MAX_PROJECT_ATTEMPTS,
   openRequestProtocolModal,
@@ -30,10 +32,9 @@ function buildProtocoloSolicitadoText() {
 }
 
 async function fillRequestProtocolModal(page: import("playwright").Page) {
-  const dataEtapa = page.locator(TOPSUN_SELECTORS.dataEtapa);
   const observacao = page.locator(TOPSUN_SELECTORS.observacao);
 
-  await dataEtapa.fill(buildCurrentDateText());
+  await fillDataEtapa(page, buildCurrentDateText(), "dataEtapa1");
 
   const protocoloSolicitadoText = buildProtocoloSolicitadoText();
   const currentObservacao = await observacao.inputValue();

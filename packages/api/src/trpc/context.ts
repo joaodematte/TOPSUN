@@ -1,5 +1,6 @@
-import { createClerkClient } from "@clerk/backend";
 import type { Context as HonoContext } from "hono";
+
+import { clerkClient } from "../clerk/client";
 
 export interface ClerkContextAuth {
   userId: string | null;
@@ -10,11 +11,6 @@ function toClerkContextAuth(
 ): ClerkContextAuth | null {
   return auth ? { userId: auth.userId } : null;
 }
-
-const clerkClient = createClerkClient({
-  publishableKey: process.env.CLERK_PUBLISHABLE_KEY,
-  secretKey: process.env.CLERK_SECRET_KEY,
-});
 
 async function authenticateClerkRequest(
   request: Request

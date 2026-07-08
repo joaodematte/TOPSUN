@@ -16,6 +16,7 @@ export interface AutomationRunHistoryItem {
   finishedAt: string | null;
   id: string;
   startedAt: string;
+  startedByName: string | null;
   stats: AutomationRunStatsRecord | null;
   status: AutomationRunDisplayStatus;
 }
