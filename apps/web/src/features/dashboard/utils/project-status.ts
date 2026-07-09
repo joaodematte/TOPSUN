@@ -22,10 +22,13 @@ export const PROJECT_STATUS_FILTER_LABEL: Record<ProjectStatusFilter, string> =
   };
 
 export const PROJECT_STATUS_CLASSNAME: Record<ProjectStatusCategory, string> = {
-  attention: "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
-  critical: "bg-orange-500/10 text-orange-600 dark:text-orange-400",
-  onTime: "bg-green-500/10 text-green-600 dark:text-green-400",
-  overdue: "bg-red-500/10 text-red-600 dark:text-red-400",
+  attention:
+    "border-yellow-500/20 bg-yellow-500/10 text-yellow-600 dark:text-yellow-400",
+  critical:
+    "border-orange-500/20 bg-orange-500/10 text-orange-600 dark:text-orange-400",
+  onTime:
+    "border-green-500/20 bg-green-500/10 text-green-600 dark:text-green-400",
+  overdue: "border-red-500/20 bg-red-500/10 text-red-600 dark:text-red-400",
 };
 
 export interface ProjectWithDiasEtapa {

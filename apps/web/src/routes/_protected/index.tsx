@@ -1,23 +1,15 @@
 import { createFileRoute } from "@tanstack/react-router";
 
-import { RequestProtocolPage } from "@/features/request-protocol/routes/request-protocol-page";
+import { Homepage } from "@/features/homepage/routes/homepage";
 import { getTitle } from "@/shared/utils/get-title";
 
 export const Route = createFileRoute("/_protected/")({
-  component: RequestProtocolPage,
+  component: Homepage,
   head: () => ({
     meta: [
       {
-        title: getTitle("Solicitação de Protocolo"),
+        title: getTitle("Visão geral"),
       },
     ],
   }),
-  loader: ({ context }) => {
-    context.queryClient.prefetchQuery(
-      context.trpc.requestProtocol.getProjects.queryOptions()
-    );
-    context.queryClient.prefetchQuery(
-      context.trpc.requestProtocol.getStatusThresholds.queryOptions()
-    );
-  },
 });

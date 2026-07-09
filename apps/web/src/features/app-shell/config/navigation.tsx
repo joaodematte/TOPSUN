@@ -1,5 +1,5 @@
 import type { Icon } from "@tabler/icons-react";
-import { IconReportAnalytics, IconRobot } from "@tabler/icons-react";
+import { IconHome, IconReportAnalytics, IconRobot } from "@tabler/icons-react";
 
 import type { FileRoutesByTo } from "@/routeTree.gen";
 
@@ -21,6 +21,11 @@ export interface SidebarItemWithItems extends SidebarItemBase {
 export type SidebarItem = SidebarItemWithHref | SidebarItemWithItems;
 
 export const SIDEBAR_ITEMS: SidebarItem[] = [
+  {
+    href: "/",
+    icon: IconHome,
+    title: "Início",
+  },
   {
     icon: IconRobot,
     items: [
@@ -55,7 +60,7 @@ export const SIDEBAR_ITEMS: SidebarItem[] = [
         title: "Emissão de ART e requerimento de acesso",
       },
       {
-        href: "/",
+        href: "/request-protocol",
         title: "Solicitação de protocolo",
       },
       {
