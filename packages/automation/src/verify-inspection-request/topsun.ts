@@ -4,6 +4,7 @@ import {
   authenticate,
   closeContextSafely,
   DEFAULT_TIMEOUT_MS,
+  fillDataEtapa,
   getTopsunConcurrency,
   MAX_PROJECT_ATTEMPTS,
   selectProject,
@@ -12,24 +13,26 @@ import {
 } from "../browser/topsun-session";
 import type { AutomationProgressEvent } from "../types";
 
-export interface CloseAnaliseRedeStepProject {
+export interface CloseInspectionStepProject {
   client: string | null;
   projectId: number;
   stepMessage: string;
   stepStatusDate: string;
 }
 
-interface CloseAnaliseRedeStepResult {
+interface CloseInspectionStepResult {
   errorMessage?: string;
-  project: CloseAnaliseRedeStepProject;
+  project: CloseInspectionStepProject;
   status: "ERRORED" | "SUCCEEDED";
 }
 
-async function openAnaliseRedeModal(page: Page) {
-  const analiseRedeEtapa = page.locator(TOPSUN_SELECTORS.etapaAnaliseRedeText);
+const APPROVE_CONFIRM_WAIT_MS = 2000;
 
-  await analiseRedeEtapa.waitFor();
-  await analiseRedeEtapa.click();
+async function openInspectionModal(page: Page) {
+  const inspectionEtapa = page.locator(TOPSUN_SELECTORS.etapaInspecaoText);
+
+  await inspectionEtapa.waitFor();
+  await inspectionEtapa.click();
 
   await page.locator(TOPSUN_SELECTORS.salvaEtapaButton).waitFor();
 }
@@ -41,11 +44,13 @@ function buildTimelineObservationText(
   return `${stepStatusDate} - ${stepMessage} [R]`;
 }
 
-async function fillAnaliseRedeModal(
+async function fillInspectionModal(
   page: Page,
   stepStatusDate: string,
   stepMessage: string
 ) {
+  await fillDataEtapa(page, stepStatusDate, "dataEtapa1");
+
   const observacao = page.locator(TOPSUN_SELECTORS.obsAprovacaoEtapa);
   const timelineObservationText = buildTimelineObservationText(
     stepStatusDate,
@@ -64,24 +69,30 @@ async function fillAnaliseRedeModal(
   );
 }
 
-async function saveAnaliseRedeStep(page: Page) {
+async function approveInspectionStep(page: Page) {
+  await page.locator(TOPSUN_SELECTORS.aprovarCfgEtapaButton).click();
+  await page.getByRole("button", { name: "Sim" }).click();
+  await Bun.sleep(APPROVE_CONFIRM_WAIT_MS);
+}
+
+async function saveInspectionStep(page: Page) {
   await page.locator(TOPSUN_SELECTORS.salvaEtapaButton).click();
   await page.locator(TOPSUN_SELECTORS.swalConfirmButton).waitFor();
 }
 
-function createSucceededCloseAnaliseRedeResult(
-  project: CloseAnaliseRedeStepProject
-): CloseAnaliseRedeStepResult {
+function createSucceededCloseInspectionResult(
+  project: CloseInspectionStepProject
+): CloseInspectionStepResult {
   return {
     project,
     status: "SUCCEEDED",
   };
 }
 
-function createErroredCloseAnaliseRedeResult(
-  project: CloseAnaliseRedeStepProject,
+function createErroredCloseInspectionResult(
+  project: CloseInspectionStepProject,
   error: unknown
-): CloseAnaliseRedeStepResult {
+): CloseInspectionStepResult {
   return {
     errorMessage:
       error instanceof Error ? error.message : "Erro desconhecido na Topsun",
@@ -90,11 +101,11 @@ function createErroredCloseAnaliseRedeResult(
   };
 }
 
-async function runCloseAnaliseRedeStepAttempt(
+async function runCloseInspectionStepAttempt(
   browser: Browser,
-  project: CloseAnaliseRedeStepProject,
+  project: CloseInspectionStepProject,
   onProgress?: (event: AutomationProgressEvent) => void | Promise<void>
-): Promise<CloseAnaliseRedeStepResult> {
+): Promise<CloseInspectionStepResult> {
   let context: BrowserContext | undefined;
   let page: Page | undefined;
 
@@ -106,39 +117,40 @@ async function runCloseAnaliseRedeStepAttempt(
     await authenticate(page);
     await waitForColetaFiltroToLoad(page);
     await selectProject(page, project.projectId);
-    await openAnaliseRedeModal(page);
-    await fillAnaliseRedeModal(
+    await openInspectionModal(page);
+    await fillInspectionModal(
       page,
       project.stepStatusDate,
       project.stepMessage
     );
-    await saveAnaliseRedeStep(page);
+    await approveInspectionStep(page);
+    await saveInspectionStep(page);
 
     await onProgress?.({
       level: "success",
-      message: `Etapa de análise de rede fechada na Topsun: ${project.projectId} - ${project.client ?? ""}`,
+      message: `Etapa de aprovação de vistoria fechada na Topsun: ${project.projectId} - ${project.client ?? ""}`,
     });
 
-    return createSucceededCloseAnaliseRedeResult(project);
+    return createSucceededCloseInspectionResult(project);
   } catch (error) {
     await onProgress?.({
       level: "error",
-      message: `Erro ao fechar etapa de análise de rede na Topsun: ${project.projectId} - ${project.client ?? ""}`,
+      message: `Erro ao fechar etapa de aprovação de vistoria na Topsun: ${project.projectId} - ${project.client ?? ""}`,
     });
 
-    return createErroredCloseAnaliseRedeResult(project, error);
+    return createErroredCloseInspectionResult(project, error);
   } finally {
     await closeContextSafely(page, context);
   }
 }
 
-async function closeAnaliseRedeStepOnProject(
+async function closeInspectionStepOnProject(
   browser: Browser,
-  project: CloseAnaliseRedeStepProject,
+  project: CloseInspectionStepProject,
   onProgress?: (event: AutomationProgressEvent) => void | Promise<void>,
   attempt = 1
-): Promise<CloseAnaliseRedeStepResult> {
-  const result = await runCloseAnaliseRedeStepAttempt(
+): Promise<CloseInspectionStepResult> {
+  const result = await runCloseInspectionStepAttempt(
     browser,
     project,
     onProgress
@@ -148,7 +160,7 @@ async function closeAnaliseRedeStepOnProject(
     return result;
   }
 
-  return closeAnaliseRedeStepOnProject(
+  return closeInspectionStepOnProject(
     browser,
     project,
     onProgress,
@@ -158,11 +170,11 @@ async function closeAnaliseRedeStepOnProject(
 
 async function processProjectsWithConcurrency(
   browser: Browser,
-  projects: CloseAnaliseRedeStepProject[],
+  projects: CloseInspectionStepProject[],
   concurrency: number,
   onProgress?: (event: AutomationProgressEvent) => void | Promise<void>
 ) {
-  const results: CloseAnaliseRedeStepResult[] = [];
+  const results: CloseInspectionStepResult[] = [];
   let nextProjectIndex = 0;
 
   async function worker() {
@@ -178,13 +190,13 @@ async function processProjectsWithConcurrency(
 
       try {
         // oxlint-disable-next-line no-await-in-loop
-        results[currentIndex] = await closeAnaliseRedeStepOnProject(
+        results[currentIndex] = await closeInspectionStepOnProject(
           browser,
           project,
           onProgress
         );
       } catch (error) {
-        results[currentIndex] = createErroredCloseAnaliseRedeResult(
+        results[currentIndex] = createErroredCloseInspectionResult(
           project,
           error
         );
@@ -198,9 +210,9 @@ async function processProjectsWithConcurrency(
   return results;
 }
 
-export function closeAnaliseRedeStepOnTopsun(
+export function closeInspectionStepOnTopsun(
   browser: Browser,
-  projects: CloseAnaliseRedeStepProject[],
+  projects: CloseInspectionStepProject[],
   onProgress?: (event: AutomationProgressEvent) => void | Promise<void>
 ) {
   if (projects.length === 0) {

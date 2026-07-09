@@ -2,6 +2,7 @@ import { topsunDb } from "@topsun/db";
 import {
   clientes,
   coletaDados,
+  dadosEtpValidArt,
   etapas,
   regioesVenda,
   usuarios,
@@ -11,6 +12,7 @@ import {
   asc,
   desc,
   eq,
+  exists,
   isNotNull,
   isNull,
   like,
@@ -24,10 +26,23 @@ const e4 = alias(etapas, "e4");
 const e13 = alias(etapas, "e13");
 const e19 = alias(etapas, "e19");
 const et16 = alias(etapas, "et16");
+const et24 = alias(etapas, "et24");
 const et14 = alias(etapas, "et14");
 
 export function listAutomationRequestProtocolProjects() {
   const diasEtapa = sql<number>`DATEDIFF(CURDATE(), DATE(${e42.datahoraAberturaEtapa}))`;
+
+  const hasProtocoloAutomatico = exists(
+    topsunDb
+      .select({ one: sql`1` })
+      .from(dadosEtpValidArt)
+      .where(
+        and(
+          eq(dadosEtpValidArt.codColetaValidaArt, coletaDados.idColeta),
+          eq(dadosEtpValidArt.protocoloAutomaticoValidaArt, 1)
+        )
+      )
+  );
 
   return topsunDb
     .select({
@@ -86,8 +101,8 @@ export function listAutomationRequestProtocolProjects() {
         eq(coletaDados.statusColeta, 2),
         eq(e42.bloqueadaEtapa, 0),
         isNotNull(e42.datahoraAberturaEtapa),
-        like(coletaDados.concessionariaColeta, "%CELESC%"),
-        or(isNull(e42.obsEtapa), eq(e42.obsEtapa, ""))
+        or(isNull(e42.obsEtapa), eq(e42.obsEtapa, "")),
+        hasProtocoloAutomatico
       )
     )
     .orderBy(desc(diasEtapa), asc(coletaDados.idColeta));
@@ -208,4 +223,42 @@ export function listVerifyApproveRequestAccessProjects() {
 
 export type VerifyApproveRequestAccessProject = Awaited<
   ReturnType<typeof listVerifyApproveRequestAccessProjects>
+>[number];
+
+export function listVerifyInspectionRequestProjects() {
+  return topsunDb
+    .select({
+      nomeCliente: clientes.nomeCliente,
+      projeto: coletaDados.idColeta,
+      protocolo: et14.campopadraoEtapa,
+    })
+    .from(et24)
+    .innerJoin(coletaDados, eq(coletaDados.idColeta, et24.codColetaEtapa))
+    .leftJoin(clientes, eq(clientes.idCliente, coletaDados.clienteColeta))
+    .innerJoin(
+      et14,
+      and(
+        eq(et14.codColetaEtapa, et24.codColetaEtapa),
+        eq(et14.codCfgEtapa, 14),
+        isNotNull(et14.campopadraoEtapa),
+        or(
+          like(et14.campopadraoEtapa, "%luiz%"),
+          like(et14.campopadraoEtapa, "%gabriel%")
+        )
+      )
+    )
+    .where(
+      and(
+        eq(et24.codCfgEtapa, 24),
+        eq(coletaDados.statusColeta, 2),
+        isNotNull(et24.datahoraAberturaEtapa),
+        eq(et24.statusEtapa, 0),
+        eq(et24.bloqueadaEtapa, 0),
+        like(coletaDados.concessionariaColeta, "%CELESC%")
+      )
+    );
+}
+
+export type VerifyInspectionRequestProject = Awaited<
+  ReturnType<typeof listVerifyInspectionRequestProjects>
 >[number];

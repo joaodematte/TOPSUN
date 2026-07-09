@@ -18,6 +18,7 @@ import type {
   RequestProtocolReportRow,
   ValidateProtocolReturnReportRow,
   VerifyApproveRequestAccessReportRow,
+  VerifyInspectionRequestReportRow,
 } from "@/features/automation/types";
 import { DataTable } from "@/shared/components/data-table";
 import { formatValue } from "@/shared/utils/format-value";
@@ -497,6 +498,83 @@ function VerifyApproveRequestAccessDataTable({
   );
 }
 
+function createVerifyInspectionRequestColumns(): ColumnDef<VerifyInspectionRequestReportRow>[] {
+  return [
+    createProjectColumn<VerifyInspectionRequestReportRow>({
+      enableSorting: true,
+    }),
+    createClientColumn<VerifyInspectionRequestReportRow>({
+      enableSorting: true,
+    }),
+    {
+      accessorKey: "protocol_number",
+      cell: ({ getValue }) => (
+        <span className="font-medium tabular-nums">
+          {formatValue(getValue<string | null>())}
+        </span>
+      ),
+      enableSorting: true,
+      header: "Protocolo",
+      size: 160,
+      sortingFn: (currentRow, nextRow) =>
+        String(currentRow.original.protocol_number ?? "").localeCompare(
+          String(nextRow.original.protocol_number ?? ""),
+          "pt-BR",
+          { numeric: true }
+        ),
+    },
+    {
+      accessorKey: "solicitante",
+      cell: ({ getValue }) => {
+        const solicitante = getValue<string | null>();
+
+        return formatValue(
+          solicitante ? capitalizeFirstLetter(solicitante) : null
+        );
+      },
+      header: "Solicitante",
+      size: 120,
+    },
+    {
+      accessorKey: "ultimo_status",
+      cell: ({ getValue }) => formatValue(getValue<string | null>()),
+      enableSorting: true,
+      header: "Último status",
+      size: 280,
+    },
+    {
+      accessorKey: "data",
+      cell: ({ getValue }) => (
+        <span className="tabular-nums">
+          {formatValue(getValue<string | null>())}
+        </span>
+      ),
+      header: "Data",
+      size: 140,
+    },
+  ];
+}
+
+function VerifyInspectionRequestDataTable({
+  pageSize,
+  rows,
+}: {
+  pageSize: number;
+  rows: VerifyInspectionRequestReportRow[];
+}) {
+  const rowsByProject = rows.toSorted(
+    (currentRow, nextRow) => currentRow.projeto - nextRow.projeto
+  );
+
+  return (
+    <DataTable
+      columns={createVerifyInspectionRequestColumns()}
+      data={rowsByProject}
+      pageSize={pageSize}
+    />
+  );
+}
+
 function ValidateProtocolReturnDataTable({
   pageSize,
   rows,
@@ -598,6 +676,15 @@ export function AutomationRunReportDataTable({
   if (report.kind === "verify_approve_request_access") {
     return (
       <VerifyApproveRequestAccessDataTable
+        pageSize={pageSize}
+        rows={report.rows}
+      />
+    );
+  }
+
+  if (report.kind === "verify_inspection_request") {
+    return (
+      <VerifyInspectionRequestDataTable
         pageSize={pageSize}
         rows={report.rows}
       />

@@ -3,6 +3,7 @@ import {
   runRequestProtocol,
   runValidateProtocolReturn,
   runVerifyApproveRequestAccess,
+  runVerifyInspectionRequest,
 } from "@topsun/automation";
 import type { AutomationKind } from "@topsun/db/schema/postgres";
 
@@ -40,6 +41,9 @@ function executeAutomation(kind: AutomationKind, runId: string) {
     }
     case "verify_approve_request_access": {
       return runVerifyApproveRequestAccess({ headless, onProgress });
+    }
+    case "verify_inspection_request": {
+      return runVerifyInspectionRequest({ headless, onProgress });
     }
     default: {
       const unhandledKind: never = kind;

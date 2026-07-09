@@ -8,6 +8,7 @@ import type {
 import {
   isValidateProtocolReturnResultTables,
   isVerifyApproveRequestAccessResultTables,
+  isVerifyInspectionRequestResultTables,
 } from "@topsun/db/schema/postgres";
 
 import { resolveClerkUserNames } from "../../clerk/users";
@@ -20,6 +21,7 @@ import type {
   RequestProtocolReportRow,
   ValidateProtocolReturnReportRow,
   VerifyApproveRequestAccessReportRow,
+  VerifyInspectionRequestReportRow,
 } from "./types";
 
 const VISIBLE_LOG_LEVELS = new Set(["info", "step", "success", "error"]);
@@ -120,6 +122,25 @@ function normalizeVerifyApproveRequestAccessRows(
   });
 }
 
+function normalizeVerifyInspectionRequestRows(
+  resultTables: AutomationStoredResultTables | null | undefined
+): VerifyInspectionRequestReportRow[] {
+  if (!resultTables || !isVerifyInspectionRequestResultTables(resultTables)) {
+    return [];
+  }
+
+  return resultTables.rows.map((row) => ({
+    cliente: row.client,
+    data: row.inspectionStep?.stepStatusDate ?? null,
+    error_message: row.errorMessage ?? null,
+    projeto: row.projectId,
+    protocol_number: row.protocolNumber,
+    solicitante: row.solicitante,
+    status: row.status,
+    ultimo_status: row.inspectionStep?.stepMessage ?? null,
+  }));
+}
+
 export function startAutomation(kind: AutomationKind, createdBy: string) {
   return automationRunner.startAutomationRun(kind, createdBy);
 }
@@ -213,6 +234,13 @@ export async function getRunReport(
         ...baseReport,
         kind,
         rows: normalizeVerifyApproveRequestAccessRows(run.resultTables),
+      };
+    }
+    case "verify_inspection_request": {
+      return {
+        ...baseReport,
+        kind,
+        rows: normalizeVerifyInspectionRequestRows(run.resultTables),
       };
     }
     default: {

@@ -55,6 +55,7 @@ export const automationKind = pgEnum("kind", [
   "request_protocol",
   "validate_protocol_return",
   "verify_approve_request_access",
+  "verify_inspection_request",
 ]);
 
 export const automationStatus = pgEnum("status", [
@@ -142,10 +143,38 @@ export interface VerifyApproveRequestAccessResultTables {
   rows: VerifyApproveRequestAccessResultRow[];
 }
 
+export interface VerifyInspectionRequestTimelineStep {
+  rejectionReasons: string;
+  serviceClosed: boolean;
+  stepDescription: string;
+  stepMessage: string;
+  stepNumber: number;
+  stepStatus: string;
+  stepStatusDate: string;
+}
+
+export type VerifyInspectionRequestResultStatus = "Erro" | "Sucesso";
+
+export interface VerifyInspectionRequestResultRow {
+  client: string | null;
+  errorMessage?: string;
+  inspectionStep: VerifyInspectionRequestTimelineStep | null;
+  projectId: number;
+  protocolNumber: string | null;
+  solicitante: string | null;
+  status: VerifyInspectionRequestResultStatus;
+  timelineSteps: VerifyInspectionRequestTimelineStep[];
+}
+
+export interface VerifyInspectionRequestResultTables {
+  rows: VerifyInspectionRequestResultRow[];
+}
+
 export type AutomationStoredResultTables =
   | AutomationRunResultTables
   | ValidateProtocolReturnResultTables
-  | VerifyApproveRequestAccessResultTables;
+  | VerifyApproveRequestAccessResultTables
+  | VerifyInspectionRequestResultTables;
 
 export function isVerifyApproveRequestAccessResultTables(
   resultTables: AutomationStoredResultTables
@@ -160,7 +189,23 @@ export function isVerifyApproveRequestAccessResultTables(
     return false;
   }
 
-  return "timelineSteps" in firstRow;
+  return "timelineSteps" in firstRow && !("inspectionStep" in firstRow);
+}
+
+export function isVerifyInspectionRequestResultTables(
+  resultTables: AutomationStoredResultTables
+): resultTables is VerifyInspectionRequestResultTables {
+  if (!("rows" in resultTables)) {
+    return false;
+  }
+
+  const [firstRow] = resultTables.rows;
+
+  if (!firstRow) {
+    return false;
+  }
+
+  return "inspectionStep" in firstRow;
 }
 
 export function isValidateProtocolReturnResultTables(

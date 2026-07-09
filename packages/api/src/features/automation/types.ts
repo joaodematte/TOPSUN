@@ -81,12 +81,30 @@ export interface VerifyApproveRequestAccessRunReport extends AutomationRunReport
   rows: VerifyApproveRequestAccessReportRow[];
 }
 
+export interface VerifyInspectionRequestReportRow {
+  cliente: string | null;
+  data: string | null;
+  error_message: string | null;
+  projeto: number;
+  protocol_number: string | null;
+  solicitante: string | null;
+  status: VerifyApproveRequestAccessResultStatus;
+  ultimo_status: string | null;
+}
+
+export interface VerifyInspectionRequestRunReport extends AutomationRunReportBase {
+  kind: "verify_inspection_request";
+  rows: VerifyInspectionRequestReportRow[];
+}
+
 export type AutomationRunReport =
   | RequestProtocolRunReport
   | ValidateProtocolReturnRunReport
-  | VerifyApproveRequestAccessRunReport;
+  | VerifyApproveRequestAccessRunReport
+  | VerifyInspectionRequestRunReport;
 
 export type AutomationRunReportRow =
   | RequestProtocolReportRow
   | ValidateProtocolReturnReportRow
-  | VerifyApproveRequestAccessReportRow;
+  | VerifyApproveRequestAccessReportRow
+  | VerifyInspectionRequestReportRow;

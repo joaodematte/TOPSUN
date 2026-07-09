@@ -36,6 +36,10 @@ export const SIDEBAR_ITEMS: SidebarItem[] = [
         href: "/automation/verify-approve-request-access",
         title: "Verificação de solicitação de acesso",
       },
+      {
+        href: "/automation/verify-inspection-request",
+        title: "Verificação de solicitação de vistoria",
+      },
     ],
     title: "Automações",
   },

@@ -6,12 +6,14 @@ export const MAX_PROJECT_ATTEMPTS = 3;
 export const DEFAULT_CONCURRENCY = 3;
 
 export const TOPSUN_SELECTORS = {
+  aprovarCfgEtapaButton: "button#btn_aprovar_cfg_etapa",
   closeModalEtapa: "#fecharModalEtapa",
   coletaFiltro: "#coleta_filtro",
   coletaFiltroLoading: "#div_coleta_filtro_carregando",
   dataEtapa1: "input#data",
   dataEtapa2: "input#data2",
   etapaAnaliseRedeText: "#etapa-16 .etapa-text",
+  etapaInspecaoText: "#etapa-24 .etapa-text",
   etapaSolicitacaoProtocoloText: "#etapa-42 .etapa-text",
   etapaSolicitacaoProtocoloVerde: "#etapa-42 .etapa-verde",
   modalEtapa: "#ModalEtapa",

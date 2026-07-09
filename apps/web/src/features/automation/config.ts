@@ -28,6 +28,11 @@ export const AUTOMATION_KIND_CONFIG: Record<
       "Controle a execução do robô que verifica e aprova solicitações de acesso na CELESC.",
     title: "Automação de Verificação de Solicitação de Acesso",
   },
+  verify_inspection_request: {
+    description:
+      "Controle a execução do robô que verifica solicitações de vistoria na CELESC e fecha a etapa 24 no TOPSUN.",
+    title: "Automação de Verificação de Solicitação de Vistoria",
+  },
 };
 
 export const AUTOMATION_DASHBOARD_ROUTE_BY_KIND: Record<
@@ -37,6 +42,7 @@ export const AUTOMATION_DASHBOARD_ROUTE_BY_KIND: Record<
   request_protocol: "/automation/request-protocol",
   validate_protocol_return: "/automation/validate-protocol-return",
   verify_approve_request_access: "/automation/verify-approve-request-access",
+  verify_inspection_request: "/automation/verify-inspection-request",
 };
 
 export const AUTOMATION_REPORT_ROUTE_BY_KIND: Record<AutomationKind, string> = {
@@ -45,4 +51,6 @@ export const AUTOMATION_REPORT_ROUTE_BY_KIND: Record<AutomationKind, string> = {
     "/automation/validate-protocol-return/$automationId",
   verify_approve_request_access:
     "/automation/verify-approve-request-access/$automationId",
+  verify_inspection_request:
+    "/automation/verify-inspection-request/$automationId",
 };

@@ -47,7 +47,7 @@ const GET_PORTAL_PAGE_INFO_QUERY = `query ($input: TecPortalPageInfoInputModel!)
   }
 }`;
 
-interface PortalTimelineItem {
+export interface PortalTimelineItem {
   canCorrect: boolean;
   id: string;
   link: string;
@@ -98,10 +98,27 @@ export function extractLastProtocolNumber(
   return lastMatch?.[0] ?? null;
 }
 
+export function getPortalTimelineItems(
+  response: PortalPageInfoResponse
+): PortalTimelineItem[] {
+  return response.data?.getPortalPageInfo?.servicesTimeline ?? [];
+}
+
+export function getLatestZegeStep(timeline: PortalTimelineItem[]) {
+  return (
+    timeline
+      .filter((step) => step.serviceCode === "ZEGE")
+      .toSorted(
+        (currentStep, nextStep) => currentStep.stepNumber - nextStep.stepNumber
+      )
+      .at(-1) ?? null
+  );
+}
+
 export function parsePortalTimelineSteps(
   response: PortalPageInfoResponse
 ): VerifyApproveRequestAccessTimelineStep[] {
-  const timeline = response.data?.getPortalPageInfo?.servicesTimeline ?? [];
+  const timeline = getPortalTimelineItems(response);
 
   return timeline
     .map((step) => ({

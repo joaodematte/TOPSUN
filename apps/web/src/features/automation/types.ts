@@ -22,9 +22,15 @@ export type VerifyApproveRequestAccessReportRow = Extract<
   { kind: "verify_approve_request_access" }
 >["rows"][number];
 
+export type VerifyInspectionRequestReportRow = Extract<
+  AutomationRunReport,
+  { kind: "verify_inspection_request" }
+>["rows"][number];
+
 export type AutomationRunReportRow =
   | RequestProtocolReportRow
   | ValidateProtocolReturnReportRow
-  | VerifyApproveRequestAccessReportRow;
+  | VerifyApproveRequestAccessReportRow
+  | VerifyInspectionRequestReportRow;
 
 export type AutomationRunReportLogEntry = AutomationRunReport["logs"][number];

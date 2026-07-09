@@ -39,6 +39,8 @@ const RESULTS_DESCRIPTION_BY_KIND: Record<AutomationKind, string> = {
     "Projetos fechados com sucesso e divergências identificadas nos e-mails da CELESC",
   verify_approve_request_access:
     "Projetos elegíveis com protocolo, solicitante, último status e mensagem do portal CELESC",
+  verify_inspection_request:
+    "Projetos elegíveis com protocolo, solicitante, data e último status ZEGE do portal CELESC",
 };
 
 const LOG_LEVEL_CLASSNAME: Record<

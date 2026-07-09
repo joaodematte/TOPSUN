@@ -78,6 +78,13 @@
       "when": 1781580065181,
       "tag": "0010_verify_approve_request_access_kind",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "7",
+      "when": 1781583665181,
+      "tag": "0011_verify_inspection_request_kind",
+      "breakpoints": true
     }
   ]
 }
